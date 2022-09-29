@@ -1,5 +1,7 @@
 # Rusty Physics Engine
 
+## How to build
+
 ## Capabilities
 
 ## Why particle based?
