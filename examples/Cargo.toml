@@ -7,5 +7,5 @@ edition = "2021"
 
 [dev-dependencies]
 engine = { path = "../engine" }
-renderer = { path = "../renderer" }
-rand = "0.8"
+rendering = { path = "../rendering" }
+#rand = "0.8"

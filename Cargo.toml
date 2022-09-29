@@ -2,6 +2,6 @@
 
 members = [
     "engine",
-    "renderer",
+    "rendering",
     "examples"
 ]

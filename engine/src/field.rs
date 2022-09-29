@@ -1,4 +1,4 @@
-//! An object that enables dynamic interaction with and between particles. 
+//! An object that enables dynamic interaction with and between particles.
 //! A field can also have its own state and integration method.
 
 use crate::particle::{Particle, ParticleReference};
