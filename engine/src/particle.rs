@@ -4,6 +4,7 @@ pub use crate::vec3::Vec3;
 
 #[derive(Default)]
 pub struct Particle {
+    // identity
     pub id: u32,
     pub group: u32,
 
@@ -74,8 +75,8 @@ impl Particle {
     //--------------------------------------------------------------------//
 
     pub fn integrate(&mut self, dt: f64) {
-        // scaling by inverse mass ensures that dynamical interactions conserve momentum and center of mass.
-        // an inverse mass of 0 allows for non-dynamical particles (ie: barriers, etc)
+        // Scaling by inverse mass ensures that dynamical interactions conserve momentum and center of mass.
+        // An inverse mass of 0 (infinitely massive) then allows for particles that don't experience interactions (ie: barriers, etc).
         let inverse_mass = if self.mass > 0_f64 {
             1_f64 / self.mass
         } else {
