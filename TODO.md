@@ -51,3 +51,4 @@
   - [ ] load 3d object files as set of connected particles
   - [ ] parallelize using rayon or bevy_tasks::ParallelIterator
   - [ ] wgpu acceleration
+  - [ ] extend engine to support rigid bodies
