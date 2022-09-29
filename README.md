@@ -1,10 +1,8 @@
 # Rusty Physics Engine
 
-## How to build
+## How to Build
 
 ## Capabilities
-
-## Why particle based?
 
 ## Technical Scope
 

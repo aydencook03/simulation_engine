@@ -1,5 +1,5 @@
 //! An object that enables dynamic interaction with and between particles.
-//! A field can also have its own state and integration method.
+//! A field can also store its own state and have an integration method.
 
 use crate::particle::{Particle, ParticleReference};
 use crate::vec3::Vec3;
