@@ -8,6 +8,7 @@ pub struct ParticleAction {
     force: Option<Vec3>,
     impulse: Option<Vec3>,
     displacement: Option<Vec3>,
+    // internal_work
 }
 
 impl ParticleAction {

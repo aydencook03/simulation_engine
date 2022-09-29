@@ -7,19 +7,24 @@ pub struct Particle {
     pub id: u32,
     pub group: u32,
 
+    // properties
     pub mass: f64,
     pub charge: f64,
     pub temperature: f64,
     pub radius: f64,
 
+    // state
     pub pos: Vec3,
     pub vel: Vec3,
     pub prev_pos: Vec3,
     pub time_since_prev_pos: f64,
 
+    // dynamical influences
     pub forces: Vec<Vec3>,
     pub impulses: Vec<Vec3>,
     pub displacements: Vec<Vec3>,
+    // pub internal_work: Vec<f64>,
+    // pub in_contact_with: Vec<ParticleReference>,
     // pub collision_info: CollisionInfo, // collision_radius?, restitution, friction, in_contact_with, thermal diffusivity, etc
     // pub temperature_info: TempInfo, // conduction & expansion constants, temp_sim: bool, etc
 }
@@ -69,34 +74,40 @@ impl Particle {
     //--------------------------------------------------------------------//
 
     pub fn integrate(&mut self, dt: f64) {
-        if self.mass > 0_f64 {
-            let mut total_force = Vec3::zero();
-            for force in &self.forces {
-                total_force += *force;
-            }
+        // scaling by inverse mass ensures that dynamical interactions conserve momentum and center of mass.
+        // an inverse mass of 0 allows for non-dynamical particles (ie: barriers, etc)
+        let inverse_mass = if self.mass > 0_f64 {
+            1_f64 / self.mass
+        } else {
+            0_f64
+        };
 
-            let mut total_impulse = Vec3::zero();
-            for impulse in &self.impulses {
-                total_impulse += *impulse;
-            }
-
-            self.vel += (total_force / self.mass) * dt;
-            self.vel += total_impulse / self.mass;
+        let mut total_force = Vec3::zero();
+        for force in &self.forces {
+            total_force += *force;
         }
 
-        self.prev_pos = self.pos;
-        self.time_since_prev_pos = dt;
+        let mut total_impulse = Vec3::zero();
+        for impulse in &self.impulses {
+            total_impulse += *impulse;
+        }
 
         let mut total_displacement = Vec3::zero();
         for displacement in &self.displacements {
             total_displacement += *displacement;
         }
 
+        self.vel += total_force * inverse_mass * dt;
+        self.vel += total_impulse * inverse_mass;
+
+        self.prev_pos = self.pos;
+        self.time_since_prev_pos = dt;
+
         self.pos += self.vel * dt;
-        self.pos += total_displacement; // Gauss-Seidel or Jacobi??
+        self.pos += total_displacement * inverse_mass; // Gauss-Seidel or Jacobi??
     }
 
-    pub fn vel_from_prev(&mut self) {
+    pub fn vel_from_prev_pos(&mut self) {
         self.vel = (self.pos - self.prev_pos) / self.time_since_prev_pos;
     }
 

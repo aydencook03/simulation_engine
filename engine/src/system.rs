@@ -63,7 +63,7 @@ impl System {
                     }
                     // project constraints
                     for particle in &mut self.particles {
-                        particle.vel_from_prev();
+                        particle.vel_from_prev_pos();
                     }
                 }
 
