@@ -50,7 +50,7 @@ impl System {
             for _ in 0..self.substeps {
                 let sub_dt = dt / (self.substeps as f64);
                 // detect collisions / gather neighbors
-                // temperature (radiation, conduction, advection, thermal-expansion)
+                // temperature (radiation, conduction, advection, thermal-expansion, friction/collision heating)
 
                 for field in &mut self.fields {
                     field.handle(&mut self.particles, sub_dt);

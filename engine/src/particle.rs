@@ -20,7 +20,8 @@ pub struct Particle {
     pub forces: Vec<Vec3>,
     pub impulses: Vec<Vec3>,
     pub displacements: Vec<Vec3>,
-    // pub collision_info: CollisionInfo, // collision_radius?, restitution, friction, in_contact_with, thermal diffusivity
+    // pub collision_info: CollisionInfo, // collision_radius?, restitution, friction, in_contact_with, thermal diffusivity, etc
+    // pub temperature_info: TempInfo, // conduction & expansion constants, temp_sim: bool, etc
 }
 
 //---------------------------------------------------------------------------------------------------//
