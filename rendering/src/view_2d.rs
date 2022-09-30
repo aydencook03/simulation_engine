@@ -1,5 +1,4 @@
-//! Things that would be common to any 2d-renderer as well as components needed for a drawable object
-//! and some nice colors.
+//! Things that would be common to any 2d-renderer.
 //!
 //! This module contains the View2D object, which any renderer can use to easily keep track of things like
 //! panning, zooming, background color, etc. It also contains methods to help map between the simulation's coordinates
@@ -16,19 +15,7 @@
 //! draw_point((x + width / 2.0), (height / 2.0 - y));
 //! ```
 
-use crate::vec2::Vec2;
-
-//---------------------------------------------------------------------------------------------------//
-// Some nice colors.
-
-pub mod colors {
-    pub const WHITE: [u8; 4] = [255, 255, 255, 255];
-    pub const BLACK: [u8; 4] = [0, 0, 0, 255];
-    pub const GREY: [u8; 4] = [40, 40, 40, 255];
-    pub const CRIMSON: [u8; 4] = [220, 20, 60, 255];
-    pub const EARTH_BLUE: [u8; 4] = [10, 30, 220, 255];
-    pub const FOREST_GREEN: [u8; 4] = [1, 79, 55, 255];
-}
+use engine::vec3::Vec3;
 
 //---------------------------------------------------------------------------------------------------//
 // A useful object that can keep track of 2d camera panning and zooming.
@@ -37,7 +24,7 @@ pub mod colors {
 #[derive(Copy, Clone)]
 pub struct View2D {
     /// amount by which the view is offset from the (0, 0) coordinate in the simulation
-    pub view_offset: Vec2,
+    pub view_offset: Vec3,
     /// zoom parameter
     pub zoom: f64,
     /// amount by which panning increases the view offset
@@ -50,7 +37,7 @@ impl View2D {
     /// Create a new default view.
     pub fn new() -> View2D {
         View2D {
-            view_offset: Vec2::zero(),
+            view_offset: Vec3::zero(),
             zoom: 1.0,
             pan_step: 20.0,
             zoom_step: 0.15,
@@ -59,7 +46,7 @@ impl View2D {
 
     /// Reset the view.
     pub fn reset(self: &mut Self) {
-        self.view_offset = Vec2::zero();
+        self.view_offset = Vec3::zero();
         self.zoom = 1.0;
     }
 
@@ -104,15 +91,15 @@ impl View2D {
     ///
     /// The 2d view into the simulation is likely to be panned around or zoomed in and out, so this function
     /// maps a set of coordinates in the simulation space to what they would be on the panned and zoomed view.
-    pub fn map_to_view(self: &Self, pos: Vec2, radius: f64) -> (Vec2, f64) {
+    pub fn map_to_view(self: &Self, pos: Vec3, radius: f64) -> (Vec3, f64) {
         let zoom = self.parameterized_zoom();
         // create affine transformation data
-        let identity = [[1.0, 0.0], [0.0, 1.0]];
-        let scale = [[zoom, 0.0], [0.0, zoom]];
+        let identity_xy = [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 0.0]];
+        let scale = [[zoom, 0.0, 0.0], [0.0, zoom, 0.0], [0.0, 0.0, 0.0]];
         let pan = self.view_offset * -1.0;
         let vec = pos
-            .affine_transformation(identity, pan)
-            .affine_transformation(scale, Vec2::zero());
+            .affine_transformation(identity_xy, pan)
+            .affine_transformation(scale, Vec3::zero());
         let radius = radius * zoom;
 
         (vec, radius)

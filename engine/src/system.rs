@@ -45,7 +45,7 @@ impl System {
 
     //--------------------------------------------------------------------//
 
-    pub fn step_forwared(&mut self, dt: f64) {
+    pub fn step_forward(&mut self, dt: f64) {
         if self.running {
             for _ in 0..self.substeps {
                 let sub_dt = dt / (self.substeps as f64);

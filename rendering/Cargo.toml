@@ -7,6 +7,6 @@ edition = "2021"
 
 [dependencies]
 engine = { path = "../engine" }
-#winit = "0.26"
-#softbuffer = "0.1"
-#tiny-skia = "0.8"
+winit = "0.26"
+softbuffer = "0.1"
+tiny-skia = "0.8"

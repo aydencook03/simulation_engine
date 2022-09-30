@@ -1,6 +1,5 @@
-//! This is an example implementation renderer for the
-//! [`rusty_physics_2d`](https://github.com/aydencook03/rusty_physics_engine) crate.
-//! It is pretty simple, and is mainly used to test the 2d physics engine.
+//! This is an example implementation of a 2d renderer for the physics engine.
+//! It is pretty simple, and is mainly used to test the engine.
 //!
 //! It uses [`winit`](https://github.com/rust-windowing/winit) for the event_loop, window, and keyboard,
 //! [`std::time`](https://doc.rust-lang.org/std/time/index.html) for timekeeping,
@@ -22,7 +21,8 @@
 
 //---------------------------------------------------------------------------------------------------//
 
-use rusty_physics_2d::{render_utils::View2D, system::System, vec2::Vec2};
+use crate::view_2d::View2D;
+use engine::{system::System, vec3::Vec3};
 
 use std::time::Instant;
 
@@ -40,7 +40,7 @@ use tiny_skia::{FillRule, Paint, PathBuilder, Pixmap, Stroke, Transform};
 //---------------------------------------------------------------------------------------------------//
 
 #[derive(Copy, Clone)]
-pub struct Renderer {
+pub struct Particle2DRenderer {
     pub render_fps: u32,
     pub physics_fps: u32,
     pub stroke_size: f32,
@@ -55,15 +55,15 @@ struct Context {
     context: GraphicsContext<Window>,
 }
 
-impl Renderer {
+impl Particle2DRenderer {
     /// Creates a default window.
-    pub fn new() -> Renderer {
-        Renderer {
+    pub fn new() -> Particle2DRenderer {
+        Particle2DRenderer {
             render_fps: 30,
             physics_fps: 60,
             stroke_size: 2.5,
-            stroke_color: rusty_physics_2d::render_utils::colors::BLACK,
-            bg_color: rusty_physics_2d::render_utils::colors::GREY,
+            stroke_color: crate::colors::BLACK,
+            bg_color: crate::colors::GREY,
             starting_width: 1000,
             starting_height: 1000,
         }
@@ -128,7 +128,7 @@ impl Renderer {
                     VirtualKeyCode::Equals => context.view.zoom_in(),
                     VirtualKeyCode::Minus => context.view.zoom_out(),
                     VirtualKeyCode::Return => context.view.reset(),
-                    VirtualKeyCode::Space => system.pause_play(),
+                    VirtualKeyCode::Space => system.running = !system.running,
                     VirtualKeyCode::R => todo!(),
                     VirtualKeyCode::Q => *control_flow = ControlFlow::Exit,
                     _ => (),
@@ -152,7 +152,7 @@ impl Renderer {
 
 //---------------------------------------------------------------------------------------------------//
 
-fn render(renderer: &Renderer, context: &mut Context, system: &System) {
+fn render(renderer: &Particle2DRenderer, context: &mut Context, system: &System) {
     //--------------------------------------------------------------------//
 
     // create particle style
@@ -191,11 +191,9 @@ fn render(renderer: &Renderer, context: &mut Context, system: &System) {
     //--------------------------------------------------------------------//
 
     for particle in &system.particles {
-        let color = rusty_physics_2d::render_utils::colors::CRIMSON;
+        let color = crate::colors::CRIMSON;
         // get particle position and radius mapped to window space
-        let (Vec2 { x, y }, radius) = context
-            .view
-            .map_to_view(particle.pos, system.particle_radius);
+        let (Vec3 { x, y, z: _ }, radius) = context.view.map_to_view(particle.pos, particle.radius);
         particle_style.set_color_rgba8(color[0], color[1], color[2], color[3]);
 
         let path = {
@@ -227,7 +225,9 @@ fn render(renderer: &Renderer, context: &mut Context, system: &System) {
     let framebuffer: Vec<u32> = draw_buffer
         .pixels()
         .into_iter()
-        .map(|pixel| Renderer::rgb_to_softbuffer([pixel.red(), pixel.green(), pixel.blue()]))
+        .map(|pixel| {
+            Particle2DRenderer::rgb_to_softbuffer([pixel.red(), pixel.green(), pixel.blue()])
+        })
         .collect();
 
     // write the contents of framebuffer to the window's framebuffer
