@@ -109,22 +109,22 @@ impl Particle {
 
         self.vel += total_force * inverse_mass * dt;
         self.vel += total_impulse * inverse_mass;
+        self.impulses.clear();
 
         self.prev_pos = self.pos;
         self.time_since_prev_pos = dt;
 
         self.pos += self.vel * dt;
-        self.pos += total_displacement * inverse_mass; // Gauss-Seidel or Jacobi??
+        self.pos += total_displacement * self.inverse_mass();
+        self.displacements.clear();
+    }
+
+    pub fn clear_force(&mut self) {
+        self.forces.clear();
     }
 
     pub fn vel_from_prev_pos(&mut self) {
         self.vel = (self.pos - self.prev_pos) / self.time_since_prev_pos;
-    }
-
-    pub fn clear(&mut self) {
-        self.forces.clear();
-        self.impulses.clear();
-        self.displacements.clear();
     }
 }
 

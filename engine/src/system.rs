@@ -21,7 +21,7 @@ impl System {
     pub fn new() -> System {
         System {
             running: true,
-            substeps: 20,
+            substeps: 5,
             ..Default::default()
         }
     }
@@ -50,16 +50,16 @@ impl System {
                 // detect collisions / gather neighbors
                 // temperature (radiation, conduction, advection, thermal-expansion, friction/collision heating)
 
-                for field in &mut self.fields {
-                    field.handle(&mut self.particles, sub_dt);
-                }
-
                 for particle in &mut self.particles {
                     particle.integrate(sub_dt);
-                    particle.vel_from_prev_pos();
-                    particle.clear();
+                    particle.clear_force();
                 }
 
+                <dyn Field>::handle_fields(&mut self.fields, &mut self.particles, sub_dt);
+
+                for particle in &mut self.particles {
+                    particle.vel_from_prev_pos();
+                }
             }
             self.time += dt;
         }

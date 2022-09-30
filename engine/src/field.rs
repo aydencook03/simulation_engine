@@ -34,19 +34,34 @@ impl ParticleAction {
         self.internal_work = Some(work);
         self
     }
+
+    pub fn send_to_particle(&self, particle: &mut Particle) {
+        if let Some(force) = self.force {
+            particle.forces.push(force);
+        }
+        if let Some(impulse) = self.impulse {
+            particle.impulses.push(impulse);
+        }
+        if let Some(displacement) = self.displacement {
+            particle.displacements.push(displacement);
+        }
+    }
 }
 
 //---------------------------------------------------------------------------------------------------//
 
+#[derive(Copy, Clone)]
 pub enum InteractionType {
-    ParticleParticle,
     FieldParticle,
+    ParticleParticle,
 }
 
 //---------------------------------------------------------------------------------------------------//
 
 pub trait Field {
     fn coupled_particles(&self) -> &[ParticleReference];
+    fn interaction_type(&self) -> InteractionType;
+    fn is_constraint(&self) -> bool { false }
     fn particle_to_field(&mut self, _particle: &Particle) {}
     fn integrate(&mut self, _dt: f64) {}
     fn field_to_particle(&self, particle: &Particle) -> ParticleAction;
@@ -54,32 +69,45 @@ pub trait Field {
 }
 
 impl dyn Field {
+    pub fn handle_fields(fields: &mut [Box<dyn Field>], particles: &mut [Particle], dt: f64) {
+        let mut non_constraint_fields = Vec::new();
+
+        for field in fields {
+            if field.is_constraint() {
+                field.handle(particles, dt);
+            } else {
+                non_constraint_fields.push(field);
+            }
+        }
+
+        for field in non_constraint_fields {
+            field.handle(particles, dt);
+        }
+    }
+
     pub fn handle(&mut self, particles: &mut [Particle], dt: f64) {
-        // particles -> act on field
-        for reference in self.coupled_particles().to_owned() {
-            // need to optimize
-            self.particle_to_field(reference.get(particles));
+        match self.interaction_type() {
+            InteractionType::FieldParticle => {
+                // particles -> act on field
+                for reference in self.coupled_particles().to_owned() {
+                    // need to optimize
+                    self.particle_to_field(reference.get(particles));
+                }
+
+                // field dynamics
+                self.integrate(dt);
+
+                // field -> act on particles
+                for reference in self.coupled_particles() {
+                    let particle = reference.get_mut(particles);
+                    let action = self.field_to_particle(particle);
+                    action.send_to_particle(particle);
+                }
+
+                self.clear();
+            },
+            InteractionType::ParticleParticle => (),
         }
-
-        // field dynamics
-        self.integrate(dt);
-
-        // field -> act on particles
-        for reference in self.coupled_particles() {
-            let particle = reference.get_mut(particles);
-            let action = self.field_to_particle(particle);
-            if let Some(force) = action.force {
-                particle.forces.push(force);
-            }
-            if let Some(impulse) = action.impulse {
-                particle.impulses.push(impulse);
-            }
-            if let Some(displacement) = action.displacement {
-                particle.displacements.push(displacement);
-            }
-        }
-
-        self.clear();
     }
 }
 

@@ -1,7 +1,30 @@
 use crate::{
-    field::{Field, ParticleAction},
+    field::{Field, InteractionType, ParticleAction},
     particle::{Particle, ParticleReference, Vec3},
 };
+
+//---------------------------------------------------------------------------------------------------//
+
+pub struct ConstantForce(Vec<ParticleReference>, Vec3);
+impl ConstantForce {
+    pub fn new(force: Vec3) -> ConstantForce {
+        ConstantForce(Vec::new(), force)
+    }
+    pub fn add_particle(&mut self, particle_reference: ParticleReference) {
+        self.0.push(particle_reference);
+    }
+}
+impl Field for ConstantForce {
+    fn coupled_particles(&self) -> &[ParticleReference] {
+        &self.0
+    }
+    fn interaction_type(&self) -> InteractionType {
+        InteractionType::FieldParticle
+    }
+    fn field_to_particle(&self, _particle: &Particle) -> ParticleAction {
+        ParticleAction::new().force(self.1)
+    }
+}
 
 //---------------------------------------------------------------------------------------------------//
 
@@ -18,6 +41,9 @@ impl Gravity {
 impl Field for Gravity {
     fn coupled_particles(&self) -> &[ParticleReference] {
         &self.0
+    }
+    fn interaction_type(&self) -> InteractionType {
+        InteractionType::FieldParticle
     }
     fn field_to_particle(&self, particle: &Particle) -> ParticleAction {
         ParticleAction::new().force(Vec3::new(0.0, -particle.mass * self.1, 0.0))
@@ -39,6 +65,9 @@ impl NGravity {
 impl Field for NGravity {
     fn coupled_particles(&self) -> &[ParticleReference] {
         &self.0
+    }
+    fn interaction_type(&self) -> InteractionType {
+        InteractionType::ParticleParticle
     }
     fn particle_to_field(&mut self, particle: &Particle) {
         self.1.push((particle.mass, particle.pos));
@@ -73,6 +102,12 @@ impl Field for DistanceConstraint {
     fn coupled_particles(&self) -> &[ParticleReference] {
         &self.0
     }
+    fn interaction_type(&self) -> InteractionType {
+        InteractionType::ParticleParticle
+    }
+    fn is_constraint(&self) -> bool {
+        true
+    }
     fn particle_to_field(&mut self, particle: &Particle) {
         self.1
             .push((particle.pos, particle.inverse_mass(), particle.id));
@@ -89,7 +124,6 @@ impl Field for DistanceConstraint {
                     (radial / dist) * (correction / (particle.inverse_mass() + inv_mass));
             }
         }
-
         ParticleAction::new().displacement(displacement)
     }
     fn clear(&mut self) {
