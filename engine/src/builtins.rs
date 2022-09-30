@@ -52,10 +52,10 @@ impl Field for Gravity {
 
 //---------------------------------------------------------------------------------------------------//
 
-pub struct NGravity(Vec<ParticleReference>, Vec<(f64, Vec3)>, f64);
+pub struct NGravity(Vec<ParticleReference>, f64);
 impl NGravity {
     pub fn new(gravitational_constant: f64) -> NGravity {
-        NGravity(Vec::new(), Vec::new(), gravitational_constant)
+        NGravity(Vec::new(), gravitational_constant)
     }
 
     pub fn add_particle(&mut self, particle_reference: ParticleReference) {
@@ -69,33 +69,24 @@ impl Field for NGravity {
     fn interaction_type(&self) -> InteractionType {
         InteractionType::ParticleParticle
     }
-    fn particle_to_field(&mut self, particle: &Particle) {
-        self.1.push((particle.mass, particle.pos));
-    }
-    fn field_to_particle(&self, particle: &Particle) -> ParticleAction {
-        let mut total_force = Vec3::zero();
-        for attractor in &self.1 {
-            let radial = particle.pos - attractor.1;
+    fn particle_to_particle(&self, particle1: &Particle, particle2: &Particle) -> ParticleAction {
+        let radial = particle1.pos - particle2.pos;
 
-            if radial.mag_squared() > 0_f64 {
-                total_force +=
-                    radial * -(self.2 * attractor.0 * particle.mass) / radial.mag().powi(3);
-            }
+        if radial.mag_squared() > 0_f64 {
+            ParticleAction::new()
+                .force(radial * -(self.1 * particle1.mass * particle2.mass) / radial.mag().powi(3))
+        } else {
+            ParticleAction::new()
         }
-
-        ParticleAction::new().force(total_force)
-    }
-    fn clear(&mut self) {
-        self.1.clear();
     }
 }
 
 //---------------------------------------------------------------------------------------------------//
 
-pub struct DistanceConstraint([ParticleReference; 2], Vec<(Vec3, f64, u32)>, f64);
+pub struct DistanceConstraint([ParticleReference; 2], f64);
 impl DistanceConstraint {
-    pub fn new(particles: [ParticleReference; 2], dist: f64) -> DistanceConstraint {
-        DistanceConstraint(particles, Vec::new(), dist)
+    pub fn new(linked_particles: [ParticleReference; 2], dist: f64) -> DistanceConstraint {
+        DistanceConstraint(linked_particles, dist)
     }
 }
 impl Field for DistanceConstraint {
@@ -108,26 +99,15 @@ impl Field for DistanceConstraint {
     fn is_constraint(&self) -> bool {
         true
     }
-    fn particle_to_field(&mut self, particle: &Particle) {
-        self.1
-            .push((particle.pos, particle.inverse_mass(), particle.id));
-    }
-    fn field_to_particle(&self, particle: &Particle) -> ParticleAction {
-        let mut displacement = Vec3::zero();
-        for (pos, inv_mass, id) in &self.1 {
-            if particle.id != *id {
-                let radial = particle.pos - *pos;
-                let dist = radial.mag();
-                let correction = self.2 - dist;
+    fn particle_to_particle(&self, particle1: &Particle, particle2: &Particle) -> ParticleAction {
+        let radial = particle1.pos - particle2.pos;
+        let dist = radial.mag();
+        let correction = self.1 - dist;
 
-                displacement =
-                    (radial / dist) * (correction / (particle.inverse_mass() + inv_mass));
-            }
-        }
+        let displacement =
+            (radial / dist) * (correction / (particle1.inverse_mass() + particle2.inverse_mass()));
+
         ParticleAction::new().displacement(displacement)
-    }
-    fn clear(&mut self) {
-        self.1.clear();
     }
 }
 

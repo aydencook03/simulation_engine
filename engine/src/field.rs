@@ -46,6 +46,12 @@ impl ParticleAction {
             particle.displacements.push(displacement);
         }
     }
+
+    pub fn immediate_displacement(&self, particle: &mut Particle) {
+        if let Some(displacement) = self.displacement {
+            particle.pos += displacement * particle.inverse_mass();
+        }
+    }
 }
 
 //---------------------------------------------------------------------------------------------------//
@@ -61,11 +67,18 @@ pub enum InteractionType {
 pub trait Field {
     fn coupled_particles(&self) -> &[ParticleReference];
     fn interaction_type(&self) -> InteractionType;
-    fn is_constraint(&self) -> bool { false }
+    fn is_constraint(&self) -> bool {
+        false
+    }
     fn particle_to_field(&mut self, _particle: &Particle) {}
     fn integrate(&mut self, _dt: f64) {}
-    fn field_to_particle(&self, particle: &Particle) -> ParticleAction;
+    fn field_to_particle(&self, _particle: &Particle) -> ParticleAction {
+        ParticleAction::new()
+    }
     fn clear(&mut self) {}
+    fn particle_to_particle(&self, _particle1: &Particle, _particle2: &Particle) -> ParticleAction {
+        ParticleAction::new()
+    }
 }
 
 impl dyn Field {
@@ -90,7 +103,7 @@ impl dyn Field {
             InteractionType::FieldParticle => {
                 // particles -> act on field
                 for reference in self.coupled_particles().to_owned() {
-                    // need to optimize
+                    // need to find a way around the ".to_owned()"
                     self.particle_to_field(reference.get(particles));
                 }
 
@@ -101,12 +114,32 @@ impl dyn Field {
                 for reference in self.coupled_particles() {
                     let particle = reference.get_mut(particles);
                     let action = self.field_to_particle(particle);
-                    action.send_to_particle(particle);
+                    if self.is_constraint() {
+                        action.immediate_displacement(particle);
+                    } else {
+                        action.send_to_particle(particle);
+                    }
                 }
 
                 self.clear();
-            },
-            InteractionType::ParticleParticle => (),
+            }
+            InteractionType::ParticleParticle => {
+                for ref1 in self.coupled_particles() {
+                    for ref2 in self.coupled_particles() {
+                        if ref1.id != ref2.id {
+                            let action =
+                                self.particle_to_particle(ref1.get(particles), ref2.get(particles));
+
+                            let particle1 = ref1.get_mut(particles);
+                            if self.is_constraint() {
+                                action.immediate_displacement(particle1);
+                            } else {
+                                action.send_to_particle(particle1);
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }
