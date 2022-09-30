@@ -1,5 +1,4 @@
-use engine::field::DistanceConstraint;
-use engine::field::Gravity;
+use engine::builtins::*;
 use engine::particle::Particle;
 use engine::system::System;
 use rendering::particle_2d_renderer::Particle2DRenderer;
@@ -9,7 +8,7 @@ fn main() {
     let window = Particle2DRenderer::new();
 
     let center = system.add_particle(Particle::new().mass(0.0));
-    let mass1 = system.add_particle(Particle::new().pos_xyz(250.0, 0.0, 0.0));
+    let mass1 = system.add_particle(Particle::new().pos_xyz(10.0, 250.0, 0.0));
     let mass2 = system.add_particle(
         Particle::new()
             .pos_xyz(350.0, 100.0, 0.0)
@@ -26,7 +25,7 @@ fn main() {
 
     system.add_field(gravity);
     system.add_field(dist1);
-    system.add_field(dist2);
+    //system.add_field(dist2);
 
     window.run(system);
 }

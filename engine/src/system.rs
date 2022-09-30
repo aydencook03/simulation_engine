@@ -21,7 +21,7 @@ impl System {
     pub fn new() -> System {
         System {
             running: true,
-            substeps: 5,
+            substeps: 20,
             ..Default::default()
         }
     }
@@ -60,25 +60,8 @@ impl System {
                     particle.clear();
                 }
 
-                self.time += dt;
-
-                /* for _ in 0..self.xpbd_substeps {
-                    let xpbd_dt = sub_dt / (self.xpbd_substeps as f64);
-                    for particle in &mut self.particles {
-                        particle.integrate(xpbd_dt);
-                    }
-                    // project constraints
-                    for particle in &mut self.particles {
-                        particle.vel_from_prev_pos();
-                    }
-                }
-
-                self.time += dt;
-                for particle in &mut self.particles {
-                    particle.clear();
-                }
-                // clear broken constraints */
             }
+            self.time += dt;
         }
     }
 }
