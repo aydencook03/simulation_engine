@@ -35,7 +35,7 @@ pub struct Particle {
 
 impl Particle {
     pub fn new() -> Particle {
-        Particle::default().mass(10.0)
+        Particle::default().mass(10.0).radius(10.0)
     }
 
     pub fn id(mut self, id: u32) -> Particle {
@@ -45,6 +45,11 @@ impl Particle {
 
     pub fn mass(mut self, mass: f64) -> Particle {
         self.mass = mass;
+        self
+    }
+
+    pub fn radius(mut self, radius: f64) -> Particle {
+        self.radius = radius;
         self
     }
 
@@ -74,14 +79,18 @@ impl Particle {
 
     //--------------------------------------------------------------------//
 
-    pub fn integrate(&mut self, dt: f64) {
-        // Scaling by inverse mass ensures that dynamical interactions conserve momentum and center of mass.
-        // An inverse mass of 0 (infinitely massive) then allows for particles that don't experience interactions (ie: barriers, etc).
-        let inverse_mass = if self.mass > 0_f64 {
+    pub fn inverse_mass(&self) -> f64 {
+        if self.mass > 0_f64 {
             1_f64 / self.mass
         } else {
             0_f64
-        };
+        }
+    }
+
+    pub fn integrate(&mut self, dt: f64) {
+        // Scaling by inverse mass ensures that dynamical interactions conserve momentum and center of mass.
+        // An inverse mass of 0 (infinitely massive) then allows for particles that don't experience interactions (ie: barriers, etc).
+        let inverse_mass = self.inverse_mass();
 
         let mut total_force = Vec3::zero();
         for force in &self.forces {

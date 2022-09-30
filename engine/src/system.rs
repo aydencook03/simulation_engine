@@ -8,7 +8,6 @@ pub struct System {
     pub time: f64,
     pub running: bool,
     pub substeps: u32,
-    pub xpbd_substeps: u32,
 
     pub particles: Vec<Particle>,
     pub fields: Vec<Box<dyn Field>>,
@@ -22,8 +21,7 @@ impl System {
     pub fn new() -> System {
         System {
             running: true,
-            substeps: 1,
-            xpbd_substeps: 5,
+            substeps: 5,
             ..Default::default()
         }
     }
@@ -56,7 +54,15 @@ impl System {
                     field.handle(&mut self.particles, sub_dt);
                 }
 
-                for _ in 0..self.xpbd_substeps {
+                for particle in &mut self.particles {
+                    particle.integrate(sub_dt);
+                    particle.vel_from_prev_pos();
+                    particle.clear();
+                }
+
+                self.time += dt;
+
+                /* for _ in 0..self.xpbd_substeps {
                     let xpbd_dt = sub_dt / (self.xpbd_substeps as f64);
                     for particle in &mut self.particles {
                         particle.integrate(xpbd_dt);
@@ -71,7 +77,7 @@ impl System {
                 for particle in &mut self.particles {
                     particle.clear();
                 }
-                // clear broken constraints
+                // clear broken constraints */
             }
         }
     }
