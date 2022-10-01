@@ -26,7 +26,7 @@ pub struct Particle {
     pub displacements: Vec<Vec3>,
     // pub internal_work: Vec<f64>,
     // pub in_contact_with: Vec<ParticleReference>,
-    // pub collision_info: CollisionInfo, // collision_radius?, restitution, friction, in_contact_with, thermal diffusivity, etc
+    // pub collision_info: CollisionInfo, restitution, friction, in_contact_with, thermal diffusivity, etc
     // pub temperature_info: TempInfo, // conduction & expansion constants, temp_sim: bool, etc
 }
 
@@ -89,7 +89,8 @@ impl Particle {
 
     pub fn integrate(&mut self, dt: f64) {
         // Scaling by inverse mass ensures that dynamical interactions conserve momentum and center of mass.
-        // An inverse mass of 0 (infinitely massive) then allows for particles that don't experience interactions (ie: barriers, etc).
+        // An inverse mass of 0 (infinitely massive) then allows for particles that don't experience
+        // interactions (ie: barriers, etc).
         let inverse_mass = self.inverse_mass();
 
         let mut total_force = Vec3::zero();

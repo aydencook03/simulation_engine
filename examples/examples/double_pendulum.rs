@@ -1,6 +1,4 @@
-use engine::builtins::*;
-use engine::particle::Particle;
-use engine::system::System;
+use engine::prelude::*;
 use rendering::particle_2d_renderer::Particle2DRenderer;
 
 fn main() {

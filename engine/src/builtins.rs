@@ -52,10 +52,10 @@ impl Field for Gravity {
 
 //---------------------------------------------------------------------------------------------------//
 
-pub struct NGravity(Vec<ParticleReference>, f64);
+pub struct NGravity(Vec<ParticleReference>, f64, Option<f64>);
 impl NGravity {
-    pub fn new(gravitational_constant: f64) -> NGravity {
-        NGravity(Vec::new(), gravitational_constant)
+    pub fn new(gravitational_constant: f64, softening_parameter: Option<f64>) -> NGravity {
+        NGravity(Vec::new(), gravitational_constant, softening_parameter)
     }
 
     pub fn add_particle(&mut self, particle_reference: ParticleReference) {
@@ -71,10 +71,20 @@ impl Field for NGravity {
     }
     fn particle_to_particle(&self, particle1: &Particle, particle2: &Particle) -> ParticleAction {
         let radial = particle1.pos - particle2.pos;
+        let dist_sqr = radial.mag_squared();
 
-        if radial.mag_squared() > 0_f64 {
-            ParticleAction::new()
-                .force(radial * -(self.1 * particle1.mass * particle2.mass) / radial.mag().powi(3))
+        if dist_sqr > 0_f64 {
+            if let Some(epsilon) = self.2 {
+                ParticleAction::new().force(
+                    radial * -(self.1 * particle1.mass * particle2.mass)
+                        / (dist_sqr + epsilon.powi(2)).powf(3_f64 / 2_f64),
+                )
+            } else {
+                ParticleAction::new().force(
+                    radial * -(self.1 * particle1.mass * particle2.mass)
+                        / dist_sqr.powf(3_f64 / 2_f64),
+                )
+            }
         } else {
             ParticleAction::new()
         }
