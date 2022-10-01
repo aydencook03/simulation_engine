@@ -14,7 +14,7 @@ impl View3D {
         View3D {
             camera_pos: Vec3::zero(),
             view_plane_pos: Vec3::new(0.0, 0.0, -1.0),
-            fov: std::f64::consts::PI,
+            fov: 170.0 * std::f64::consts::PI/180.0,
         }
     }
 }

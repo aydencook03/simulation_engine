@@ -80,10 +80,10 @@ impl Particle {
     //--------------------------------------------------------------------//
 
     pub fn inverse_mass(&self) -> f64 {
-        if self.mass > 0_f64 {
-            1_f64 / self.mass
+        if self.mass > 0.0 {
+            1.0 / self.mass
         } else {
-            0_f64
+            0.0
         }
     }
 

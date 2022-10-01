@@ -76,11 +76,11 @@ impl Field for NGravity {
         if let Some(epsilon) = self.2 {
             ParticleAction::new().force(
                 radial * -(self.1 * particle1.mass * particle2.mass)
-                    / (dist_sqr + epsilon.powi(2)).powf(3_f64 / 2_f64),
+                    / (dist_sqr + epsilon.powi(2)).powf(3.0 / 2.0),
             )
         } else {
             ParticleAction::new().force(
-                radial * -(self.1 * particle1.mass * particle2.mass) / dist_sqr.powf(3_f64 / 2_f64),
+                radial * -(self.1 * particle1.mass * particle2.mass) / dist_sqr.powf(3.0 / 2.0),
             )
         }
     }
