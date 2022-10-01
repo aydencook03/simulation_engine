@@ -49,6 +49,6 @@
   - [ ] good 3d rendering
     - [ ] isosurface/isoline rendering?
   - [ ] load 3d object files as set of connected particles
-  - [ ] parallelize using rayon or bevy_tasks::ParallelIterator
+  - [ ] parallelize using simd, rayon, bevy_tasks::ParallelIterator, etc
   - [ ] wgpu acceleration
   - [ ] extend engine to support rigid bodies

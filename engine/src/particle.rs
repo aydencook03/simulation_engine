@@ -116,7 +116,7 @@ impl Particle {
         self.time_since_prev_pos = dt;
 
         self.pos += self.vel * dt;
-        self.pos += total_displacement * self.inverse_mass();
+        self.pos += total_displacement * inverse_mass;
         self.displacements.clear();
     }
 

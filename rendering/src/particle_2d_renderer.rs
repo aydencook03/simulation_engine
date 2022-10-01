@@ -50,7 +50,7 @@ pub struct Particle2DRenderer {
     pub starting_height: u32,
 }
 
-struct Context {
+struct SoftbufferContext {
     view: View2D,
     context: GraphicsContext<Window>,
 }
@@ -81,7 +81,7 @@ impl Particle2DRenderer {
         r | g | b
     }
 
-    pub fn run(self: Self, mut system: System) {
+    pub fn run(self, mut system: System) {
         let event_loop = EventLoop::new();
         let window = {
             let size = PhysicalSize::new(self.starting_width, self.starting_height);
@@ -92,7 +92,7 @@ impl Particle2DRenderer {
                 .unwrap()
         };
 
-        let mut context = Context {
+        let mut context = SoftbufferContext {
             view: View2D::new(),
             context: unsafe { GraphicsContext::new(window) }.unwrap(),
         };
@@ -134,106 +134,112 @@ impl Particle2DRenderer {
                     _ => (),
                 },
                 Event::MainEventsCleared => {
-                    render(&self, &mut context, &system);
+                    self.render_particles(&mut context, &system);
+
                     let passed_sec = (time.elapsed().as_micros() as f64) * 10_f64.powi(-6);
                     context.context.window_mut().set_title(&format!(
                         "Simulation - fps: {:.0} - time: {:.2}",
                         1.0 / passed_sec,
                         system.time
                     ));
+
                     system.step_forward(passed_sec);
+
                     time = Instant::now();
                 }
                 _ => (),
             };
         });
     }
+
+    //--------------------------------------------------------------------//
+
+    fn render_particles(&self, context: &mut SoftbufferContext, system: &System) {
+        // create particle style
+        let mut particle_style = Paint::default();
+        particle_style.anti_alias = true;
+
+        // create stroke styles
+        let mut stroke_style = Paint::default();
+        stroke_style.anti_alias = true;
+        stroke_style.set_color_rgba8(
+            self.stroke_color[0],
+            self.stroke_color[1],
+            self.stroke_color[2],
+            self.stroke_color[3],
+        );
+        let mut stroke = Stroke::default();
+
+        //--------------------------------------------------------------------//
+
+        // get window width, height, and zoom info
+        let width = context.context.window().inner_size().width as f64;
+        let height = context.context.window().inner_size().width as f64;
+        stroke.width = self.stroke_size * (context.view.parameterized_zoom() as f32);
+
+        // create buffer
+        let mut draw_buffer = Pixmap::new(width as u32, height as u32).unwrap();
+
+        // paint the background
+        draw_buffer.fill(tiny_skia::Color::from_rgba8(
+            self.bg_color[0],
+            self.bg_color[1],
+            self.bg_color[2],
+            self.bg_color[3],
+        ));
+
+        //--------------------------------------------------------------------//
+        let mut particles = Vec::new();
+        for particle in &system.particles {
+            particles.push((particle.pos, particle.radius));
+        }
+        particles.sort_by(|a, b| a.0.z.partial_cmp(&b.0.z).unwrap());
+
+        for (pos, radius) in particles {
+            let color = crate::colors::CRIMSON;
+            // get particle position and radius mapped to window space
+            let (Vec3 { x, y, z: _ }, radius) = context.view.map_to_view(pos, radius);
+            particle_style.set_color_rgba8(color[0], color[1], color[2], color[3]);
+
+            let path = {
+                let mut pb = PathBuilder::new();
+                pb.push_circle(
+                    (x + width / 2.0) as f32,
+                    (height / 2.0 - y) as f32,
+                    radius as f32,
+                );
+                pb.finish().unwrap()
+            };
+
+            // draw the particle outline
+            draw_buffer.stroke_path(&path, &stroke_style, &stroke, Transform::identity(), None);
+
+            // fill in the particle outline
+            draw_buffer.fill_path(
+                &path,
+                &particle_style,
+                FillRule::Winding,
+                Transform::identity(),
+                None,
+            );
+        }
+
+        //--------------------------------------------------------------------//
+
+        // convert the draw_buffer to the format that Softbuffer uses
+        let framebuffer: Vec<u32> = draw_buffer
+            .pixels()
+            .into_iter()
+            .map(|pixel| {
+                Particle2DRenderer::rgb_to_softbuffer([pixel.red(), pixel.green(), pixel.blue()])
+            })
+            .collect();
+
+        // write the contents of framebuffer to the window's framebuffer
+        context
+            .context
+            .set_buffer(&framebuffer, width as u16, height as u16);
+    }
 }
 
 //---------------------------------------------------------------------------------------------------//
-
-fn render(renderer: &Particle2DRenderer, context: &mut Context, system: &System) {
-    //--------------------------------------------------------------------//
-
-    // create particle style
-    let mut particle_style = Paint::default();
-    particle_style.anti_alias = true;
-
-    // create stroke styles
-    let mut stroke_style = Paint::default();
-    stroke_style.anti_alias = true;
-    stroke_style.set_color_rgba8(
-        renderer.stroke_color[0],
-        renderer.stroke_color[1],
-        renderer.stroke_color[2],
-        renderer.stroke_color[3],
-    );
-    let mut stroke = Stroke::default();
-
-    //--------------------------------------------------------------------//
-
-    // get window width, height, and zoom info
-    let width = context.context.window().inner_size().width as f64;
-    let height = context.context.window().inner_size().width as f64;
-    stroke.width = renderer.stroke_size * (context.view.parameterized_zoom() as f32);
-
-    // create buffer
-    let mut draw_buffer = Pixmap::new(width as u32, height as u32).unwrap();
-
-    // paint the background
-    draw_buffer.fill(tiny_skia::Color::from_rgba8(
-        renderer.bg_color[0],
-        renderer.bg_color[1],
-        renderer.bg_color[2],
-        renderer.bg_color[3],
-    ));
-
-    //--------------------------------------------------------------------//
-
-    for particle in &system.particles {
-        let color = crate::colors::CRIMSON;
-        // get particle position and radius mapped to window space
-        let (Vec3 { x, y, z: _ }, radius) = context.view.map_to_view(particle.pos, particle.radius);
-        particle_style.set_color_rgba8(color[0], color[1], color[2], color[3]);
-
-        let path = {
-            let mut pb = PathBuilder::new();
-            pb.push_circle(
-                (x + width / 2.0) as f32,
-                (height / 2.0 - y) as f32,
-                radius as f32,
-            );
-            pb.finish().unwrap()
-        };
-
-        // draw the particle outline
-        draw_buffer.stroke_path(&path, &stroke_style, &stroke, Transform::identity(), None);
-
-        // fill in the particle outline
-        draw_buffer.fill_path(
-            &path,
-            &particle_style,
-            FillRule::Winding,
-            Transform::identity(),
-            None,
-        );
-    }
-
-    //--------------------------------------------------------------------//
-
-    // convert the draw_buffer to the format that Softbuffer uses
-    let framebuffer: Vec<u32> = draw_buffer
-        .pixels()
-        .into_iter()
-        .map(|pixel| {
-            Particle2DRenderer::rgb_to_softbuffer([pixel.red(), pixel.green(), pixel.blue()])
-        })
-        .collect();
-
-    // write the contents of framebuffer to the window's framebuffer
-    context
-        .context
-        .set_buffer(&framebuffer, width as u16, height as u16);
-
-    //--------------------------------------------------------------------//
-}
