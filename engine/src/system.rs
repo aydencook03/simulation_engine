@@ -21,7 +21,7 @@ impl System {
     pub fn new() -> System {
         System {
             running: true,
-            substeps: 10,
+            substeps: 20,
             ..Default::default()
         }
     }
@@ -59,7 +59,6 @@ impl System {
         if self.running {
             for _ in 0..self.substeps {
                 let sub_dt = dt / (self.substeps as f64);
-                // temperature (radiation, conduction, advection, thermal-expansion, friction/collision heating)
 
                 for particle in &mut self.particles {
                     particle.integrate(sub_dt);

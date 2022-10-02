@@ -150,6 +150,7 @@ impl dyn Field {
             }
             InteractionType::ParticleParticle => {
                 for ref1 in &self.coupled_particles().0 {
+                    let mut actions = Vec::new();
                     for ref2 in &self.coupled_particles().0 {
                         if ref1.id != ref2.id {
                             let action =
@@ -157,11 +158,14 @@ impl dyn Field {
 
                             let particle1 = ref1.get_mut(particles);
                             if self.is_constraint() {
-                                action.immediate_constraint_action(particle1);
+                                actions.push(action);
                             } else {
                                 action.send_to_particle(particle1);
                             }
                         }
+                    }
+                    for action in actions {
+                        action.immediate_constraint_action(ref1.get_mut(particles));
                     }
                 }
             }

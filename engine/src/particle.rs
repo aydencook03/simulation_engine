@@ -11,7 +11,7 @@ pub struct Particle {
     // properties
     pub mass: f64,
     pub charge: f64,
-    // pub collision_info: CollisionInfo, restitution, friction, thermal diffusivity, etc
+    // pub collision_info: CollisionInfo, restitution, friction, etc
     pub thermal_conductivity: f64,
     pub specific_heat_capacity: f64,
     pub coefficient_of_thermal_expansion: f64,
