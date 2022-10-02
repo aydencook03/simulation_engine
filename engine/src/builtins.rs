@@ -90,6 +90,43 @@ impl Field for NGravity {
 
 //---------------------------------------------------------------------------------------------------//
 
+pub struct VanDerWaals(CoupledParticles, f64, Option<f64>, Option<f64>);
+impl VanDerWaals {
+    pub fn new(bond_energy: f64, bond_length: Option<f64>, softening_parameter: Option<f64>) -> VanDerWaals {
+        VanDerWaals(CoupledParticles::new(), bond_energy, bond_length, softening_parameter)
+    }
+}
+impl Field for VanDerWaals {
+    fn coupled_particles(&self) -> &CoupledParticles {
+        &self.0
+    }
+    fn coupled_particles_mut(&mut self) -> &mut CoupledParticles {
+        &mut self.0
+    }
+    fn interaction_type(&self) -> InteractionType {
+        InteractionType::ParticleParticle
+    }
+    fn particle_to_particle(&self, particle1: &Particle, particle2: &Particle) -> ParticleAction {
+        let radial = particle1.pos - particle2.pos;
+        let dist_sqr = radial.mag_squared();
+        let bond_6 = if let Some(length) = self.2 {
+            length.powi(6)
+        } else {
+            (particle1.radius + particle2.radius).powi(6)
+        };
+        let bond_12 = bond_6.powi(2);
+
+        if let Some(soft) = self.3 {
+            let denom = dist_sqr + soft.powi(2);
+            ParticleAction::new().force(radial * -12_f64 * self.1 * (bond_6/denom.powi(4) - bond_12/denom.powi(7)))
+        } else {
+            ParticleAction::new().force(radial * -12_f64 * self.1 * (bond_6/dist_sqr.powi(4) - bond_12/dist_sqr.powi(7)))
+        }
+    }
+}
+
+//---------------------------------------------------------------------------------------------------//
+
 pub struct DistanceConstraint(CoupledParticles, f64);
 impl DistanceConstraint {
     pub fn new(dist: f64) -> DistanceConstraint {

@@ -133,14 +133,6 @@ impl dyn Field {
                     action.send_to_particle(particle);
                 }
 
-                if self.is_constraint() {
-                    for reference in &self.coupled_particles().0 {
-                        let particle = reference.get_mut(particles);
-                        particle.add_displacements();
-                        particle.vel_from_prev_pos();
-                    }
-                }
-
                 self.clear();
             }
             InteractionType::ParticleParticle => {
@@ -154,13 +146,14 @@ impl dyn Field {
                         }
                     }
                 }
-                if self.is_constraint() {
-                    for reference in &self.coupled_particles().0 {
-                        let particle = reference.get_mut(particles);
-                        particle.add_displacements();
-                        particle.vel_from_prev_pos();
-                    }
-                }
+            }
+        }
+        
+        if self.is_constraint() {
+            for reference in &self.coupled_particles().0 {
+                let particle = reference.get_mut(particles);
+                particle.add_displacements();
+                particle.vel_from_prev_pos();
             }
         }
     }
