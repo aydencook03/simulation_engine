@@ -21,7 +21,7 @@ impl System {
     pub fn new() -> System {
         System {
             running: true,
-            substeps: 5,
+            substeps: 10,
             ..Default::default()
         }
     }
@@ -37,8 +37,20 @@ impl System {
         }
     }
 
-    pub fn add_field(&mut self, field: impl Field + 'static) {
+    pub fn add_field(&mut self, field: impl Field + 'static) -> usize {
         self.fields.push(Box::new(field));
+        self.fields.len() - 1
+    }
+
+    pub fn all_particles(&self) -> Vec<ParticleReference> {
+        let mut particles = Vec::new();
+        for index in 0..self.particles.len() {
+            particles.push(ParticleReference {
+                id: self.particles[index].id,
+                index,
+            });
+        }
+        particles
     }
 
     //--------------------------------------------------------------------//

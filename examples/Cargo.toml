@@ -8,4 +8,4 @@ edition = "2021"
 [dev-dependencies]
 engine = { path = "../engine" }
 rendering = { path = "../rendering" }
-#rand = "0.8"
+rand = "0.8"

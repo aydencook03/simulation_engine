@@ -6,6 +6,17 @@ use crate::vec3::Vec3;
 
 //---------------------------------------------------------------------------------------------------//
 
+#[derive(Default, Clone)]
+pub struct CoupledParticles(pub Vec<ParticleReference>);
+
+impl CoupledParticles {
+    pub fn new() -> CoupledParticles {
+        CoupledParticles::default()
+    }
+}
+
+//---------------------------------------------------------------------------------------------------//
+
 #[derive(Default, Copy, Clone)]
 pub struct ParticleAction {
     force: Option<Vec3>,
@@ -47,9 +58,12 @@ impl ParticleAction {
         }
     }
 
-    pub fn immediate_displacement(&self, particle: &mut Particle) {
+    pub fn immediate_constraint_action(&self, particle: &mut Particle) {
         if let Some(displacement) = self.displacement {
-            particle.pos += displacement * particle.inverse_mass();
+            particle.pos += displacement;
+        }
+        if let Some(impulse) = self.impulse {
+            particle.vel += impulse * particle.inverse_mass();
         }
     }
 }
@@ -65,7 +79,16 @@ pub enum InteractionType {
 //---------------------------------------------------------------------------------------------------//
 
 pub trait Field {
-    fn coupled_particles(&self) -> &[ParticleReference];
+    fn coupled_particles(&self) -> &CoupledParticles;
+    fn coupled_particles_mut(&mut self) -> &mut CoupledParticles;
+    fn add_particle(&mut self, particle_reference: ParticleReference) {
+        self.coupled_particles_mut().0.push(particle_reference);
+    }
+    fn add_particles(&mut self, particle_references: &[ParticleReference]) {
+        for reference in particle_references {
+            self.coupled_particles_mut().0.push(*reference);
+        }
+    }
     fn interaction_type(&self) -> InteractionType;
     fn is_constraint(&self) -> bool {
         false
@@ -80,6 +103,8 @@ pub trait Field {
         ParticleAction::new()
     }
 }
+
+//--------------------------------------------------------------------//
 
 impl dyn Field {
     pub fn handle_fields(fields: &mut [Box<dyn Field>], particles: &mut [Particle], dt: f64) {
@@ -102,7 +127,7 @@ impl dyn Field {
         match self.interaction_type() {
             InteractionType::FieldParticle => {
                 // particles -> act on field
-                for reference in self.coupled_particles().to_owned() {
+                for reference in &self.coupled_particles().0.to_owned() {
                     // need to find a way around the ".to_owned()"
                     self.particle_to_field(reference.get(particles));
                 }
@@ -111,11 +136,11 @@ impl dyn Field {
                 self.integrate(dt);
 
                 // field -> act on particles
-                for reference in self.coupled_particles() {
+                for reference in &self.coupled_particles().0 {
                     let particle = reference.get_mut(particles);
                     let action = self.field_to_particle(particle);
                     if self.is_constraint() {
-                        action.immediate_displacement(particle);
+                        action.immediate_constraint_action(particle);
                     } else {
                         action.send_to_particle(particle);
                     }
@@ -124,15 +149,15 @@ impl dyn Field {
                 self.clear();
             }
             InteractionType::ParticleParticle => {
-                for ref1 in self.coupled_particles() {
-                    for ref2 in self.coupled_particles() {
+                for ref1 in &self.coupled_particles().0 {
+                    for ref2 in &self.coupled_particles().0 {
                         if ref1.id != ref2.id {
                             let action =
                                 self.particle_to_particle(ref1.get(particles), ref2.get(particles));
 
                             let particle1 = ref1.get_mut(particles);
                             if self.is_constraint() {
-                                action.immediate_displacement(particle1);
+                                action.immediate_constraint_action(particle1);
                             } else {
                                 action.send_to_particle(particle1);
                             }

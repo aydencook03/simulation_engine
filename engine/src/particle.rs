@@ -11,23 +11,27 @@ pub struct Particle {
     // properties
     pub mass: f64,
     pub charge: f64,
-    pub temperature: f64,
-    pub radius: f64,
+    // pub collision_info: CollisionInfo, restitution, friction, thermal diffusivity, etc
+    pub thermal_conductivity: f64,
+    pub specific_heat_capacity: f64,
+    pub coefficient_of_thermal_expansion: f64,
 
     // state
     pub pos: Vec3,
     pub vel: Vec3,
-    pub prev_pos: Vec3,
-    pub time_since_prev_pos: f64,
+    pub temperature: f64,
+    pub radius: f64,
 
-    // dynamical influences
+    // dynamical influences to state
     pub forces: Vec<Vec3>,
     pub impulses: Vec<Vec3>,
     pub displacements: Vec<Vec3>,
-    // pub internal_work: Vec<f64>,
-    // pub in_contact_with: Vec<ParticleReference>,
-    // pub collision_info: CollisionInfo, restitution, friction, in_contact_with, thermal diffusivity, etc
-    // pub temperature_info: TempInfo, // conduction & expansion constants, temp_sim: bool, etc
+    pub internal_work: Vec<f64>,
+    pub expansion: Vec<f64>,
+
+    // history needed for constraint solving
+    pub prev_pos: Vec3,
+    pub time_since_prev_pos: f64,
 }
 
 //---------------------------------------------------------------------------------------------------//
@@ -35,7 +39,7 @@ pub struct Particle {
 
 impl Particle {
     pub fn new() -> Particle {
-        Particle::default().mass(10.0).radius(10.0)
+        Particle::default().mass(5.0).radius(10.0)
     }
 
     pub fn id(mut self, id: u32) -> Particle {
@@ -50,6 +54,11 @@ impl Particle {
 
     pub fn radius(mut self, radius: f64) -> Particle {
         self.radius = radius;
+        self
+    }
+
+    pub fn radius_from_density(mut self, density: f64) -> Particle {
+        self.radius = ((3.0 * self.mass) / (4.0 * density)).cbrt();
         self
     }
 
@@ -116,7 +125,7 @@ impl Particle {
         self.time_since_prev_pos = dt;
 
         self.pos += self.vel * dt;
-        self.pos += total_displacement * inverse_mass;
+        self.pos += total_displacement;
         self.displacements.clear();
     }
 
