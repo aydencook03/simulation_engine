@@ -143,12 +143,6 @@ impl Particle2DRenderer {
                         system.time
                     ));
 
-                    /* let mut total_momentum = Vec3::zero();
-                    for particle in &system.particles {
-                        total_momentum += particle.vel*particle.mass;
-                    }
-                    println!("Momentum: {:#?}", total_momentum); */
-
                     system.step_forward(passed_sec);
 
                     time = Instant::now();

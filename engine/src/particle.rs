@@ -112,11 +112,6 @@ impl Particle {
             total_impulse += *impulse;
         }
 
-        let mut total_displacement = Vec3::zero();
-        for displacement in &self.displacements {
-            total_displacement += *displacement;
-        }
-
         self.vel += total_force * inverse_mass * dt;
         self.vel += total_impulse * inverse_mass;
         self.impulses.clear();
@@ -125,7 +120,13 @@ impl Particle {
         self.time_since_prev_pos = dt;
 
         self.pos += self.vel * dt;
-        self.pos += total_displacement;
+        self.add_displacements();
+    }
+
+    pub fn add_displacements(&mut self) {
+        for displacement in &self.displacements {
+            self.pos += *displacement;
+        }
         self.displacements.clear();
     }
 

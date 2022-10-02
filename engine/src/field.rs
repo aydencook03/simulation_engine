@@ -57,15 +57,6 @@ impl ParticleAction {
             particle.displacements.push(displacement);
         }
     }
-
-    pub fn immediate_constraint_action(&self, particle: &mut Particle) {
-        if let Some(displacement) = self.displacement {
-            particle.pos += displacement;
-        }
-        if let Some(impulse) = self.impulse {
-            particle.vel += impulse * particle.inverse_mass();
-        }
-    }
 }
 
 //---------------------------------------------------------------------------------------------------//
@@ -139,10 +130,12 @@ impl dyn Field {
                 for reference in &self.coupled_particles().0 {
                     let particle = reference.get_mut(particles);
                     let action = self.field_to_particle(particle);
-                    if self.is_constraint() {
-                        action.immediate_constraint_action(particle);
-                    } else {
-                        action.send_to_particle(particle);
+                    action.send_to_particle(particle);
+                }
+
+                if self.is_constraint() {
+                    for reference in &self.coupled_particles().0 {
+                        reference.get_mut(particles).add_displacements();
                     }
                 }
 
@@ -150,22 +143,18 @@ impl dyn Field {
             }
             InteractionType::ParticleParticle => {
                 for ref1 in &self.coupled_particles().0 {
-                    let mut actions = Vec::new();
                     for ref2 in &self.coupled_particles().0 {
                         if ref1.id != ref2.id {
                             let action =
                                 self.particle_to_particle(ref1.get(particles), ref2.get(particles));
 
-                            let particle1 = ref1.get_mut(particles);
-                            if self.is_constraint() {
-                                actions.push(action);
-                            } else {
-                                action.send_to_particle(particle1);
-                            }
+                            action.send_to_particle(ref1.get_mut(particles));
                         }
                     }
-                    for action in actions {
-                        action.immediate_constraint_action(ref1.get_mut(particles));
+                }
+                if self.is_constraint() {
+                    for reference in &self.coupled_particles().0 {
+                        reference.get_mut(particles).add_displacements();
                     }
                 }
             }
