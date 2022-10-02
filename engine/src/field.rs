@@ -135,7 +135,9 @@ impl dyn Field {
 
                 if self.is_constraint() {
                     for reference in &self.coupled_particles().0 {
-                        reference.get_mut(particles).add_displacements();
+                        let particle = reference.get_mut(particles);
+                        particle.add_displacements();
+                        particle.vel_from_prev_pos();
                     }
                 }
 
@@ -154,7 +156,9 @@ impl dyn Field {
                 }
                 if self.is_constraint() {
                     for reference in &self.coupled_particles().0 {
-                        reference.get_mut(particles).add_displacements();
+                        let particle = reference.get_mut(particles);
+                        particle.add_displacements();
+                        particle.vel_from_prev_pos();
                     }
                 }
             }

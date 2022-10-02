@@ -130,12 +130,12 @@ impl Particle {
         self.displacements.clear();
     }
 
-    pub fn clear_force(&mut self) {
-        self.forces.clear();
-    }
-
     pub fn vel_from_prev_pos(&mut self) {
         self.vel = (self.pos - self.prev_pos) / self.time_since_prev_pos;
+    }
+
+    pub fn clear_force(&mut self) {
+        self.forces.clear();
     }
 }
 

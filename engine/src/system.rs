@@ -66,10 +66,6 @@ impl System {
                 }
 
                 <dyn Field>::handle_fields(&mut self.fields, &mut self.particles, sub_dt);
-
-                for particle in &mut self.particles {
-                    particle.vel_from_prev_pos();
-                }
             }
             self.time += dt;
         }
