@@ -5,7 +5,6 @@ fn main() {
     let mut system = System::new();
     let window = Particle2DRenderer::new();
 
-    let mut gravity = NGravity::new(20000.0, None);
     system.add_particle(Particle::new().radius(20.0).mass(50.0));
     system.add_particle(
         Particle::new()
@@ -20,6 +19,7 @@ fn main() {
             .vel_xyz(100.0, 0.0, 0.0),
     );
 
+    let mut gravity = NGravity::new(20000.0, 0.0);
     gravity.add_particles(&system.all_particles());
     system.add_field(gravity);
 

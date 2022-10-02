@@ -148,7 +148,7 @@ impl dyn Field {
                 }
             }
         }
-        
+
         if self.is_constraint() {
             for reference in &self.coupled_particles().0 {
                 let particle = reference.get_mut(particles);
