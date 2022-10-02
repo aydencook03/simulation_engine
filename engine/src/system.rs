@@ -21,7 +21,7 @@ impl System {
     pub fn new() -> System {
         System {
             running: true,
-            substeps: 20,
+            substeps: 15,
             ..Default::default()
         }
     }
