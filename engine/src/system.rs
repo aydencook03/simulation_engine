@@ -73,12 +73,6 @@ impl System {
                 }
             }
             self.time += dt;
-
-            let mut total_momentum = Vec3::zero();
-            for particle in &self.particles {
-                total_momentum += particle.vel * particle.mass;
-            }
-            println!("Momentum: {:#?}", total_momentum);
         }
     }
 }
