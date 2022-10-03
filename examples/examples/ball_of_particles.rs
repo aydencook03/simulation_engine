@@ -46,9 +46,5 @@ fn main() {
     no_overlap.add_particles(&system.all_particles());
     system.add_field(no_overlap);
 
-    let mut rect_bound = BoxBoundConstraint::new(back_bottom_left, front_top_right);
-    rect_bound.add_particles(&system.all_particles());
-    system.add_field(rect_bound);
-
     window.run(system);
 }

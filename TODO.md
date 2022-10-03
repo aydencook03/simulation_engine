@@ -3,9 +3,6 @@
 - [ ] generate README from lib docs
 
 - dynamic interaction
-  - [ ] pause / play
-  - [ ] step forward
-  - [ ] reset
   - [ ] serialization of System
 
 - possibly useful crates
@@ -22,8 +19,8 @@
 
 - physics
   - [ ] realistic forces
-    - [ ] newtonian gravity
-    - [ ] van der waals
+    - [X] newtonian gravity
+    - [X] van der waals
     - [ ] chemical bonding like forces
     - [ ] linear/spring force
     - [ ] collision / impulse forces
