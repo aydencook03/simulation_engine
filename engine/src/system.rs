@@ -1,5 +1,6 @@
 use crate::field::Field;
 use crate::particle::{Particle, ParticleReference};
+use crate::vec3::Vec3;
 
 //---------------------------------------------------------------------------------------------------//
 
@@ -51,6 +52,22 @@ impl System {
             });
         }
         particles
+    }
+
+    pub fn debug_momentum(&self) {
+        let mut momentum = Vec3::zero();
+        for particle in &self.particles {
+            momentum += particle.mass * particle.vel;
+        }
+        dbg!("Momentum: {:#?}}", momentum);
+    }
+
+    pub fn debug_angular_momentum(&self) {
+        let mut angular_momentum = Vec3::zero();
+        for particle in &self.particles {
+            angular_momentum += particle.pos.cross(particle.mass * particle.vel);
+        }
+        dbg!("Angular Momentum: {:#?}", angular_momentum);
     }
 
     //--------------------------------------------------------------------//

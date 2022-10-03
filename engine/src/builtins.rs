@@ -82,8 +82,9 @@ impl Field for NGravity {
         let dist_sqr = radial.mag_squared();
 
         ParticleAction::new().force(
-            radial * -(self.1 * particle1.mass * particle2.mass)
-                / (dist_sqr + self.2.powi(2)).powi(3).sqrt(),
+            -(self.1 * particle1.mass * particle2.mass)
+                / (dist_sqr + self.2.powi(2)).powi(3).sqrt()
+                * radial,
         )
     }
 }
@@ -129,7 +130,7 @@ impl Field for VanDerWaals {
 
         let denom = dist_sqr + self.3.powi(2);
         ParticleAction::new()
-            .force(radial * -12_f64 * self.1 * (bond_6 / denom.powi(4) - bond_12 / denom.powi(7)))
+            .force(-12_f64 * self.1 * (bond_6 / denom.powi(4) - bond_12 / denom.powi(7)) * radial)
     }
 }
 

@@ -58,7 +58,7 @@ impl Particle2DRenderer {
     /// Creates a default window.
     pub fn new() -> Particle2DRenderer {
         Particle2DRenderer {
-            physics_dt: 21.0/120.0,
+            physics_dt: 1.0 / 120.0,
             stroke_size: 2.5,
             stroke_color: crate::colors::BLACK,
             bg_color: crate::colors::GREY,
