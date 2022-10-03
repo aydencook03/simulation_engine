@@ -5,7 +5,7 @@ use rendering::particle_2d_renderer::Particle2DRenderer;
 const COUNT: u32 = 200;
 const DENSITY: f64 = 1.0;
 const MIN_MASS: f64 = 5.0;
-const MAX_MASS: f64 = 100.0;
+const MAX_MASS: f64 = 150.0;
 const GRAVITY: f64 = 1500.0;
 
 fn main() {

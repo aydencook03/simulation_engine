@@ -130,7 +130,7 @@ impl Field for VanDerWaals {
 
         let denom = dist_sqr + self.3.powi(2);
         ParticleAction::new()
-            .force(-12_f64 * self.1 * (bond_6 / denom.powi(4) - bond_12 / denom.powi(7)) * radial)
+            .force((-12_f64 * self.1 * (bond_6 / denom.powi(4) - bond_12 / denom.powi(7))) * radial)
     }
 }
 
@@ -241,7 +241,7 @@ impl Field for DistanceConstraint {
         let inv_mass = particle1.inverse_mass();
 
         let displacement =
-            (radial / dist) * inv_mass * (correction / (inv_mass + particle2.inverse_mass()));
+            inv_mass * correction / (inv_mass + particle2.inverse_mass()) * (radial/dist);
 
         ParticleAction::new().displacement(displacement)
     }

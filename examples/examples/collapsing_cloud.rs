@@ -6,10 +6,11 @@ const COUNT: u32 = 200;
 const MASS: f64 = 10.0;
 const RADIUS: f64 = 8.0;
 const GRAVITY: f64 = 48000.0;
-const BOND_ENERGY: f64 = 8000.0;
+const BOND_ENERGY: f64 = 80000.0;
 
 fn main() {
     let mut system = System::new();
+    system.substeps = 50;
     let window = Particle2DRenderer::new();
 
     let mut rng = rand::thread_rng();
@@ -28,11 +29,11 @@ fn main() {
         );
     }
 
-    let mut gravity = NGravity::new(GRAVITY, 0.03);
+    let mut gravity = NGravity::new(GRAVITY, 0.0);
     gravity.add_particles(&system.all_particles());
     system.add_field(gravity);
 
-    let mut repulsion = VanDerWaals::new(BOND_ENERGY, None, 0.03);
+    let mut repulsion = VanDerWaals::new(BOND_ENERGY, None, 0.0);
     repulsion.add_particles(&system.all_particles());
     system.add_field(repulsion);
 

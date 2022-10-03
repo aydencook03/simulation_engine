@@ -14,7 +14,7 @@ fn main() {
     let mut system = System::new();
     system.substeps = 10;
     let mut window = Particle2DRenderer::new();
-    window.physics_dt = 1.0/60.0;
+    window.physics_dt = 1.0 / 60.0;
 
     let mut rng = rand::thread_rng();
     let back_bottom_left = Vec3::new(-500.0, -500.0, -500.0);

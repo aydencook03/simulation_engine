@@ -72,6 +72,8 @@ pub enum InteractionType {
 pub trait Field {
     fn coupled_particles(&self) -> &CoupledParticles;
     fn coupled_particles_mut(&mut self) -> &mut CoupledParticles;
+    fn interaction_type(&self) -> InteractionType;
+
     fn add_particle(&mut self, particle_reference: ParticleReference) {
         self.coupled_particles_mut().0.push(particle_reference);
     }
@@ -80,7 +82,6 @@ pub trait Field {
             self.coupled_particles_mut().0.push(*reference);
         }
     }
-    fn interaction_type(&self) -> InteractionType;
     fn is_constraint(&self) -> bool {
         false
     }
@@ -139,8 +140,9 @@ impl dyn Field {
                 for ref1 in &self.coupled_particles().0 {
                     for ref2 in &self.coupled_particles().0 {
                         if ref1.id != ref2.id {
-                            let action =
-                                self.particle_to_particle(ref1.get(particles), ref2.get(particles));
+                            let particle1 = ref1.get(particles);
+                            let particle2 = ref2.get(particles);
+                            let action = self.particle_to_particle(particle1, particle2);
 
                             action.send_to_particle(ref1.get_mut(particles));
                         }
@@ -152,6 +154,8 @@ impl dyn Field {
         if self.is_constraint() {
             for reference in &self.coupled_particles().0 {
                 let particle = reference.get_mut(particles);
+                particle.forces.clear();
+                particle.impulses.clear();
                 particle.add_displacements();
                 particle.vel_from_prev_pos();
             }

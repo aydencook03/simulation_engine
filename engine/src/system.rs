@@ -59,7 +59,7 @@ impl System {
         for particle in &self.particles {
             momentum += particle.mass * particle.vel;
         }
-        dbg!("Momentum: {:#?}}", momentum);
+        dbg!(momentum);
     }
 
     pub fn debug_angular_momentum(&self) {
@@ -67,7 +67,7 @@ impl System {
         for particle in &self.particles {
             angular_momentum += particle.pos.cross(particle.mass * particle.vel);
         }
-        dbg!("Angular Momentum: {:#?}", angular_momentum);
+        dbg!(angular_momentum);
     }
 
     //--------------------------------------------------------------------//
@@ -85,6 +85,8 @@ impl System {
                 <dyn Field>::handle_fields(&mut self.fields, &mut self.particles, sub_dt);
             }
             self.time += dt;
+
+            self.debug_angular_momentum();
         }
     }
 }

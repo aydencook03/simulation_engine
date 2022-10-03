@@ -45,8 +45,7 @@ pub struct Particle2DRenderer {
     pub stroke_size: f32,
     pub stroke_color: [u8; 4],
     pub bg_color: [u8; 4],
-    pub starting_width: u32,
-    pub starting_height: u32,
+    pub starting_size: [u32; 2],
 }
 
 struct SoftbufferContext {
@@ -62,8 +61,7 @@ impl Particle2DRenderer {
             stroke_size: 2.5,
             stroke_color: crate::colors::BLACK,
             bg_color: crate::colors::GREY,
-            starting_width: 1000,
-            starting_height: 1000,
+            starting_size: [1000, 1000]
         }
     }
 
@@ -82,7 +80,7 @@ impl Particle2DRenderer {
     pub fn run(self, mut system: System) {
         let event_loop = EventLoop::new();
         let window = {
-            let size = PhysicalSize::new(self.starting_width, self.starting_height);
+            let size = PhysicalSize::new(self.starting_size[0], self.starting_size[1]);
             WindowBuilder::new()
                 .with_inner_size(size)
                 .with_title("Simulation")
