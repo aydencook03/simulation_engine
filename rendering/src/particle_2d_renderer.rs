@@ -41,7 +41,7 @@ use tiny_skia::{FillRule, Paint, PathBuilder, Pixmap, Stroke, Transform};
 
 #[derive(Copy, Clone)]
 pub struct Particle2DRenderer {
-    pub physics_fps: u32,
+    pub physics_dt: f64,
     pub stroke_size: f32,
     pub stroke_color: [u8; 4],
     pub bg_color: [u8; 4],
@@ -58,7 +58,7 @@ impl Particle2DRenderer {
     /// Creates a default window.
     pub fn new() -> Particle2DRenderer {
         Particle2DRenderer {
-            physics_fps: 120,
+            physics_dt: 21.0/120.0,
             stroke_size: 2.5,
             stroke_color: crate::colors::BLACK,
             bg_color: crate::colors::GREY,
@@ -96,7 +96,6 @@ impl Particle2DRenderer {
         };
 
         let mut time = Instant::now();
-        let physics_dt = 1_f64 / (self.physics_fps as f64);
 
         event_loop.run(move |event, _, control_flow| {
             // ControlFlow::Poll continuously runs the event loop, even if the OS hasn't
@@ -142,10 +141,10 @@ impl Particle2DRenderer {
                         system.time
                     ));
 
-                    if passed_sec <= physics_dt {
+                    if passed_sec <= self.physics_dt {
                         system.step_forward(passed_sec);
                     } else {
-                        system.step_forward(physics_dt);
+                        system.step_forward(self.physics_dt);
                     }
 
                     time = Instant::now();
