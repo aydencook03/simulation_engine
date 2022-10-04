@@ -73,20 +73,29 @@ impl System {
     //--------------------------------------------------------------------//
 
     pub fn step_forward(&mut self, dt: f64) {
-        if self.running {
+        if self.running && dt != 0_f64 {
+            self.debug_angular_momentum();
             for _ in 0..self.substeps {
                 let sub_dt = dt / (self.substeps as f64);
 
-                for particle in &mut self.particles {
-                    particle.integrate(sub_dt);
-                    particle.clear_force();
+                for field in &mut self.fields {
+                    if !field.is_constraint() {
+                        field.handle(&mut self.particles, sub_dt);
+                    }
                 }
 
-                <dyn Field>::handle_fields(&mut self.fields, &mut self.particles, sub_dt);
+                for particle in &mut self.particles {
+                    particle.integrate(sub_dt);
+                    particle.forces.clear();
+                }
+
+                for field in &mut self.fields {
+                    if field.is_constraint() {
+                        field.handle(&mut self.particles, sub_dt);
+                    }
+                }
             }
             self.time += dt;
-
-            self.debug_angular_momentum();
         }
     }
 }

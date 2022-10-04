@@ -31,7 +31,6 @@ pub struct Particle {
 
     // history needed for constraint solving
     pub prev_pos: Vec3,
-    pub time_since_prev_pos: f64,
 }
 
 //---------------------------------------------------------------------------------------------------//
@@ -117,7 +116,6 @@ impl Particle {
         self.impulses.clear();
 
         self.prev_pos = self.pos;
-        self.time_since_prev_pos = dt;
 
         self.pos += self.vel * dt;
         self.add_displacements();
@@ -128,14 +126,6 @@ impl Particle {
             self.pos += *displacement;
         }
         self.displacements.clear();
-    }
-
-    pub fn vel_from_prev_pos(&mut self) {
-        self.vel = (self.pos - self.prev_pos) / self.time_since_prev_pos;
-    }
-
-    pub fn clear_force(&mut self) {
-        self.forces.clear();
     }
 }
 

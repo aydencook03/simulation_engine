@@ -241,7 +241,7 @@ impl Field for DistanceConstraint {
         let inv_mass = particle1.inverse_mass();
 
         let displacement =
-            inv_mass * correction / (inv_mass + particle2.inverse_mass()) * (radial/dist);
+            inv_mass * correction / (inv_mass + particle2.inverse_mass()) * (radial / dist);
 
         ParticleAction::new().displacement(displacement)
     }

@@ -5,7 +5,12 @@ fn main() {
     let mut system = System::new();
     let window = Particle2DRenderer::new();
 
-    system.add_particle(Particle::new().radius(20.0).mass(50.0).vel_xyz(-10.0, 0.0, 14.0));
+    system.add_particle(
+        Particle::new()
+            .radius(20.0)
+            .mass(50.0)
+            .vel_xyz(-10.0, 0.0, 14.0),
+    );
     system.add_particle(
         Particle::new()
             .pos_xyz(100.0, 100.0, 100.0)

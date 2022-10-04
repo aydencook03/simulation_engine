@@ -56,6 +56,9 @@ impl ParticleAction {
         if let Some(displacement) = self.displacement {
             particle.displacements.push(displacement);
         }
+        if let Some(work) = self.internal_work {
+            particle.internal_work.push(work);
+        }
     }
 }
 
@@ -99,22 +102,6 @@ pub trait Field {
 //--------------------------------------------------------------------//
 
 impl dyn Field {
-    pub fn handle_fields(fields: &mut [Box<dyn Field>], particles: &mut [Particle], dt: f64) {
-        let mut non_constraint_fields = Vec::new();
-
-        for field in fields {
-            if field.is_constraint() {
-                field.handle(particles, dt);
-            } else {
-                non_constraint_fields.push(field);
-            }
-        }
-
-        for field in non_constraint_fields {
-            field.handle(particles, dt);
-        }
-    }
-
     pub fn handle(&mut self, particles: &mut [Particle], dt: f64) {
         match self.interaction_type() {
             InteractionType::FieldParticle => {
@@ -156,8 +143,9 @@ impl dyn Field {
                 let particle = reference.get_mut(particles);
                 particle.forces.clear();
                 particle.impulses.clear();
+
                 particle.add_displacements();
-                particle.vel_from_prev_pos();
+                particle.vel = (particle.pos - particle.prev_pos) / dt;
             }
         }
     }
