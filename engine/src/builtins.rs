@@ -213,20 +213,32 @@ impl Field for BoxBound {
 
 //---------------------------------------------------------------------------------------------------//
 
-pub struct DistanceConstraint(CoupledParticles, f64);
+pub struct DistanceConstraint {
+    particles: CoupledParticles,
+    distance: f64,
+    compliance: f64,
+    stretch_limit: Option<f64>,
+    broken: bool,
+}
 
 impl DistanceConstraint {
-    pub fn new(dist: f64) -> DistanceConstraint {
-        DistanceConstraint(CoupledParticles::new(), dist)
+    pub fn new(distance: f64) -> DistanceConstraint {
+        DistanceConstraint {
+            particles: CoupledParticles::new(),
+            distance,
+            compliance: 0.0,
+            stretch_limit: None,
+            broken: false,
+        }
     }
 }
 
 impl Field for DistanceConstraint {
     fn coupled_particles(&self) -> &CoupledParticles {
-        &self.0
+        &self.particles
     }
     fn coupled_particles_mut(&mut self) -> &mut CoupledParticles {
-        &mut self.0
+        &mut self.particles
     }
     fn interaction_type(&self) -> InteractionType {
         InteractionType::ParticleParticle
@@ -237,13 +249,23 @@ impl Field for DistanceConstraint {
     fn particle_to_particle(&self, particle1: &Particle, particle2: &Particle) -> ParticleAction {
         let radial = particle1.pos - particle2.pos;
         let dist = radial.mag();
-        let correction = self.1 - dist;
+        let correction = self.distance - dist;
         let inv_mass = particle1.inverse_mass();
+
+        if let Some(limit) = self.stretch_limit {
+            if correction.abs() > limit {
+                //self.broken = true;
+            }
+        }
 
         let displacement =
             inv_mass * correction / (inv_mass + particle2.inverse_mass()) * (radial / dist);
 
-        ParticleAction::new().displacement(displacement)
+        if !self.broken {
+            ParticleAction::new().displacement(displacement)
+        } else {
+            ParticleAction::new()
+        }
     }
 }
 

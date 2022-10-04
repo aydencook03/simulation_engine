@@ -32,10 +32,18 @@ impl System {
         self.particles.push(particle.id(id));
         self.id_counter += 1;
 
-        ParticleReference {
-            id,
-            index: self.particles.len() - 1,
+        ParticleReference::new(id, self.particles.len() - 1)
+    }
+
+    pub fn add_particles(&mut self, particles: Vec<Particle>) -> Vec<ParticleReference> {
+        let mut references = Vec::new();
+        for particle in particles {
+            let id = self.id_counter;
+            self.particles.push(particle.id(id));
+            self.id_counter += 1;
+            references.push(ParticleReference::new(id, self.particles.len() -1));
         }
+        references
     }
 
     pub fn add_field(&mut self, field: impl Field + 'static) -> usize {
@@ -44,14 +52,11 @@ impl System {
     }
 
     pub fn all_particles(&self) -> Vec<ParticleReference> {
-        let mut particles = Vec::new();
+        let mut references = Vec::new();
         for index in 0..self.particles.len() {
-            particles.push(ParticleReference {
-                id: self.particles[index].id,
-                index,
-            });
+            references.push(ParticleReference::new(self.particles[index].id, index));
         }
-        particles
+        references
     }
 
     pub fn debug_momentum(&self) {

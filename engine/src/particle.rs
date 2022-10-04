@@ -27,7 +27,7 @@ pub struct Particle {
     pub impulses: Vec<Vec3>,
     pub displacements: Vec<Vec3>,
     pub internal_work: Vec<f64>,
-    pub expansion: Vec<f64>,
+    pub bulk_strain: Vec<f64>,
 
     // history needed for constraint solving
     pub prev_pos: Vec3,
@@ -137,9 +137,18 @@ impl Particle {
 pub struct ParticleReference {
     pub id: u32,
     pub index: usize,
+    pub exists: bool,
 }
 
 impl ParticleReference {
+    pub fn new(id: u32, index: usize) -> ParticleReference {
+        ParticleReference {
+            id,
+            index,
+            exists: true,
+        }
+    }
+
     pub fn get_mut(mut self, list: &mut [Particle]) -> &mut Particle {
         if list[self.index].id == self.id {
             return &mut list[self.index];
