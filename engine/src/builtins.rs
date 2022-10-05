@@ -227,6 +227,11 @@ impl DistanceConstraint {
             compliance: 0.0,
         }
     }
+
+    pub fn compliance(mut self, compliance: f64) -> DistanceConstraint {
+        self.compliance = compliance;
+        self
+    }
 }
 
 impl Field for DistanceConstraint {

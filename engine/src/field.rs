@@ -93,6 +93,7 @@ pub trait Field {
             self.coupled_particles_mut().0.push(*reference);
         }
     }
+    
     fn is_constraint(&self) -> bool {
         false
     }
