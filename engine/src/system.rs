@@ -41,7 +41,7 @@ impl System {
             let id = self.id_counter;
             self.particles.push(particle.id(id));
             self.id_counter += 1;
-            references.push(ParticleReference::new(id, self.particles.len() -1));
+            references.push(ParticleReference::new(id, self.particles.len() - 1));
         }
         references
     }
@@ -97,6 +97,10 @@ impl System {
                     if field.is_constraint() {
                         field.handle(&mut self.particles, sub_dt);
                     }
+                }
+
+                for particle in &mut self.particles {
+                    particle.vel = (particle.pos - particle.prev_pos) / sub_dt;
                 }
             }
             self.time += dt;

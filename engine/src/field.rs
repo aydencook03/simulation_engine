@@ -64,6 +64,14 @@ impl ParticleAction {
 
 //---------------------------------------------------------------------------------------------------//
 
+/// # Describes the way the field interacts with its coupled particles.
+///
+/// ### Field ⇄ Particle:
+/// -
+///
+/// ### Particle ⇄ Particle:
+/// - Field doesn't store any state of its own.
+/// - The force on each particle only depends on the current state of the other particles.
 #[derive(Copy, Clone)]
 pub enum InteractionType {
     FieldParticle,
@@ -145,7 +153,6 @@ impl dyn Field {
                 particle.impulses.clear();
 
                 particle.add_displacements();
-                particle.vel = (particle.pos - particle.prev_pos) / dt;
             }
         }
     }

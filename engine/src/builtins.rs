@@ -217,8 +217,6 @@ pub struct DistanceConstraint {
     particles: CoupledParticles,
     distance: f64,
     compliance: f64,
-    stretch_limit: Option<f64>,
-    broken: bool,
 }
 
 impl DistanceConstraint {
@@ -227,8 +225,6 @@ impl DistanceConstraint {
             particles: CoupledParticles::new(),
             distance,
             compliance: 0.0,
-            stretch_limit: None,
-            broken: false,
         }
     }
 }
@@ -252,20 +248,10 @@ impl Field for DistanceConstraint {
         let correction = self.distance - dist;
         let inv_mass = particle1.inverse_mass();
 
-        if let Some(limit) = self.stretch_limit {
-            if correction.abs() > limit {
-                //self.broken = true;
-            }
-        }
-
         let displacement =
             inv_mass * correction / (inv_mass + particle2.inverse_mass()) * (radial / dist);
 
-        if !self.broken {
-            ParticleAction::new().displacement(displacement)
-        } else {
-            ParticleAction::new()
-        }
+        ParticleAction::new().displacement(displacement)
     }
 }
 
