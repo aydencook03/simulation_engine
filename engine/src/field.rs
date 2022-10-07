@@ -56,9 +56,6 @@ impl ParticleAction {
         if let Some(displacement) = self.displacement {
             particle.displacements.push(displacement);
         }
-        if let Some(work) = self.internal_work {
-            particle.internal_work.push(work);
-        }
     }
 }
 
@@ -80,7 +77,7 @@ pub enum InteractionType {
 
 //---------------------------------------------------------------------------------------------------//
 
-pub trait Field {
+pub trait Field: Sync {
     fn coupled_particles(&self) -> &CoupledParticles;
     fn coupled_particles_mut(&mut self) -> &mut CoupledParticles;
     fn interaction_type(&self) -> InteractionType;
@@ -93,17 +90,22 @@ pub trait Field {
             self.coupled_particles_mut().0.push(*reference);
         }
     }
-    
+
     fn is_constraint(&self) -> bool {
         false
     }
     fn particle_to_field(&mut self, _particle: &Particle) {}
     fn integrate(&mut self, _dt: f64) {}
-    fn field_to_particle(&self, _particle: &Particle) -> ParticleAction {
+    fn field_to_particle(&self, _particle: &Particle, _dt: f64) -> ParticleAction {
         ParticleAction::new()
     }
     fn clear(&mut self) {}
-    fn particle_to_particle(&self, _particle1: &Particle, _particle2: &Particle) -> ParticleAction {
+    fn particle_to_particle(
+        &self,
+        _particle1: &Particle,
+        _particle2: &Particle,
+        _dt: f64,
+    ) -> ParticleAction {
         ParticleAction::new()
     }
 }
@@ -126,7 +128,7 @@ impl dyn Field {
                 // field -> act on particles
                 for reference in &self.coupled_particles().0 {
                     let particle = reference.get_mut(particles);
-                    let action = self.field_to_particle(particle);
+                    let action = self.field_to_particle(particle, dt);
                     action.send_to_particle(particle);
                 }
 
@@ -138,8 +140,7 @@ impl dyn Field {
                         if ref1.id != ref2.id {
                             let particle1 = ref1.get(particles);
                             let particle2 = ref2.get(particles);
-                            let action = self.particle_to_particle(particle1, particle2);
-
+                            let action = self.particle_to_particle(particle1, particle2, dt);
                             action.send_to_particle(ref1.get_mut(particles));
                         }
                     }
@@ -150,9 +151,6 @@ impl dyn Field {
         if self.is_constraint() {
             for reference in &self.coupled_particles().0 {
                 let particle = reference.get_mut(particles);
-                particle.forces.clear();
-                particle.impulses.clear();
-
                 particle.add_displacements();
             }
         }

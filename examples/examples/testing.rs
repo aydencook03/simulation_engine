@@ -2,7 +2,7 @@ use engine::prelude::*;
 use rand::Rng;
 use rendering::particle_2d_renderer::Particle2DRenderer;
 
-const COUNT: u32 = 2;
+const COUNT: u32 = 400;
 const DENSITY: f64 = 1.0;
 const MIN_MASS: f64 = 5.0;
 const MAX_MASS: f64 = 150.0;

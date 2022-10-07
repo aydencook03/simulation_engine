@@ -2,7 +2,7 @@ use engine::prelude::*;
 use rand::Rng;
 use rendering::particle_2d_renderer::Particle2DRenderer;
 
-const COUNT: u32 = 200;
+const COUNT: u32 = 250;
 const MASS: f64 = 10.0;
 const RADIUS: f64 = 8.0;
 const GRAVITY: f64 = 60000.0;
@@ -10,7 +10,6 @@ const BOND_ENERGY: f64 = 80000.0;
 
 fn main() {
     let mut system = System::new();
-    system.substeps = 50;
     let window = Particle2DRenderer::new();
 
     let mut rng = rand::thread_rng();

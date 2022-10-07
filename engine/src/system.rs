@@ -79,6 +79,7 @@ impl System {
 
     pub fn step_forward(&mut self, dt: f64) {
         if self.running && dt != 0_f64 {
+            self.debug_angular_momentum();
             for _ in 0..self.substeps {
                 let sub_dt = dt / (self.substeps as f64);
 
@@ -100,6 +101,8 @@ impl System {
                 }
 
                 for particle in &mut self.particles {
+                    particle.forces.clear();
+                    particle.impulses.clear();
                     particle.vel = (particle.pos - particle.prev_pos) / sub_dt;
                 }
             }

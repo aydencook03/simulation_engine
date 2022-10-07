@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 pub use crate::vec3::Vec3;
 
 //---------------------------------------------------------------------------------------------------//
@@ -10,11 +12,7 @@ pub struct Particle {
 
     // properties
     pub mass: f64,
-    pub charge: f64,
-    // pub collision_info: CollisionInfo, restitution, friction, etc
-    pub thermal_conductivity: f64,
-    pub specific_heat_capacity: f64,
-    pub coefficient_of_thermal_expansion: f64,
+    pub properties: HashMap<String, f64>,
 
     // state
     pub pos: Vec3,
@@ -26,8 +24,6 @@ pub struct Particle {
     pub forces: Vec<Vec3>,
     pub impulses: Vec<Vec3>,
     pub displacements: Vec<Vec3>,
-    pub internal_work: Vec<f64>,
-    pub bulk_strain: Vec<f64>,
 
     // history needed for constraint solving
     pub prev_pos: Vec3,
@@ -96,7 +92,6 @@ impl Particle {
     }
 
     pub fn integrate(&mut self, dt: f64) {
-        // Scaling by inverse mass ensures that dynamical interactions conserve momentum and center of mass.
         // An inverse mass of 0 (infinitely massive) then allows for particles that don't experience
         // interactions (ie: barriers, etc).
         let inverse_mass = self.inverse_mass();

@@ -23,7 +23,7 @@ impl Field for ConstantForce {
     fn interaction_type(&self) -> InteractionType {
         InteractionType::FieldParticle
     }
-    fn field_to_particle(&self, _particle: &Particle) -> ParticleAction {
+    fn field_to_particle(&self, _particle: &Particle, _dt: f64) -> ParticleAction {
         ParticleAction::new().force(self.1)
     }
 }
@@ -48,7 +48,7 @@ impl Field for Gravity {
     fn interaction_type(&self) -> InteractionType {
         InteractionType::FieldParticle
     }
-    fn field_to_particle(&self, particle: &Particle) -> ParticleAction {
+    fn field_to_particle(&self, particle: &Particle, _dt: f64) -> ParticleAction {
         ParticleAction::new().force(Vec3::new(0.0, -particle.mass * self.1, 0.0))
     }
 }
@@ -77,7 +77,12 @@ impl Field for NGravity {
     fn interaction_type(&self) -> InteractionType {
         InteractionType::ParticleParticle
     }
-    fn particle_to_particle(&self, particle1: &Particle, particle2: &Particle) -> ParticleAction {
+    fn particle_to_particle(
+        &self,
+        particle1: &Particle,
+        particle2: &Particle,
+        _dt: f64,
+    ) -> ParticleAction {
         let radial = particle1.pos - particle2.pos;
         let dist_sqr = radial.mag_squared();
 
@@ -118,7 +123,12 @@ impl Field for VanDerWaals {
     fn interaction_type(&self) -> InteractionType {
         InteractionType::ParticleParticle
     }
-    fn particle_to_particle(&self, particle1: &Particle, particle2: &Particle) -> ParticleAction {
+    fn particle_to_particle(
+        &self,
+        particle1: &Particle,
+        particle2: &Particle,
+        _dt: f64,
+    ) -> ParticleAction {
         let radial = particle1.pos - particle2.pos;
         let dist_sqr = radial.mag_squared();
         let bond_6 = if let Some(length) = self.2 {
@@ -154,7 +164,7 @@ impl Field for BoxBound {
     fn interaction_type(&self) -> InteractionType {
         InteractionType::FieldParticle
     }
-    fn field_to_particle(&self, particle: &Particle) -> ParticleAction {
+    fn field_to_particle(&self, particle: &Particle, _dt: f64) -> ParticleAction {
         let mut unsatisfied = false;
         let mut displacement = Vec3::zero();
         let mut impulse = Vec3::zero();
@@ -247,14 +257,20 @@ impl Field for DistanceConstraint {
     fn is_constraint(&self) -> bool {
         true
     }
-    fn particle_to_particle(&self, particle1: &Particle, particle2: &Particle) -> ParticleAction {
+    fn particle_to_particle(
+        &self,
+        particle1: &Particle,
+        particle2: &Particle,
+        dt: f64,
+    ) -> ParticleAction {
         let radial = particle1.pos - particle2.pos;
         let dist = radial.mag();
         let correction = self.distance - dist;
         let inv_mass = particle1.inverse_mass();
 
-        let displacement =
-            inv_mass * correction / (inv_mass + particle2.inverse_mass()) * (radial / dist);
+        let displacement = inv_mass * correction
+            / (inv_mass + particle2.inverse_mass() + self.compliance / dt.powi(2))
+            * (radial / dist);
 
         ParticleAction::new().displacement(displacement)
     }
@@ -283,7 +299,12 @@ impl Field for MinDistanceConstraint {
     fn is_constraint(&self) -> bool {
         true
     }
-    fn particle_to_particle(&self, particle1: &Particle, particle2: &Particle) -> ParticleAction {
+    fn particle_to_particle(
+        &self,
+        particle1: &Particle,
+        particle2: &Particle,
+        _dt: f64,
+    ) -> ParticleAction {
         let radial = particle1.pos - particle2.pos;
         let dist = radial.mag();
 
@@ -303,11 +324,16 @@ impl Field for MinDistanceConstraint {
 
 //---------------------------------------------------------------------------------------------------//
 
-pub struct NoOverlapConstraint(CoupledParticles);
+pub struct NoOverlapConstraint(CoupledParticles, f64);
 
 impl NoOverlapConstraint {
     pub fn new() -> NoOverlapConstraint {
-        NoOverlapConstraint(CoupledParticles::new())
+        NoOverlapConstraint(CoupledParticles::new(), 0.0)
+    }
+
+    pub fn compliance(mut self, compliance: f64) -> NoOverlapConstraint {
+        self.1 = compliance;
+        self
     }
 }
 
@@ -324,7 +350,12 @@ impl Field for NoOverlapConstraint {
     fn is_constraint(&self) -> bool {
         true
     }
-    fn particle_to_particle(&self, particle1: &Particle, particle2: &Particle) -> ParticleAction {
+    fn particle_to_particle(
+        &self,
+        particle1: &Particle,
+        particle2: &Particle,
+        dt: f64,
+    ) -> ParticleAction {
         let radial = particle1.pos - particle2.pos;
         let dist = radial.mag();
         let radii_sum = particle1.radius + particle2.radius;
@@ -333,8 +364,9 @@ impl Field for NoOverlapConstraint {
             let overlap = radii_sum - dist;
             let inv_mass = particle1.inverse_mass();
 
-            let displacement =
-                (radial / dist) * inv_mass * (overlap / (inv_mass + particle2.inverse_mass()));
+            let displacement = (radial / dist)
+                * inv_mass
+                * (overlap / (inv_mass + particle2.inverse_mass() + self.1 / dt.powi(2)));
 
             ParticleAction::new().displacement(displacement)
         } else {
@@ -366,7 +398,7 @@ impl Field for BoxBoundConstraint {
     fn is_constraint(&self) -> bool {
         true
     }
-    fn field_to_particle(&self, particle: &Particle) -> ParticleAction {
+    fn field_to_particle(&self, particle: &Particle, _dt: f64) -> ParticleAction {
         let mut unsatisfied = false;
         let mut displacement = Vec3::zero();
 
