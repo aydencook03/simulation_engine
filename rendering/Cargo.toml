@@ -14,4 +14,3 @@ softbuffer = "0.1"
 tiny-skia = "0.8"
 
 # particle 3d renderer (real time)
-bevy = "0.8"
