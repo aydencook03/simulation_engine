@@ -73,11 +73,12 @@ impl ParticleAction {
 pub enum InteractionType {
     FieldParticle,
     ParticleParticle,
+    Simple,
 }
 
 //---------------------------------------------------------------------------------------------------//
 
-pub trait Field: Sync {
+pub trait Field {
     fn coupled_particles(&self) -> &CoupledParticles;
     fn coupled_particles_mut(&mut self) -> &mut CoupledParticles;
     fn interaction_type(&self) -> InteractionType;
@@ -106,6 +107,9 @@ pub trait Field: Sync {
         _particle2: &Particle,
         _dt: f64,
     ) -> ParticleAction {
+        ParticleAction::new()
+    }
+    fn simple_action(&self, _particle: &Particle, _dt: f64) -> ParticleAction {
         ParticleAction::new()
     }
 }
@@ -144,6 +148,13 @@ impl dyn Field {
                             action.send_to_particle(ref1.get_mut(particles));
                         }
                     }
+                }
+            }
+            InteractionType::Simple => {
+                for reference in &self.coupled_particles().0 {
+                    let particle = reference.get_mut(particles);
+                    let action = self.simple_action(particle, dt);
+                    action.send_to_particle(particle);
                 }
             }
         }
