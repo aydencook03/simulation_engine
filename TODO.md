@@ -1,8 +1,8 @@
 # TODO / IDEAS
 
 - Short Term
-  - [ ] develop a good abstraction for constraints
-  - [ ] simplify the abstraction for fields (ie: remove dt, etc)
+  - [ ] develop a good abstraction/api for constraints
+  - [ ] simplify the abstraction/api for fields (ie: remove dt, etc)
   - [ ] linear spring force
   - [ ] real-time 3d renderer w/ simple interaction (using bevy)
   - [ ] support particle sources and sinks
@@ -12,6 +12,7 @@
     - only occurs when multiple fields are being used simultaneously?
   - [ ] builder methods for builtin fields & constraints
   - [ ] fix BoxBound instability
+  - [ ] stress/strain estimates from xpbd
 
 - Fields
   - [ ] particle-mesh-method newtonian gravity
@@ -25,7 +26,7 @@
 
 - Thermodynamics
   - [ ] research how to implement a good general macroscopic thermodynamics model
-  - [ ] conduction, advection, radiation, collisions
+  - [ ] conduction, advection, radiation, friction, collisions
   - [ ] state variables & state equations
     - what is needed in this engine? pos, vel, temp, radius?
     - fields can alter any of these state variables. a field could implement a certain state eqn?
@@ -42,6 +43,9 @@
   - [ ] animation baking (both 3d and 2d)
     - [ ] save/serialize System state to file once the animation is completed
   - [ ] color based on radiation/temperature
+  - [ ] good 3d rendering
+    - [ ] isosurface/isoline rendering?
+    - [ ] sph-like smoothing
 
 - Algorithms
   - [ ] spawning composite shapes of particles (spheres, blocks, etc)
@@ -64,8 +68,4 @@
   - [ ] deformable solids (break constraint and then create a new one in the new location?)
   - [ ] bouncy objects
   - [ ] granular materials
-
-- Long Term
-  - [ ] good 3d rendering
-    - [ ] isosurface/isoline rendering?
   - [ ] extend engine to support rigid bodies (like bullet, rapier, xpbd, etc)
