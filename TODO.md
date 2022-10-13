@@ -1,51 +1,71 @@
 # TODO / IDEAS
 
-- [ ] generate README from lib docs
+- short term
+  - [ ] develop a good abstraction for constraints
+  - [ ] simplify the abstraction for fields (ie: remove dt, etc)
+  - [ ] linear spring force
+  - [ ] real-time 3d renderer w/ simple interaction (using bevy)
+  - [ ] support particle sources and sinks
+  - [ ] non-dynamic particles (central gravity bodies, boundary particles, constraint & spring attachments, platforms, etc.)
+  - [ ] first class sph for smoothing?
+  - [ ] investigate/solve weird lack of angular momentum conservation
+    - only occurs when multiple fields are being used simultaneously?
+  - [ ] builder methods for builtin fields & constraints
+  - [ ] fix BoxBound instability
 
-- dynamic interaction
-  - [ ] serialization of System
+- fields
+  - [ ] particle-mesh-method newtonian gravity
+  - [ ] electromagnetic
+  - [ ] material point method mesh
 
-- possibly useful crates
-  - [ ] bevy_ecs
-  - [ ] bevy (for rendering and interaction)
-  - [ ] nalgebra
-  - [ ] parry
-  - [ ] rayon / bevy_tasks
-  - [ ] serde
-
-- rendering
-  - [ ] MVP real time renderer (w/ GUI & interaction?)
-  - [ ] baked animation renderer
-
-- physics
-  - [ ] realistic forces
-    - [X] newtonian gravity
-    - [X] van der waals
-    - [ ] chemical bonding like forces
-    - [ ] linear/spring force
-    - [ ] collision / impulse forces
-    - [ ] fluid forces (attraction & repulsion)
-  - [ ] fields
-    - [ ] electromagnetic
-    - [ ] material point method mesh
+- collision handling
+  - [ ] collision / impulse forces
   - [ ] friction
   - [ ] viscosity
+
+- thermodynamics
+  - [ ] research how to implement a good general macroscopic thermodynamics model
+  - [ ] conduction, advection, radiation, collisions
+  - [ ] state variables & state equations
+    - what is needed in this engine? pos, vel, temp, radius?
+    - fields can alter any of these state variables. a field could implement a certain state eqn?
+  - [ ] thermal expansion
+  - [ ] phase changes
+
+- compilation features
+  - [ ] serialization of System struct and saving/loading from file (using serde)
+  - [ ] object mesh file loading (for FEM-like analysis)?
+  - [ ] parallelize using simd, rayon, bevy_tasks::ParallelIterator, etc
+  - [ ] wgpu acceleration
+
+- rendering
+  - [ ] animation baking (both 3d and 2d)
+    - [ ] save/serialize System state to file once the animation is completed
+  - [ ] color based on radiation/temperature
+
+- algorithms
+  - [ ] spawning composite shapes of particles (spheres, blocks, etc)
+  - [ ] hash map collision detection
+  - [ ] tree methods for optimized n-body forces
+
+- physics
+  - [ ] intermolecular forces
+    - [ ] solids (bonds)
+      - [ ] xpbd distance constraints w/ compliance
+      - [ ] smoothed-particle-hydrodynamics
+      - [ ] material-point-method
+    - [ ] liquids & gases (intermolecular forces & hydrogen bonds)
+      - [ ] Lennard-Jones 6-12, 6-9, 10-12
+      - [ ] smoothed-particle-hydrodynamics
+      - [ ] material-point-method
+      - [ ] position-based-fluids
   - [ ] soft bodies
     - [ ] volume conserving, pnuematic, etc
   - [ ] deformable solids (break constraint and then create a new one in the new location?)
   - [ ] bouncy objects
   - [ ] granular materials
-  - [ ] temperature simulation
-    - [ ] contact conduction
-    - [ ] melting (weaken constraints as temperature rises)
-    - [ ] collision heating based on energy lost after constraint solve
-    - [ ] color change/glow based on temperature
-    - [ ] radiation (temp drops naturally over time)
 
 - long term
   - [ ] good 3d rendering
     - [ ] isosurface/isoline rendering?
-  - [ ] load 3d object files as set of connected particles
-  - [ ] parallelize using simd, rayon, bevy_tasks::ParallelIterator, etc
-  - [ ] wgpu acceleration
-  - [ ] extend engine to support rigid bodies
+  - [ ] extend engine to support rigid bodies (like bullet, rapier, xpbd, etc)

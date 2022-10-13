@@ -6,12 +6,11 @@ use crate::vec3::Vec3;
 
 //---------------------------------------------------------------------------------------------------//
 
-#[derive(Default, Clone)]
 pub struct CoupledParticles(pub Vec<ParticleReference>);
 
 impl CoupledParticles {
     pub fn new() -> CoupledParticles {
-        CoupledParticles::default()
+        CoupledParticles(Vec::new())
     }
 }
 
