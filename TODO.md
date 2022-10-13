@@ -1,6 +1,6 @@
 # TODO / IDEAS
 
-- short term
+- Short Term
   - [ ] develop a good abstraction for constraints
   - [ ] simplify the abstraction for fields (ie: remove dt, etc)
   - [ ] linear spring force
@@ -13,17 +13,17 @@
   - [ ] builder methods for builtin fields & constraints
   - [ ] fix BoxBound instability
 
-- fields
+- Fields
   - [ ] particle-mesh-method newtonian gravity
   - [ ] electromagnetic
   - [ ] material point method mesh
 
-- collision handling
+- Collision Handling
   - [ ] collision / impulse forces
   - [ ] friction
   - [ ] viscosity
 
-- thermodynamics
+- Thermodynamics
   - [ ] research how to implement a good general macroscopic thermodynamics model
   - [ ] conduction, advection, radiation, collisions
   - [ ] state variables & state equations
@@ -32,23 +32,23 @@
   - [ ] thermal expansion
   - [ ] phase changes
 
-- compilation features
+- Compilation Features
   - [ ] serialization of System struct and saving/loading from file (using serde)
   - [ ] object mesh file loading (for FEM-like analysis)?
   - [ ] parallelize using simd, rayon, bevy_tasks::ParallelIterator, etc
   - [ ] wgpu acceleration
 
-- rendering
+- Rendering
   - [ ] animation baking (both 3d and 2d)
     - [ ] save/serialize System state to file once the animation is completed
   - [ ] color based on radiation/temperature
 
-- algorithms
+- Algorithms
   - [ ] spawning composite shapes of particles (spheres, blocks, etc)
   - [ ] hash map collision detection
   - [ ] tree methods for optimized n-body forces
 
-- physics
+- Physics
   - [ ] intermolecular forces
     - [ ] solids (bonds)
       - [ ] xpbd distance constraints w/ compliance
@@ -65,7 +65,7 @@
   - [ ] bouncy objects
   - [ ] granular materials
 
-- long term
+- Long Term
   - [ ] good 3d rendering
     - [ ] isosurface/isoline rendering?
   - [ ] extend engine to support rigid bodies (like bullet, rapier, xpbd, etc)
