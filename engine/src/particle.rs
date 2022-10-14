@@ -4,7 +4,7 @@ pub use crate::vec3::Vec3;
 
 //---------------------------------------------------------------------------------------------------//
 
-#[derive(Default)]
+#[derive(Default, Clone)]
 pub struct Particle {
     // identity
     pub id: u32,
