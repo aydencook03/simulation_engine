@@ -3,16 +3,18 @@
 - Short Term
   - [ ] develop a good abstraction/api for constraints
   - [ ] simplify the abstraction/api for fields (ie: remove dt, etc)
+  - [ ] account for N's 3rd law in the ParticleParticle interaction (can enable optimizations?)
   - [ ] linear spring force
   - [ ] real-time 3d renderer w/ simple interaction (using bevy)
   - [ ] support particle sources and sinks
   - [ ] non-dynamic particles (central gravity bodies, boundary particles, constraint & spring attachments, platforms, etc.)
-  - [ ] first class sph for smoothing?
+  - [ ] a common functionality implementation of SPH smoothing.
   - [ ] investigate/solve weird lack of angular momentum conservation
     - only occurs when multiple fields are being used simultaneously?
   - [ ] builder methods for builtin fields & constraints
   - [ ] fix BoxBound instability
   - [ ] stress/strain estimates from xpbd
+  - [ ] a general purpose (common functionality) Mesh object that has derivative operators defined on it
 
 - Fields
   - [ ] particle-mesh-method newtonian gravity

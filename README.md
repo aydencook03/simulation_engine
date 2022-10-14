@@ -1,7 +1,7 @@
 # Simulation Engine
 
 ## Running the Examples
-The list of current examples can be found in the examples directory. Before running them, make sure that you have Rust's build tool, Cargo, installed (more info [here](https://www.rust-lang.org/tools/install)). You can then run them with 
+The list of current examples can be found in the examples directory. Before running them, make sure that you have Rust's build tool, Cargo, installed ([installation](https://www.rust-lang.org/tools/install)). You can then run them with 
 ```console
 cargo run --release --example {example_name}
 ```
@@ -25,14 +25,22 @@ The theoretical foundations of this framework are those of classical mechanics:
 
 Due to the small size of particles (relative to us), macroscopic phenomenon appear to virtually operate over a continuum, causing many models to be governed by sets of partial differential equations. A common approach to then performing simulations using these models is to discretize the problem domain using some kind of lattice or mesh, on which partial derivatives can be defined and integrated. However, problems arise when the things being simulated are able to move around or when the mesh/lattice can itself undergo large deformations, in which cases the derivatives are no longer defined and the simulation will break.
 
-This seemingly leads to a major problem
+This also seemingly leads to a major problem, if most things occur at such a microscopic scale that they seem to be continuous, then trying to simulate them with particles seems hopeless. However, using Newton's second law and summing over a system of particles, it can be shown that an entire system of particles dynamically behave as just a single particle at their center of mass. This allows us to break a system of a computationally impossible number of particles into a more manageable number of particles. The only downside to chunking together groups of particles is that we then lose the emergent phenomenon of continuity/smoothness. Thankfully, there is a mathematically sound ways of "smoothing out" the smaller system of larger particles called Smoothed Particle Hydrodynamics ([SPH](https://en.wikipedia.org/wiki/Smoothed-particle_hydrodynamics)). The other interesting thing to note is that when you use a single particle to represent a collection of particles, you also need to account for two additional degrees of freedom, namely the size and the internal energy (temperature) of that group of particles. In the limit of many small particles, any **classical** phenomenon will be fully reproduceable, and having sph-like smoothing with size and temperature will be a very good approximation at a larger scale.
 
-symplectic euler integration of newton's equations, xpbd algorithm (Compliant Constrained Dynamics, constraints, fem, etc), sph
+With all of this in mind, the most fundamental calculations that this engine will be doing is an integration of Newton's second law, the handling of constraints, smoothing of a system of particles to recover a continuum when needed, and evolving some thermodynamic models. To ensure the conservation of energy, a [symplectic integrator](https://en.wikipedia.org/wiki/Symplectic_integrator) will be used. For the handling of constraints, the [XPBD](https://doi.org/10.1145/2994258.2994272) algorithm will be used, which is a fantastic algorithm and framework for compliant constrained dynamics that can even replace things like Finite Element Analysis using particles.
 
 ### Primary Goals
+
+- Particles
+- Fields
+- Compliant Constraints
+- SPH
+- Thermodynamics
 
 ### Current State & Challenges
 
 ### Project Plan
+
+Initially I want to make sure there is a strong foundation of code that enables all of the primary goals mentioned. A more detailed and task oriented breakdown can be found in the [TODO.md](./TODO.md) file.
 
 ## References
