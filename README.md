@@ -13,7 +13,7 @@ The theoretical foundations of this framework are those of classical mechanics:
     - Euclidean space, a universal time, and symmetry under galilean boosts.
     - The symmetries give rise to the conservation of energy, momentum, angular momentum, and velocity of the center of mass.
 - Newton's three laws of motion:
-    - $\dot{\vec{v}}=\vec{0}\iff\Sigma\vec{F}=\vec{0}$
+    - $\dot{\vec{v}}\neq\vec{0}\iff\Sigma\vec{F}\neq\vec{0}$
     - $\dot{\left\lbrack\matrix{\vec{r}\cr\vec{p}}\right\rbrack}=\left\lbrack\matrix{\vec{p}/m\cr\Sigma\vec{F}}\right\rbrack$
     - $\vec{F} _{ij}=-\vec{F} _{ji}$
 - Newton's second law shows that $m\vec{v}=\vec{p}$ and $\dot{\vec{p}}=\Sigma\vec{F}$, so $\Sigma\vec{F}=m\dot{\vec{v}}+\dot{m}\vec{v}$. The first law says that if there is no external force, then there is no change in velocity, so therefore $\dot{m}=0$. In other words, the mass of a particle must remain constant.
