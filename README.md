@@ -38,10 +38,10 @@ With all of this in mind, the most fundamental calculations that this engine wil
     - Additional properties can be attached to a particle to allow for more dynamics (charge, material properties, etc).
     - Allow kinematic-only particles for things like central gravity bodies, boundary particles, constraint & spring attachments, platforms, etc.
 - Fields
-    - A generic object that can store state, evolve over time, as well as dynamically interact with coupled particles.
-    - A good api for common functionality of any type of field.
+    - A generic object that can store state, evolve over time, and dynamically interact with coupled particles.
+    - A good api for common functionality of any type of field and boundary condition.
 - Compliant Constraints
-    - An implementation of the XPBD algorighm.
+    - An implementation of the XPBD algorithm.
     - A good api for common functionality of any type of constraint.
 - SPH
     - Functions and algorithms that separate away the common functionality of SPH-like smoothing.

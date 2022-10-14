@@ -70,4 +70,4 @@
   - [ ] deformable solids (break constraint and then create a new one in the new location?)
   - [ ] bouncy objects
   - [ ] granular materials
-  - [ ] extend engine to support rigid bodies (like bullet, rapier, xpbd, etc)
+  - [ ] extend engine to support rigid bodies (a particle with orientation, shape, inertia) (like bullet, rapier, xpbd, etc)
