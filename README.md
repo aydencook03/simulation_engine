@@ -1,9 +1,9 @@
 # Simulation Engine
 
 ## Running the Examples
-The list of current examples can be found in the examples directory. To run them, make sure that you have rust's build tool, Cargo, installed (more info [here](https://www.rust-lang.org/tools/install)). You can run them with 
+The list of current examples can be found in the examples directory. Before running them, make sure that you have Rust's build tool, Cargo, installed (more info [here](https://www.rust-lang.org/tools/install)). You can then run them with 
 ```console
-~simulation_engine$ cargo run --release --example {example_name}
+cargo run --release --example {example_name}
 ```
 
 ## Project Outline
