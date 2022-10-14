@@ -34,12 +34,27 @@ With all of this in mind, the most fundamental calculations that this engine wil
 ### Primary Goals
 
 - Particles
+    - A dynamical object that has mass and a state (position, velocity, temperature, size).
+    - Additional properties can be attached to a particle to allow for more dynamics (charge, material properties, etc).
+    - Allow kinematic-only particles for things like central gravity bodies, boundary particles, constraint & spring attachments, platforms, etc.
 - Fields
+    - A generic object that can store state, evolve over time, as well as dynamically interact with coupled particles.
+    - A good api for common functionality of any type of field.
 - Compliant Constraints
+    - An implementation of the XPBD algorighm.
+    - A good api for common functionality of any type of constraint.
 - SPH
+    - Functions and algorithms that separate away the common functionality of SPH-like smoothing.
 - Thermodynamics
+    - A good way to handle generic thermodynamic models and equations of state.
 
 ### Current State & Challenges
+
+Currently, there are initial implementations of particles, fields, and constraints.
+
+The primary challenge so far has been abstracting away common functionality of fields and constraints so that the engine can universally support a wide variety of dynamics.
+
+Another large challenge has been implementing a good thermodynamics model.
 
 ### Project Plan
 
