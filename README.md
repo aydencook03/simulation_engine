@@ -1,6 +1,10 @@
 # Simulation Engine
 
 ## Running the Examples
+The list of current examples can be found in the examples directory. To run them, make sure that you have rust's build tool, Cargo, installed (more info [here](https://www.rust-lang.org/tools/install)). You can run them with 
+```console
+~simulation_engine$ cargo run --release --example {example_name}
+```
 
 ## Project Outline
 
@@ -11,7 +15,7 @@ The goal of this project is to create a general purpose framework for particle b
 The theoretical foundations of this framework are those of classical mechanics:
 - The structure of the spacetime is given by the Galilean Group:
     - Euclidean space, a universal time, and symmetry under galilean boosts.
-    - The symmetries give rise to the conservation of energy, momentum, angular momentum, and velocity of the center of mass.
+    - The symmetries give rise to the conservation of energy, momentum, angular momentum, and velocity of the center of mass. Using a lagrangian can make it easier to ensure these conservation laws are respected.
 - Newton's three laws of motion:
     - $\dot{\vec{v}}\neq\vec{0}\iff\Sigma\vec{F}\neq\vec{0}$
     - $\dot{\left\lbrack\matrix{\vec{r}\cr\vec{p}}\right\rbrack}=\left\lbrack\matrix{\vec{p}/m\cr\Sigma\vec{F}}\right\rbrack$
@@ -23,7 +27,7 @@ Due to the small size of particles (relative to us), macroscopic phenomenon appe
 
 This seemingly leads to a major problem
 
-symplectic euler, xpbd, sph
+symplectic euler integration of newton's equations, xpbd algorithm (Compliant Constrained Dynamics, constraints, fem, etc), sph
 
 ### Primary Goals
 
