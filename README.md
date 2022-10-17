@@ -10,7 +10,7 @@ cargo run --release --example {example_name}
 
 ### Introduction
 
-The goal of this project is to create a general purpose framework for particle based simulations. In reality everything is composed of particles, and so it seems reasonable that one should be able to use particle dynamics to simulate (at least to some degree) any kind of phenomenon. Along with this generality of particles, another major advantage of their use is the ability to massively parallelize and distribute the compuational workloads that arise when performing simulations.
+The goal of this project is to create a general purpose framework for particle based simulations. In reality everything is composed of particles, and so it seems reasonable that one should be able to use particle dynamics to simulate (at least to some degree) any kind of phenomenon. Along with this generality of particles, another major advantage of their use is the ability to massively parallelize and distribute the computational workloads that arise when performing simulations.
 
 The theoretical foundations of this framework are those of classical mechanics:
 - The structure of the spacetime is given by the Galilean Group:

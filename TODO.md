@@ -2,7 +2,10 @@
 
 - Short Term
   - [ ] develop a good abstraction/api for constraints
-  - [ ] simplify the abstraction/api for fields (ie: remove dt, etc)
+  - [ ] simplify the abstraction/api for fields
+    - [ ] remove dt
+    - [ ] separate field updating and force calculating
+  - [ ] different number of substeps for different parts of `step_forward`
   - [ ] account for N's 3rd law in the ParticleParticle interaction (can enable optimizations?)
   - [ ] linear spring force
   - [ ] real-time 3d renderer w/ simple interaction (using bevy)
@@ -14,12 +17,37 @@
   - [ ] builder methods for builtin fields & constraints
   - [ ] fix BoxBound instability
   - [ ] stress/strain estimates from xpbd
-  - [ ] a general purpose (common functionality) Mesh object that has derivative operators defined on it
+  - [ ] a general purpose (common functionality) Mesh object that has derivative operators etc defined on it
+
+- Examples
+  - [ ] cantilever
+  - [ ] pile of blocks
+  - [ ] cloth
+  - [ ] jello block
+  - [ ] planet collision
+  - [ ] dam break
+  - [ ] pile of sand
 
 - Fields
   - [ ] particle-mesh-method newtonian gravity
   - [ ] electromagnetic
   - [ ] material point method mesh
+  - [ ] rayleigh dissipation function
+
+- Constraints / Position Based Dynamics
+  - [ ] compliance, rayleigh dissipation
+  - [ ] stretching
+  - [ ] bending
+  - [ ] isometric bending?
+  - [ ] particle-triangle collisions
+  - [ ] contact plane collisions (for general purpose shapes & environment)
+  - [ ] particle-particle collisions
+  - [ ] friction
+  - [ ] tetrahedral volume conservation
+  - [ ] triangle area conservation
+  - [ ] closed triangle mesh overpressure
+  - [ ] fluid pressure
+  - [ ] shape matching & oriented particles?
 
 - Collision Handling
   - [ ] collision / impulse forces
