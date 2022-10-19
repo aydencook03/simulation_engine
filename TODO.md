@@ -10,6 +10,7 @@
   - [ ] linear spring force
   - [ ] real-time 3d renderer w/ simple interaction (using bevy)
   - [ ] support particle sources and sinks
+  - [ ] support breakable constraints
   - [ ] non-dynamic particles (central gravity bodies, boundary particles, constraint & spring attachments, platforms, etc.)
   - [ ] a common functionality implementation of SPH smoothing.
   - [ ] investigate/solve weird lack of angular momentum conservation
@@ -35,19 +36,18 @@
   - [ ] rayleigh dissipation function
 
 - Constraints / Position Based Dynamics
-  - [ ] compliance, rayleigh dissipation
+  - [ ] compliance, rayleigh dissipation / damping
   - [ ] stretching
   - [ ] bending
   - [ ] isometric bending?
   - [ ] particle-triangle collisions
-  - [ ] contact plane collisions (for general purpose shapes & environment)
-  - [ ] particle-particle collisions
-  - [ ] friction
+  - [ ] contact plane collisions (for general purpose shapes & environment) w/ friction
+  - [ ] particle-particle non-penetration w/ friction
   - [ ] tetrahedral volume conservation
   - [ ] triangle area conservation
   - [ ] closed triangle mesh overpressure
-  - [ ] fluid pressure
-  - [ ] shape matching & oriented particles?
+  - [ ] fluid w/ surface tension & cohesion
+  - [ ] shape matching?
 
 - Collision Handling
   - [ ] collision / impulse forces
@@ -65,6 +65,7 @@
 
 - Compilation Features
   - [ ] serialization of System struct and saving/loading from file (using serde)
+  - [ ] load and run a serialized system from the command line (create folder of serialized examples)
   - [ ] object mesh file loading (for FEM-like analysis)?
   - [ ] parallelize using simd, rayon, bevy_tasks::ParallelIterator, etc
   - [ ] wgpu acceleration

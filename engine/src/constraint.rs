@@ -3,55 +3,29 @@ pub use crate::vec3::Vec3;
 
 //---------------------------------------------------------------------------------------------------//
 
-pub enum ConstrainedParticles {
-    None,
-    One(ParticleReference),
-    Two([ParticleReference; 2]),
-    Three([ParticleReference; 2]),
-    Four([ParticleReference; 4]),
-    N(Vec<ParticleReference>),
+pub struct ConstraintData<const PARTICLE_COUNT: usize> {
+    pub constrained_particles: [ParticleReference; PARTICLE_COUNT],
+    pub compliance: f64,
+    pub dissipation: f64,
+
+    constraint_function: Box<dyn Fn(&[Particle; PARTICLE_COUNT]) -> f64>,
+    constraint_gradient: Box<dyn Fn(&Particle) -> Vec3>,
+}
+
+impl<const PARTICLE_COUNT: usize> ConstraintData<PARTICLE_COUNT> {
+    fn project(&self, particles: &mut [Particle], dt: f64) {}
 }
 
 //---------------------------------------------------------------------------------------------------//
 
-pub struct ParticleCorrection(Option<Vec3>);
-
-impl ParticleCorrection {
-    pub fn new() -> ParticleCorrection {
-        ParticleCorrection(None)
-    }
-
-    pub fn correction(mut self, correction: Vec3) -> ParticleCorrection {
-        self.0 = Some(correction);
-        self
-    }
-
-    pub fn project(&self, particle: &mut Particle) {
-        if let Some(correction) = self.0 {
-            particle.pos += correction;
-            // or should I do particle.displacements.push(correction)?
-        }
-    }
+pub trait Constraint<const PARTICLE_COUNT: usize> {
+    fn data(&mut self) -> &mut ConstraintData<PARTICLE_COUNT>;
 }
 
 //---------------------------------------------------------------------------------------------------//
 
-pub trait Constraint {
-    fn constrained_particles(&self) -> &ConstrainedParticles;
-    fn is_broken(&self) -> bool {
-        false
-    }
-    fn calculate_corrections(&self, particles: &[Particle], dt: f64) -> Option<Vec<ParticleCorrection>>;
-}
-
-//---------------------------------------------------------------------------------------------------//
-
-impl dyn Constraint {
-    pub fn handle(&mut self, particles: &mut [Particle], dt: f64) {
-        if !self.is_broken() {
-            
-        }
-    }
+impl<const PARTICLE_COUNT: usize> dyn Constraint<PARTICLE_COUNT> {
+    pub fn handle(&mut self, _particles: &mut [Particle], _dt: f64) {}
 }
 
 //---------------------------------------------------------------------------------------------------//
