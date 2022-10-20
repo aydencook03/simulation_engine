@@ -42,11 +42,11 @@
   - [ ] isometric bending?
   - [ ] particle-triangle collisions
   - [ ] contact plane collisions (for general purpose shapes & environment) w/ friction
-  - [ ] particle-particle non-penetration w/ friction
+  - [ ] particle-particle non-penetration w/ friction (position level friction & averaging of velocity friction)
   - [ ] tetrahedral volume conservation
   - [ ] triangle area conservation
   - [ ] closed triangle mesh overpressure
-  - [ ] fluid w/ surface tension & cohesion
+  - [ ] fluid w/ surface tension, cohesion, viscosity
   - [ ] shape matching?
 
 - Collision Handling
