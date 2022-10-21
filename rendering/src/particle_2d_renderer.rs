@@ -10,14 +10,15 @@
 //!
 //! # Controls:
 //!
-//! |  Key   |   Action    |
-//! |--------|-------------|
-//! | Arrows | Pan Around  |
-//! | +/-    | Zoom In/Out |
-//! | Enter  | Reset View  |
-//! | Space  | Pause/Play  |
-//! | R      | Reset Sim   |
-//! | Q      | Quit        |
+//! |  Key   |   Action     |
+//! |--------|--------------|
+//! | Arrows | Pan Around   |
+//! | +/-    | Zoom In/Out  |
+//! | Enter  | Reset View   |
+//! | Space  | Pause/Play   |
+//! | R      | Reset Sim    |
+//! | S      | Step Forward |
+//! | Q      | Quit         |
 
 //---------------------------------------------------------------------------------------------------//
 
@@ -127,6 +128,13 @@ impl Particle2DRenderer {
                     VirtualKeyCode::Return => context.view.reset(),
                     VirtualKeyCode::Space => system.running = !system.running,
                     VirtualKeyCode::R => todo!(),
+                    VirtualKeyCode::S => {
+                        if !system.running {
+                            system.running = true;
+                            system.step_forward(self.physics_dt);
+                            system.running = false;
+                        }
+                    },
                     VirtualKeyCode::Q => *control_flow = ControlFlow::Exit,
                     _ => (),
                 },
