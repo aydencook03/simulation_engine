@@ -23,17 +23,14 @@ fn main() {
     let mut gravity = Gravity::new(200.0);
     gravity.add_particles(&system.all_particles());
 
-    let mut dist1 = DistanceConstraint::new(250.0);
-    dist1.add_particles(&[center, mass1]);
-    let mut dist2 = DistanceConstraint::new(100.0);
-    dist2.add_particles(&[mass1, mass2]);
-    let mut dist3 = DistanceConstraint::new(100.0);
-    dist3.add_particles(&[mass2, mass3]);
+    let dist1 = Constraint::Distance([center, mass1], 250., 0., 0.);
+    let dist2 = Constraint::Distance([mass1, mass2], 100., 0., 0.);
+    let dist3 = Constraint::Distance([mass2, mass3], 100., 0., 0.);
 
     system.add_field(gravity);
-    system.add_field(dist1);
-    system.add_field(dist2);
-    system.add_field(dist3);
+    system.add_constraint(dist1);
+    system.add_constraint(dist2);
+    system.add_constraint(dist3);
 
     window.run(system);
 }

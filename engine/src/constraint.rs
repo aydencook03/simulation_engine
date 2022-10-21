@@ -3,18 +3,75 @@ pub use crate::vec3::Vec3;
 
 //---------------------------------------------------------------------------------------------------//
 
+pub enum Constraint {
+    Distance([ParticleReference; 2], f64, f64, f64),
+}
+
+impl Constraint {
+    pub fn project(&self, particle_source: &mut [Particle], dt: f64) {
+        match &self {
+            Constraint::Distance(refs, dist, comp, diss) => {
+                let particle1 = refs[0].get(particle_source);
+                let particle2 = refs[1].get(particle_source);
+                let inv_mass1 = particle1.inverse_mass();
+                let inv_mass2 = particle2.inverse_mass();
+                let alpha = comp / dt.powi(2);
+                let gamma = comp * diss / dt;
+                let radial = particle2.pos - particle1.pos;
+                let norm = radial.norm();
+                let correction = dist - radial.mag();
+                let lagrange = (-correction
+                    - gamma
+                        * (norm.dot(particle1.pos - particle1.prev_pos)
+                            - norm.dot(particle2.pos - particle2.prev_pos)))
+                    / ((1.0 + gamma) * (inv_mass1 + inv_mass2) + alpha);
+                refs[0].get_mut(particle_source).pos += lagrange * inv_mass1 * norm;
+                refs[1].get_mut(particle_source).pos += -lagrange * inv_mass2 * norm;
+            }
+        }
+    }
+}
+
+//---------------------------------------------------------------------------------------------------//
+/*
 pub struct ConstraintData<const PARTICLE_COUNT: usize> {
     pub constrained_particles: [ParticleReference; PARTICLE_COUNT],
     pub compliance: f64,
     pub dissipation: f64,
 
-    constraint_function: Box<dyn Fn([&Particle; PARTICLE_COUNT]) -> f64>,
-    constraint_gradient: Box<dyn Fn(&Particle) -> Vec3>,
+    pub constraint_function: Box<dyn Fn([&Particle; PARTICLE_COUNT]) -> f64>,
+    pub constraint_gradient: Box<dyn Fn(&Particle) -> Vec3>,
 }
 
 impl<const PARTICLE_COUNT: usize> ConstraintData<PARTICLE_COUNT> {
     fn project(&self, particle_source: &mut [Particle], dt: f64) {
-        let particles: [&Particle; PARTICLE_COUNT];
+        let mut particles: [&Particle; PARTICLE_COUNT] =
+            unsafe { MaybeUninit::uninit().assume_init() };
+
+        for (index, reference) in self.constrained_particles.iter().enumerate() {
+            particles[index] = reference.get(particle_source);
+        }
+
+        let alpha = self.compliance / dt.powi(2);
+        let gamma = self.compliance * self.dissipation / dt;
+        let mut damp = 0.0;
+        let mut grad = 0.0;
+
+        for reference in &self.constrained_particles {
+            let particle = reference.get(particle_source);
+            let gradient = (*self.constraint_gradient)(particle);
+            damp += gradient.dot(particle.pos - particle.prev_pos);
+            grad += particle.inverse_mass() * gradient.mag_squared();
+        }
+
+        let lagrange = (-(*self.constraint_function)(particles) - gamma * damp)
+            / ((gamma + 1.0) * grad + alpha);
+
+        for reference in &self.constrained_particles {
+            let particle = reference.get_mut(particle_source);
+            particle.pos +=
+                lagrange * particle.inverse_mass() * (*self.constraint_gradient)(particle);
+        }
     }
 }
 
@@ -27,7 +84,9 @@ pub trait Constraint<const PARTICLE_COUNT: usize> {
 //---------------------------------------------------------------------------------------------------//
 
 impl<const PARTICLE_COUNT: usize> dyn Constraint<PARTICLE_COUNT> {
-    pub fn handle(&mut self, _particle_source: &mut [Particle], _dt: f64) {}
+    pub fn handle(&mut self, particle_source: &mut [Particle], dt: f64) {
+        self.data().project(particle_source, dt);
+    }
 }
-
+*/
 //---------------------------------------------------------------------------------------------------//

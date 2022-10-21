@@ -91,24 +91,18 @@ pub trait Field {
         }
     }
 
-    fn is_constraint(&self) -> bool {
-        false
-    }
     fn particle_to_field(&mut self, _particle: &Particle) {}
     fn integrate(&mut self, _dt: f64) {}
-    fn field_to_particle(&self, _particle: &Particle, _dt: f64) -> ParticleAction {
+    fn field_to_particle(&self, _particle: &Particle) -> ParticleAction {
         ParticleAction::new()
     }
     fn clear(&mut self) {}
-    fn particle_to_particle(
-        &self,
-        _particle1: &Particle,
-        _particle2: &Particle,
-        _dt: f64,
-    ) -> ParticleAction {
+
+    fn particle_to_particle(&self, _particle1: &Particle, _particle2: &Particle) -> ParticleAction {
         ParticleAction::new()
     }
-    fn simple_action(&self, _particle: &Particle, _dt: f64) -> ParticleAction {
+
+    fn simple_action(&self, _particle: &Particle) -> ParticleAction {
         ParticleAction::new()
     }
 }
@@ -131,7 +125,7 @@ impl dyn Field {
                 // field -> act on particles
                 for reference in &self.coupled_particles().0 {
                     let particle = reference.get_mut(particles);
-                    let action = self.field_to_particle(particle, dt);
+                    let action = self.field_to_particle(particle);
                     action.send_to_particle(particle);
                 }
 
@@ -143,7 +137,7 @@ impl dyn Field {
                         if ref1.id != ref2.id {
                             let particle1 = ref1.get(particles);
                             let particle2 = ref2.get(particles);
-                            let action = self.particle_to_particle(particle1, particle2, dt);
+                            let action = self.particle_to_particle(particle1, particle2);
                             action.send_to_particle(ref1.get_mut(particles));
                         }
                     }
@@ -152,16 +146,9 @@ impl dyn Field {
             InteractionType::Simple => {
                 for reference in &self.coupled_particles().0 {
                     let particle = reference.get_mut(particles);
-                    let action = self.simple_action(particle, dt);
+                    let action = self.simple_action(particle);
                     action.send_to_particle(particle);
                 }
-            }
-        }
-
-        if self.is_constraint() {
-            for reference in &self.coupled_particles().0 {
-                let particle = reference.get_mut(particles);
-                particle.add_displacements();
             }
         }
     }

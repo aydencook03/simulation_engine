@@ -1,10 +1,9 @@
 # TODO / IDEAS
 
 - Short Term
-  - [ ] develop a good abstraction/api for constraints
+  - [X] develop a good abstraction/api for constraints
   - [ ] simplify the abstraction/api for fields
     - [ ] remove dt
-    - [ ] separate field updating and force calculating
   - [ ] different number of substeps for different parts of `step_forward`
   - [ ] account for N's 3rd law in the ParticleParticle interaction (can enable optimizations?)
   - [ ] linear spring force
@@ -14,6 +13,7 @@
   - [ ] non-dynamic particles (central gravity bodies, boundary particles, constraint & spring attachments, platforms, etc.)
   - [ ] a common functionality implementation of SPH smoothing.
   - [ ] investigate/solve weird lack of angular momentum conservation
+    - total forces/interactions are not central?
     - only occurs when multiple fields are being used simultaneously?
   - [ ] builder methods for builtin fields & constraints
   - [ ] fix BoxBound instability
@@ -47,7 +47,9 @@
   - [ ] triangle area conservation
   - [ ] closed triangle mesh overpressure
   - [ ] fluid w/ surface tension, cohesion, viscosity
+  - [ ] cloth drag
   - [ ] shape matching?
+  - [ ] generic constraint API
 
 - Collision Handling
   - [ ] collision / impulse forces

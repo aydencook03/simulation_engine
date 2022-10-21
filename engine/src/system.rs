@@ -1,3 +1,4 @@
+use crate::constraint::Constraint;
 use crate::field::Field;
 use crate::particle::{Particle, ParticleReference};
 use crate::vec3::Vec3;
@@ -12,6 +13,7 @@ pub struct System {
 
     pub particles: Vec<Particle>,
     pub fields: Vec<Box<dyn Field>>,
+    pub constraints: Vec<Constraint>,
 
     pub id_counter: u32,
 }
@@ -51,6 +53,11 @@ impl System {
         self.fields.len() - 1
     }
 
+    pub fn add_constraint(&mut self, constraint: Constraint) -> usize {
+        self.constraints.push(constraint);
+        self.constraints.len() - 1
+    }
+
     pub fn all_particles(&self) -> Vec<ParticleReference> {
         let mut references = Vec::new();
         for index in 0..self.particles.len() {
@@ -83,9 +90,7 @@ impl System {
                 let sub_dt = dt / (self.substeps as f64);
 
                 for field in &mut self.fields {
-                    if !field.is_constraint() {
-                        field.handle(&mut self.particles, sub_dt);
-                    }
+                    field.handle(&mut self.particles, sub_dt);
                 }
 
                 for particle in &mut self.particles {
@@ -93,15 +98,11 @@ impl System {
                     particle.forces.clear();
                 }
 
-                for field in &mut self.fields {
-                    if field.is_constraint() {
-                        field.handle(&mut self.particles, sub_dt);
-                    }
+                for constraint in &mut self.constraints {
+                    constraint.project(&mut self.particles, sub_dt);
                 }
 
                 for particle in &mut self.particles {
-                    particle.forces.clear();
-                    particle.impulses.clear();
                     particle.vel = (particle.pos - particle.prev_pos) / sub_dt;
                 }
             }
