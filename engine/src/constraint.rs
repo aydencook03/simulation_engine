@@ -2,7 +2,99 @@ pub use crate::particle::{Particle, ParticleReference};
 pub use crate::vec3::Vec3;
 
 //---------------------------------------------------------------------------------------------------//
+// Constraint trait.
 
+pub trait Constraint {
+    fn project(&mut self, particle_source: &mut [Particle], dt: f64);
+    // fn force_estimate;
+}
+
+//---------------------------------------------------------------------------------------------------//
+// Different constraints implemented using the Constraint trait.
+
+pub mod builtin_constraints {
+    use crate::{
+        constraint::Constraint,
+        particle::{Particle, ParticleReference},
+    };
+
+    //--------------------------------------------------------------------//
+
+    pub struct Distance {
+        particles: [ParticleReference; 2],
+        distance: f64,
+        compliance: f64,
+        dissipation: f64,
+    }
+
+    impl Distance {
+        pub fn new(particles: [ParticleReference; 2], distance: f64) -> Distance {
+            Distance {
+                particles,
+                distance,
+                compliance: 0.0,
+                dissipation: 0.0,
+            }
+        }
+    }
+
+    impl Constraint for Distance {
+        fn project(&mut self, particle_source: &mut [Particle], dt: f64) {
+            let particle1 = self.particles[0].get(particle_source);
+            let particle2 = self.particles[1].get(particle_source);
+            let inv_mass1 = particle1.inverse_mass();
+            let inv_mass2 = particle2.inverse_mass();
+            let alpha = self.compliance / dt.powi(2);
+            let gamma = self.compliance * self.dissipation / dt;
+            let radial = particle2.pos - particle1.pos;
+            let norm = radial.norm();
+            let correction = self.distance - radial.mag();
+            let lagrange = (-correction
+                - gamma
+                    * (norm.dot(particle1.pos - particle1.prev_pos)
+                        - norm.dot(particle2.pos - particle2.prev_pos)))
+                / ((1.0 + gamma) * (inv_mass1 + inv_mass2) + alpha);
+            self.particles[0].get_mut(particle_source).pos += lagrange * inv_mass1 * norm;
+            //println!("Force: {:#?}", (-lagrange*inv_mass2/dt.powi(2))*norm);
+            self.particles[1].get_mut(particle_source).pos += -lagrange * inv_mass2 * norm;
+        }
+    }
+
+    //--------------------------------------------------------------------//
+
+    pub struct NonPenetrate {
+        particles: [ParticleReference; 2],
+    }
+
+    impl NonPenetrate {
+        pub fn new(particles: [ParticleReference; 2]) -> NonPenetrate {
+            NonPenetrate { particles }
+        }
+    }
+
+    impl Constraint for NonPenetrate {
+        fn project(&mut self, particle_source: &mut [Particle], _dt: f64) {
+            let particle1 = self.particles[0].get(particle_source);
+            let particle2 = self.particles[1].get(particle_source);
+            let radial = particle2.pos - particle1.pos;
+            let correction = (particle1.radius + particle2.radius) - radial.mag();
+
+            if correction > 0.0 {
+                let norm = radial.norm();
+                let inv_mass1 = particle1.inverse_mass();
+                let inv_mass2 = particle2.inverse_mass();
+                let lagrange = (-correction) / (inv_mass1 + inv_mass2);
+                self.particles[0].get_mut(particle_source).pos += lagrange * inv_mass1 * norm;
+                self.particles[1].get_mut(particle_source).pos += -lagrange * inv_mass2 * norm;
+            }
+        }
+    }
+
+    //--------------------------------------------------------------------//
+}
+
+//---------------------------------------------------------------------------------------------------//
+/*
 pub enum Constraint {
     Distance([ParticleReference; 2], f64, f64, f64),
     NonPenetrate([ParticleReference; 2]),
@@ -48,7 +140,7 @@ impl Constraint {
         }
     }
 }
-
+*/
 //---------------------------------------------------------------------------------------------------//
 /*
 pub struct ConstraintData<const PARTICLE_COUNT: usize> {

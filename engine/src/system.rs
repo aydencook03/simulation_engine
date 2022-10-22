@@ -13,7 +13,7 @@ pub struct System {
 
     pub particles: Vec<Particle>,
     pub fields: Vec<Box<dyn Field>>,
-    pub constraints: Vec<Constraint>,
+    pub constraints: Vec<Box<dyn Constraint>>,
 
     pub id_counter: u32,
 }
@@ -53,8 +53,8 @@ impl System {
         self.fields.len() - 1
     }
 
-    pub fn add_constraint(&mut self, constraint: Constraint) -> usize {
-        self.constraints.push(constraint);
+    pub fn add_constraint(&mut self, constraint: impl Constraint + 'static) -> usize {
+        self.constraints.push(Box::new(constraint));
         self.constraints.len() - 1
     }
 

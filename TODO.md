@@ -35,13 +35,14 @@
 
 - Fields
   - [ ] particle-mesh-method newtonian gravity
+  - [ ] SPH newtonian gravity mesh
   - [ ] electromagnetic
   - [ ] material point method mesh
   - [ ] rayleigh dissipation function
 
 - Constraints / Position Based Dynamics
-  - [ ] compliance, rayleigh dissipation / damping
-  - [ ] stretching
+  - [X] compliance, rayleigh dissipation / damping
+  - [X] stretching
   - [ ] bending
   - [ ] isometric bending?
   - [ ] particle-triangle collisions

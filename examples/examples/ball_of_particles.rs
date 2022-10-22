@@ -37,7 +37,7 @@ fn main() {
     let mut index: usize = 0;
     for ref1 in &system.all_particles() {
         for ref2 in &system.all_particles()[(index + 1)..] {
-            system.add_constraint(Constraint::NonPenetrate([*ref1, *ref2]));
+            system.add_constraint(Constraints::NonPenetrate::new([*ref1, *ref2]));
         }
         index += 1;
     }

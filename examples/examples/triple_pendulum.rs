@@ -23,9 +23,9 @@ fn main() {
     let mut gravity = Fields::Gravity::new(200.0);
     gravity.add_particles(&system.all_particles());
 
-    let dist1 = Constraint::Distance([center, mass1], 250., 0., 0.);
-    let dist2 = Constraint::Distance([mass1, mass2], 100., 0., 0.);
-    let dist3 = Constraint::Distance([mass2, mass3], 100., 0., 0.);
+    let dist1 = Constraints::Distance::new([center, mass1], 250.);
+    let dist2 = Constraints::Distance::new([mass1, mass2], 100.);
+    let dist3 = Constraints::Distance::new([mass2, mass3], 100.);
 
     system.add_field(gravity);
     system.add_constraint(dist1);

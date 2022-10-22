@@ -9,7 +9,7 @@ pub mod vec3;
 
 pub mod prelude {
     pub use crate::{
-        field::builtin_fields as Fields, constraint::Constraint, field::Field, particle::Particle,
-        system::System, vec3::Vec3,
+        constraint::builtin_constraints as Constraints, field::builtin_fields as Fields,
+        field::Field, particle::Particle, system::System, vec3::Vec3,
     };
 }
