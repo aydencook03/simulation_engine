@@ -52,7 +52,12 @@ impl Particle {
     }
 
     pub fn radius_from_density(mut self, density: f64) -> Particle {
-        self.radius = ((3.0 * self.mass) / (4.0 * density)).cbrt();
+        self.radius = ((3.0 * self.mass) / (4.0 * density * core::f64::consts::PI)).cbrt();
+        self
+    }
+
+    pub fn mass_from_density(mut self, density: f64) -> Particle {
+        self.mass = density * (4.0/3.0) * core::f64::consts::PI * self.radius.powi(3);
         self
     }
 

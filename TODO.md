@@ -103,7 +103,7 @@
       - [ ] position-based-fluids
   - [ ] soft bodies
     - [ ] volume conserving, pnuematic, etc
-  - [ ] deformable solids (break constraint and then create a new one in the new location?)
+  - [ ] plastic deformation (break constraint and then create a new one in the new location?)
   - [ ] bouncy objects
   - [ ] granular materials
   - [ ] extend engine to support rigid bodies (a particle with orientation, shape, inertia) (like bullet, rapier, xpbd, etc)
