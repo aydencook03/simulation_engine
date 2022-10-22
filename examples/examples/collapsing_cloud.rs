@@ -28,11 +28,11 @@ fn main() {
         );
     }
 
-    let mut gravity = NGravity::new(GRAVITY, RADIUS / 2.0);
+    let mut gravity = Fields::NGravity::new(GRAVITY, RADIUS / 2.0);
     gravity.add_particles(&system.all_particles());
     system.add_field(gravity);
 
-    let mut repulsion = VanDerWaals::new(BOND_ENERGY, None, RADIUS / 2.0);
+    let mut repulsion = Fields::VanDerWaals::new(BOND_ENERGY, None, RADIUS / 2.0);
     repulsion.add_particles(&system.all_particles());
     system.add_field(repulsion);
 

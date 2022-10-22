@@ -6,21 +6,22 @@
     - [ ] how to derive constraint force from lagrange multiplier
   - [X] simplify the abstraction/api for fields
     - [X] remove dt
-  - [ ] different number of substeps for different parts of `step_forward`
   - [X] account for N's 3rd law in the ParticleParticle interaction (can enable optimizations?)
-  - [ ] linear spring force
   - [ ] real-time 3d renderer w/ simple interaction (using bevy)
   - [ ] support particle sources and sinks
-  - [ ] support breakable constraints
-  - [ ] non-dynamic particles (central gravity bodies, boundary particles, constraint & spring attachments, platforms, etc.)
+  - [ ] different boundary conditions
+    - [ ] periodic (teleport)
+  - [ ] support breakable constraints (max constraint force and broken properties)
+  - [ ] non-dynamical particles (central gravity bodies, boundary particles, constraint & spring attachments, platforms, etc.)
   - [ ] a common functionality implementation of SPH smoothing
     - [ ] different smoothing kernels & their gradient, divergence, laplacian, etc
+    - [ ] different modifications to the kernels for certain symmetries and properties
+    - [ ] different boundary conditions
   - [ ] investigate/solve weird lack of angular momentum conservation
-    - total forces/interactions are not central?
-    - only occurs when multiple fields are being used simultaneously?
+    - total forces/interactions must not be central
+    - only occurs when multiple fields are being used simultaneously
   - [ ] builder methods for builtin fields & constraints
   - [ ] fix BoxBound instability
-  - [ ] stress/strain estimates from xpbd
   - [ ] a general purpose (common functionality) Mesh object that has derivative operators etc defined on it
 
 - Examples

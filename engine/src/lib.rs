@@ -1,5 +1,4 @@
 pub mod algorithms;
-pub mod builtin_fields;
 pub mod constraint;
 pub mod field;
 pub mod particle;
@@ -10,7 +9,7 @@ pub mod vec3;
 
 pub mod prelude {
     pub use crate::{
-        builtin_fields::*, constraint::Constraint, field::Field, particle::Particle,
+        field::builtin_fields as Fields, constraint::Constraint, field::Field, particle::Particle,
         system::System, vec3::Vec3,
     };
 }

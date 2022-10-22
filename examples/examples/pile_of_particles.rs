@@ -39,7 +39,7 @@ fn main() {
         );
     }
 
-    let mut gravity = Gravity::new(GRAVITY);
+    let mut gravity = Fields::Gravity::new(GRAVITY);
     gravity.add_particles(&system.all_particles());
     system.add_field(gravity);
 

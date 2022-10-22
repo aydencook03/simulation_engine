@@ -24,7 +24,7 @@ fn main() {
             .vel_xyz(100.0, 0.0, 0.0),
     );
 
-    let mut gravity = NGravity::new(40000.0, 0.0);
+    let mut gravity = Fields::NGravity::new(40000.0, 0.0);
     gravity.add_particles(&system.all_particles());
     system.add_field(gravity);
 

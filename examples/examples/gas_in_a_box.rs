@@ -27,11 +27,11 @@ fn main() {
         );
     }
 
-    let mut repulsion = VanDerWaals::new(BOND_ENERGY, None, 0.03);
+    let mut repulsion = Fields::VanDerWaals::new(BOND_ENERGY, None, 0.03);
     repulsion.add_particles(&system.all_particles());
     system.add_field(repulsion);
 
-    let mut walls = BoxBound::new(back_bottom_left, front_top_right);
+    let mut walls = Fields::BoxBound::new(back_bottom_left, front_top_right);
     walls.add_particles(&system.all_particles());
     system.add_field(walls);
 
