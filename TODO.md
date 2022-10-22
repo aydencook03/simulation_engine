@@ -2,7 +2,8 @@
 
 - Short Term
   - [X] develop a good abstraction/api for constraints
-  - [ ] comment explaining math of XPBD and how to derive needed quantities
+  - [ ] comment explaining math and equations of XPBD and how to derive needed quantities
+    - [ ] how to derive constraint force from lagrange multiplier
   - [X] simplify the abstraction/api for fields
     - [X] remove dt
   - [ ] different number of substeps for different parts of `step_forward`

@@ -6,11 +6,10 @@ const COUNT: u32 = 200;
 const DENSITY: f64 = 1.0;
 const MIN_MASS: f64 = 5.0;
 const MAX_MASS: f64 = 150.0;
-const GRAVITY: f64 = 1500.0;
+const GRAVITY: f64 = 5500.0;
 
 fn main() {
     let mut system = System::new();
-    system.running = false;
     system.substeps = 50;
     let window = Particle2DRenderer::new();
 
@@ -31,7 +30,7 @@ fn main() {
         );
     }
 
-    let mut gravity = NGravity::new(GRAVITY * 10.0, 0.0);
+    let mut gravity = NGravity::new(GRAVITY, 0.0);
     gravity.add_particles(&system.all_particles());
     system.add_field(gravity);
 

@@ -27,6 +27,7 @@ impl Constraint {
                             - norm.dot(particle2.pos - particle2.prev_pos)))
                     / ((1.0 + gamma) * (inv_mass1 + inv_mass2) + alpha);
                 refs[0].get_mut(particle_source).pos += lagrange * inv_mass1 * norm;
+                //println!("Force: {:#?}", (-lagrange*inv_mass2/dt.powi(2))*norm);
                 refs[1].get_mut(particle_source).pos += -lagrange * inv_mass2 * norm;
             }
             Constraint::NonPenetrate(refs) => {
