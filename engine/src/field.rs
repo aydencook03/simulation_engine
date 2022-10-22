@@ -45,6 +45,19 @@ impl ParticleAction {
         self
     }
 
+    pub fn flipped(mut self) -> ParticleAction {
+        if let Some(force) = self.force {
+            self.force = Some(-1. * force);
+        }
+        if let Some(impulse) = self.impulse {
+            self.impulse = Some(-1. * impulse)
+        }
+        if let Some(displacement) = self.displacement {
+            self.displacement = Some(-1. * displacement);
+        }
+        self
+    }
+
     pub fn send_to_particle(&self, particle: &mut Particle) {
         if let Some(force) = self.force {
             particle.forces.push(force);
@@ -72,7 +85,6 @@ impl ParticleAction {
 pub enum InteractionType {
     FieldParticle,
     ParticleParticle,
-    Simple,
 }
 
 //---------------------------------------------------------------------------------------------------//
@@ -101,10 +113,6 @@ pub trait Field {
     fn particle_to_particle(&self, _particle1: &Particle, _particle2: &Particle) -> ParticleAction {
         ParticleAction::new()
     }
-
-    fn simple_action(&self, _particle: &Particle) -> ParticleAction {
-        ParticleAction::new()
-    }
 }
 
 //--------------------------------------------------------------------//
@@ -113,6 +121,9 @@ impl dyn Field {
     pub fn handle(&mut self, particles: &mut [Particle], dt: f64) {
         match self.interaction_type() {
             InteractionType::FieldParticle => {
+                // ready field for fresh update
+                self.clear();
+
                 // particles -> act on field
                 for reference in &self.coupled_particles().0.to_owned() {
                     // need to find a way around the ".to_owned()"
@@ -128,26 +139,18 @@ impl dyn Field {
                     let action = self.field_to_particle(particle);
                     action.send_to_particle(particle);
                 }
-
-                self.clear();
             }
             InteractionType::ParticleParticle => {
+                let mut index: usize = 0;
                 for ref1 in &self.coupled_particles().0 {
-                    for ref2 in &self.coupled_particles().0 {
-                        if ref1.id != ref2.id {
-                            let particle1 = ref1.get(particles);
-                            let particle2 = ref2.get(particles);
-                            let action = self.particle_to_particle(particle1, particle2);
-                            action.send_to_particle(ref1.get_mut(particles));
-                        }
+                    for ref2 in &self.coupled_particles().0[(index + 1)..] {
+                        let particle1 = ref1.get(particles);
+                        let particle2 = ref2.get(particles);
+                        let action = self.particle_to_particle(particle1, particle2);
+                        action.send_to_particle(ref1.get_mut(particles));
+                        action.flipped().send_to_particle(ref2.get_mut(particles));
                     }
-                }
-            }
-            InteractionType::Simple => {
-                for reference in &self.coupled_particles().0 {
-                    let particle = reference.get_mut(particles);
-                    let action = self.simple_action(particle);
-                    action.send_to_particle(particle);
+                    index += 1;
                 }
             }
         }

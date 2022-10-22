@@ -10,6 +10,7 @@ const GRAVITY: f64 = 1500.0;
 
 fn main() {
     let mut system = System::new();
+    system.running = false;
     system.substeps = 50;
     let window = Particle2DRenderer::new();
 
@@ -34,9 +35,15 @@ fn main() {
     gravity.add_particles(&system.all_particles());
     system.add_field(gravity);
 
-    let mut no_overlap = NoOverlapConstraint::new();
-    no_overlap.add_particles(&system.all_particles());
-    system.add_field(no_overlap);
+    let mut index: usize = 0;
+    for ref1 in &system.all_particles() {
+        for ref2 in &system.all_particles()[(index + 1)..] {
+            system.add_constraint(Constraint::NonPenetrate([*ref1, *ref2]));
+        }
+        index += 1;
+    }
+
+    system.constraint_pass(10);
 
     window.run(system);
 }

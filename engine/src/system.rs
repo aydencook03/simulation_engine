@@ -84,8 +84,17 @@ impl System {
 
     //--------------------------------------------------------------------//
 
+    pub fn constraint_pass(&mut self, iterations: u32) {
+        for _ in 0..iterations {
+            for constraint in &mut self.constraints {
+                constraint.project(&mut self.particles, 10_f64.powi(100));
+            }
+        }
+    }
+
     pub fn step_forward(&mut self, dt: f64) {
         if self.running && dt != 0_f64 {
+            self.debug_angular_momentum();
             for _ in 0..self.substeps {
                 let sub_dt = dt / (self.substeps as f64);
 

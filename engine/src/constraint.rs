@@ -5,6 +5,7 @@ pub use crate::vec3::Vec3;
 
 pub enum Constraint {
     Distance([ParticleReference; 2], f64, f64, f64),
+    NonPenetrate([ParticleReference; 2]),
 }
 
 impl Constraint {
@@ -27,6 +28,21 @@ impl Constraint {
                     / ((1.0 + gamma) * (inv_mass1 + inv_mass2) + alpha);
                 refs[0].get_mut(particle_source).pos += lagrange * inv_mass1 * norm;
                 refs[1].get_mut(particle_source).pos += -lagrange * inv_mass2 * norm;
+            }
+            Constraint::NonPenetrate(refs) => {
+                let particle1 = refs[0].get(particle_source);
+                let particle2 = refs[1].get(particle_source);
+                let radial = particle2.pos - particle1.pos;
+                let correction = (particle1.radius + particle2.radius) - radial.mag();
+
+                if correction > 0.0 {
+                    let norm = radial.norm();
+                    let inv_mass1 = particle1.inverse_mass();
+                    let inv_mass2 = particle2.inverse_mass();
+                    let lagrange = (-correction) / (inv_mass1 + inv_mass2);
+                    refs[0].get_mut(particle_source).pos += lagrange * inv_mass1 * norm;
+                    refs[1].get_mut(particle_source).pos += -lagrange * inv_mass2 * norm;
+                }
             }
         }
     }

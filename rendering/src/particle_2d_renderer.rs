@@ -134,7 +134,7 @@ impl Particle2DRenderer {
                             system.step_forward(self.physics_dt);
                             system.running = false;
                         }
-                    },
+                    }
                     VirtualKeyCode::Q => *control_flow = ControlFlow::Exit,
                     _ => (),
                 },

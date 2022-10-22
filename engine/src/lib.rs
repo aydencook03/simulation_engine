@@ -9,5 +9,8 @@ pub mod vec3;
 // optional feature: parallelization or gpu acceleration
 
 pub mod prelude {
-    pub use crate::{constraint::Constraint, builtin_fields::*, field::Field, particle::Particle, system::System, vec3::Vec3};
+    pub use crate::{
+        builtin_fields::*, constraint::Constraint, field::Field, particle::Particle,
+        system::System, vec3::Vec3,
+    };
 }

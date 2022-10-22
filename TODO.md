@@ -2,16 +2,18 @@
 
 - Short Term
   - [X] develop a good abstraction/api for constraints
-  - [ ] simplify the abstraction/api for fields
-    - [ ] remove dt
+  - [ ] comment explaining math of XPBD and how to derive needed quantities
+  - [X] simplify the abstraction/api for fields
+    - [X] remove dt
   - [ ] different number of substeps for different parts of `step_forward`
-  - [ ] account for N's 3rd law in the ParticleParticle interaction (can enable optimizations?)
+  - [X] account for N's 3rd law in the ParticleParticle interaction (can enable optimizations?)
   - [ ] linear spring force
   - [ ] real-time 3d renderer w/ simple interaction (using bevy)
   - [ ] support particle sources and sinks
   - [ ] support breakable constraints
   - [ ] non-dynamic particles (central gravity bodies, boundary particles, constraint & spring attachments, platforms, etc.)
-  - [ ] a common functionality implementation of SPH smoothing.
+  - [ ] a common functionality implementation of SPH smoothing
+    - [ ] different smoothing kernels & their gradient, divergence, laplacian, etc
   - [ ] investigate/solve weird lack of angular momentum conservation
     - total forces/interactions are not central?
     - only occurs when multiple fields are being used simultaneously?

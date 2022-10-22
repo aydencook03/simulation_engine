@@ -9,7 +9,6 @@ const BOND_ENERGY: f64 = 800.0;
 
 fn main() {
     let mut system = System::new();
-    system.running = false;
     let window = Particle2DRenderer::new();
 
     let mut rng = rand::thread_rng();
