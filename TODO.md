@@ -2,7 +2,7 @@
 
 - Short Term
   - [X] develop a good abstraction/api for constraints
-  - [ ] comment explaining math and equations of XPBD and how to derive needed quantities
+  - [ ] comment explaining math and equations of XPBD
     - [ ] how to derive constraint force from lagrange multiplier
   - [X] simplify the abstraction/api for fields
     - [X] remove dt
@@ -22,7 +22,16 @@
     - only occurs when multiple fields are being used simultaneously
   - [ ] builder methods for builtin fields & constraints
   - [ ] fix BoxBound instability
-  - [ ] a general purpose (common functionality) Mesh object that has derivative operators etc defined on it
+  - [ ] a general purpose (common functionality) Mesh object
+    - [ ] derivatives, gradients, laplacian, etc defined on it
+    - [ ] different types:
+      - [ ] structured (FDM, FVM, FEM)
+        - [ ] 2d: orthogonal quadrilateral / lattice graph. 3d: hexahedral
+      - [ ] unstructured (FVM, FEM)
+        - [ ] 2d: quadrilateral, triangular. 3d: tetrahedral
+        - [ ] surface mesh
+    - [ ] mesh <=> connected particles
+    - [ ] different boundary conditions (Neumann, dirichet, etc)
 
 - Examples
   - [ ] cantilever
