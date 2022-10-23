@@ -22,10 +22,10 @@
 
 //---------------------------------------------------------------------------------------------------//
 
-use crate::view_2d::View2D;
+use crate::{view_2d::View2D, colors::Color};
 use engine::{system::System, vec3::Vec3};
 
-use std::time::Instant;
+use std::{time::Instant, collections::HashMap};
 
 use winit::{
     dpi::PhysicalSize, //LogicalSize,
@@ -49,9 +49,10 @@ struct SoftbufferContext {
 
 pub struct Style2D {
     pub stroke_size: f32,
-    pub stroke_color: [u8; 4],
-    pub bg_color: [u8; 4],
+    pub stroke_color: Color,
+    pub bg_color: Color,
     pub starting_window_size: [u32; 2],
+    pub group_colors: HashMap<u32, Color>,
 }
 
 pub struct Scale2D {
@@ -71,12 +72,15 @@ pub struct Particle2DRenderer {
 impl Particle2DRenderer {
     /// Creates a default window.
     pub fn new() -> Particle2DRenderer {
+        let mut group_colors = HashMap::new();
+        group_colors.insert(0, crate::colors::CRIMSON);
         Particle2DRenderer {
             style: Style2D {
                 stroke_size: 2.5,
                 stroke_color: crate::colors::BLACK,
                 bg_color: crate::colors::GREY,
                 starting_window_size: [1000, 1000],
+                group_colors,
             },
             scale: Scale2D {
                 physics_dt: 1.0 / 120.0,
@@ -220,12 +224,12 @@ impl Particle2DRenderer {
         //--------------------------------------------------------------------//
         let mut particles = Vec::new();
         for particle in &system.particles {
-            particles.push((particle.pos, particle.radius));
+            particles.push((particle.pos, particle.radius, particle.group));
         }
         particles.sort_by(|a, b| a.0.z.partial_cmp(&b.0.z).unwrap());
 
-        for (pos, radius) in particles {
-            let color = crate::colors::CRIMSON;
+        for (pos, radius, group) in particles {
+            let color = self.style.group_colors.get(&group).unwrap();
             // get particle position and radius mapped to window space
             let (Vec3 { x, y, z: _ }, radius) = context.view.map_to_view(pos, radius);
             particle_style.set_color_rgba8(color[0], color[1], color[2], color[3]);

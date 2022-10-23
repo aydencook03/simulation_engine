@@ -41,6 +41,11 @@ impl Particle {
         self
     }
 
+    pub fn group(mut self, group: u32) -> Particle {
+        self.group = group;
+        self
+    }
+
     pub fn mass(mut self, mass: f64) -> Particle {
         self.mass = mass;
         self

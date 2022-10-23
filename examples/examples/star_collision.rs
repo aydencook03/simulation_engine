@@ -13,6 +13,8 @@ fn main() {
     let mut window = Particle2DRenderer::new();
     system.substeps = 1;
     window.style.stroke_size = 0.0;
+    window.style.group_colors.insert(1, rendering::colors::EARTH_BLUE);
+    window.style.group_colors.insert(2, rendering::colors::FOREST_GREEN);
     window.scale.starting_zoom = -14.0;
     window.scale.physics_dt = 1.0 * 60.0;
     window.scale.time_unit = (60.0, "Minutes".to_string());
@@ -41,7 +43,8 @@ fn main() {
                 .pos(star_1_pos + rand)
                 .vel(star_1_vel)
                 .mass(particle_mass)
-                .radius_from_density(STAR_DENSITY),
+                .radius_from_density(STAR_DENSITY)
+                .group(1),
         );
 
         // star 2
@@ -50,7 +53,8 @@ fn main() {
                 .pos(star_2_pos + rand)
                 .vel(star_2_vel)
                 .mass(particle_mass)
-                .radius_from_density(STAR_DENSITY),
+                .radius_from_density(STAR_DENSITY)
+                .group(2),
         );
     }
 
