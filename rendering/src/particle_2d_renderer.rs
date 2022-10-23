@@ -22,10 +22,10 @@
 
 //---------------------------------------------------------------------------------------------------//
 
-use crate::{view_2d::View2D, colors::Color};
+use crate::{colors::Color, view_2d::View2D};
 use engine::{system::System, vec3::Vec3};
 
-use std::{time::Instant, collections::HashMap};
+use std::{collections::HashMap, time::Instant};
 
 use winit::{
     dpi::PhysicalSize, //LogicalSize,

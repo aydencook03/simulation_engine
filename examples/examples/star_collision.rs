@@ -13,8 +13,14 @@ fn main() {
     let mut window = Particle2DRenderer::new();
     system.substeps = 1;
     window.style.stroke_size = 0.0;
-    window.style.group_colors.insert(1, rendering::colors::EARTH_BLUE);
-    window.style.group_colors.insert(2, rendering::colors::FOREST_GREEN);
+    window
+        .style
+        .group_colors
+        .insert(1, rendering::colors::EARTH_BLUE);
+    window
+        .style
+        .group_colors
+        .insert(2, rendering::colors::FOREST_GREEN);
     window.scale.starting_zoom = -14.0;
     window.scale.physics_dt = 1.0 * 60.0;
     window.scale.time_unit = (60.0, "Minutes".to_string());
@@ -26,7 +32,7 @@ fn main() {
     let star_1_pos = Vec3::new(-2.0 * star_radius, 2.0 * star_radius, 0.0);
     let star_1_vel = Vec3::new(0.0005 * star_radius, -0.0003 * star_radius, 0.0);
 
-    let star_2_pos = Vec3::new(2.0 * star_radius, -2.0*star_radius, 0.0);
+    let star_2_pos = Vec3::new(2.0 * star_radius, -2.0 * star_radius, 0.0);
     let star_2_vel = Vec3::new(-0.0005 * star_radius, 0.0003 * star_radius, 0.0);
 
     // Create stars

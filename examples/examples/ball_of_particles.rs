@@ -12,7 +12,7 @@ fn main() {
     let mut system = System::new();
     system.substeps = 50;
     let mut window = Particle2DRenderer::new();
-    window.stroke_size = 0.0;
+    window.style.stroke_size = 0.0;
 
     let mut rng = rand::thread_rng();
     let back_bottom_left = Vec3::new(-500.0, -500.0, -500.0);
