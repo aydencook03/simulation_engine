@@ -148,9 +148,8 @@ impl dyn Field {
                 let mut index: usize = 0;
                 for ref1 in &self.coupled_particles().0 {
                     for ref2 in &self.coupled_particles().0[(index + 1)..] {
-                        let particle1 = ref1.get(particles);
-                        let particle2 = ref2.get(particles);
-                        let action = self.particle_to_particle(particle1, particle2);
+                        let action =
+                            self.particle_to_particle(ref1.get(particles), ref2.get(particles));
                         action.send_to_particle(ref1.get_mut(particles));
                         action.flipped().send_to_particle(ref2.get_mut(particles));
                     }

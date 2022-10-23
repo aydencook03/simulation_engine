@@ -58,13 +58,31 @@ impl System {
         self.constraints.len() - 1
     }
 
+    //--------------------------------------------------------------------//
+
     pub fn all_particles(&self) -> Vec<ParticleReference> {
         let mut references = Vec::new();
-        for index in 0..self.particles.len() {
-            references.push(ParticleReference::new(self.particles[index].id, index));
+        let mut index = 0;
+        for particle in &self.particles {
+            references.push(ParticleReference::new(particle.id, index));
+            index += 1;
         }
         references
     }
+
+    pub fn particles_in_group(&self, group: u32) -> Vec<ParticleReference> {
+        let mut references = Vec::new();
+        let mut index = 0;
+        for particle in &self.particles {
+            if particle.group == group {
+                references.push(ParticleReference::new(particle.id, index));
+            }
+            index += 1;
+        }
+        references
+    }
+
+    //--------------------------------------------------------------------//
 
     pub fn debug_momentum(&self) {
         let mut momentum = Vec3::zero();
@@ -84,7 +102,7 @@ impl System {
 
     //--------------------------------------------------------------------//
 
-    pub fn constraint_pass(&mut self, iterations: u32) {
+    pub fn static_constraint_pass(&mut self, iterations: u32) {
         for _ in 0..iterations {
             for constraint in &mut self.constraints {
                 constraint.project(&mut self.particles, 10_f64.powi(100));

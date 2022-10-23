@@ -57,7 +57,7 @@ impl Particle {
     }
 
     pub fn mass_from_density(mut self, density: f64) -> Particle {
-        self.mass = density * (4.0/3.0) * core::f64::consts::PI * self.radius.powi(3);
+        self.mass = density * (4.0 / 3.0) * core::f64::consts::PI * self.radius.powi(3);
         self
     }
 
@@ -96,7 +96,7 @@ impl Particle {
     }
 
     pub fn integrate(&mut self, dt: f64) {
-        // An inverse mass of 0 (infinitely massive) then allows for particles that don't experience
+        // An inverse mass of 0 (infinitely massive) allows for particles that don't experience
         // interactions (ie: barriers, etc).
         let inverse_mass = self.inverse_mass();
 

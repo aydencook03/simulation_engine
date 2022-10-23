@@ -42,7 +42,7 @@ fn main() {
         index += 1;
     }
 
-    system.constraint_pass(10);
+    system.static_constraint_pass(10);
 
     window.run(system);
 }

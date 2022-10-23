@@ -51,14 +51,16 @@
 
 - Constraints / Position Based Dynamics
   - [X] compliance, rayleigh dissipation / damping
-  - [X] stretching
+  - [X] stretching (for young's modulus)
   - [ ] bending
   - [ ] isometric bending?
   - [ ] particle-triangle collisions
   - [ ] contact plane collisions (for general purpose shapes & environment) w/ friction
   - [ ] particle-particle non-penetration w/ friction (position level friction & averaging of velocity friction)
-  - [ ] tetrahedral volume conservation
+  - [ ] tetrahedral volume conservation (for bulk modulus) (use neo-hookean bc it doesn't need polar decomposition?)
   - [ ] triangle area conservation
+  - [ ] shear (for shear modulus)
+  - [ ] neo-hookean soft body (tetrahedral hydrostatic constraint & deviatoric constraint)
   - [ ] closed triangle mesh overpressure
   - [ ] fluid w/ surface tension, cohesion, viscosity
   - [ ] cloth drag
