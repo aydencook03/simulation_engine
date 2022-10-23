@@ -57,6 +57,7 @@ pub struct Style2D {
 pub struct Scale2D {
     pub physics_dt: f64,
     pub time_unit: (f64, String),
+    pub pixel_distance: f64,
     pub starting_zoom: f64,
 }
 
@@ -77,9 +78,10 @@ impl Particle2DRenderer {
                 bg_color: crate::colors::GREY,
                 starting_window_size: [1000, 1000],
             },
-            scale:  Scale2D {
+            scale: Scale2D {
                 physics_dt: 1.0 / 120.0,
                 time_unit: (1.0, "Seconds".to_string()),
+                pixel_distance: 1.0,
                 starting_zoom: 1.0,
             },
         }
@@ -100,8 +102,10 @@ impl Particle2DRenderer {
     pub fn run(self, mut system: System) {
         let event_loop = EventLoop::new();
         let window = {
-            let size =
-                PhysicalSize::new(self.style.starting_window_size[0], self.style.starting_window_size[1]);
+            let size = PhysicalSize::new(
+                self.style.starting_window_size[0],
+                self.style.starting_window_size[1],
+            );
             WindowBuilder::new()
                 .with_inner_size(size)
                 .with_title("Simulation")
