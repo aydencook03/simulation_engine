@@ -40,29 +40,48 @@ use tiny_skia::{FillRule, Paint, PathBuilder, Pixmap, Stroke, Transform};
 
 //---------------------------------------------------------------------------------------------------//
 
-#[derive(Copy, Clone)]
-pub struct Particle2DRenderer {
-    pub physics_dt: f64,
+struct SoftbufferContext {
+    view: View2D,
+    context: GraphicsContext<Window>,
+}
+
+//---------------------------------------------------------------------------------------------------//
+
+pub struct Style2D {
     pub stroke_size: f32,
     pub stroke_color: [u8; 4],
     pub bg_color: [u8; 4],
     pub starting_window_size: [u32; 2],
 }
 
-struct SoftbufferContext {
-    view: View2D,
-    context: GraphicsContext<Window>,
+pub struct Scale2D {
+    pub physics_dt: f64,
+    pub time_unit: (f64, String),
+    pub starting_zoom: f64,
 }
+
+pub struct Particle2DRenderer {
+    pub style: Style2D,
+    pub scale: Scale2D,
+}
+
+//---------------------------------------------------------------------------------------------------//
 
 impl Particle2DRenderer {
     /// Creates a default window.
     pub fn new() -> Particle2DRenderer {
         Particle2DRenderer {
-            physics_dt: 1.0 / 120.0,
-            stroke_size: 2.5,
-            stroke_color: crate::colors::BLACK,
-            bg_color: crate::colors::GREY,
-            starting_window_size: [1000, 1000],
+            style: Style2D {
+                stroke_size: 2.5,
+                stroke_color: crate::colors::BLACK,
+                bg_color: crate::colors::GREY,
+                starting_window_size: [1000, 1000],
+            },
+            scale:  Scale2D {
+                physics_dt: 1.0 / 120.0,
+                time_unit: (1.0, "Seconds".to_string()),
+                starting_zoom: 1.0,
+            },
         }
     }
 
@@ -82,7 +101,7 @@ impl Particle2DRenderer {
         let event_loop = EventLoop::new();
         let window = {
             let size =
-                PhysicalSize::new(self.starting_window_size[0], self.starting_window_size[1]);
+                PhysicalSize::new(self.style.starting_window_size[0], self.style.starting_window_size[1]);
             WindowBuilder::new()
                 .with_inner_size(size)
                 .with_title("Simulation")
@@ -94,6 +113,7 @@ impl Particle2DRenderer {
             view: View2D::new(),
             context: unsafe { GraphicsContext::new(window) }.unwrap(),
         };
+        context.view.zoom = self.scale.starting_zoom;
 
         let mut time = Instant::now();
 
@@ -131,7 +151,7 @@ impl Particle2DRenderer {
                     VirtualKeyCode::S => {
                         if !system.running {
                             system.running = true;
-                            system.step_forward(self.physics_dt);
+                            system.step_forward(self.scale.physics_dt);
                             system.running = false;
                         }
                     }
@@ -140,19 +160,15 @@ impl Particle2DRenderer {
                 },
                 Event::MainEventsCleared => {
                     self.render_particles(&mut context, &system);
+                    system.step_forward(self.scale.physics_dt);
 
                     let passed_sec = (time.elapsed().as_micros() as f64) * 10_f64.powi(-6);
                     context.context.window_mut().set_title(&format!(
-                        "Simulation - fps: {:.0} - time: {:.2}",
+                        "Simulation - fps: {:.0} - time: {:.2} {}",
                         1.0 / passed_sec,
-                        system.time
+                        system.time / self.scale.time_unit.0,
+                        self.scale.time_unit.1
                     ));
-
-                    if passed_sec <= self.physics_dt {
-                        system.step_forward(passed_sec);
-                    } else {
-                        system.step_forward(self.physics_dt);
-                    }
 
                     time = Instant::now();
                 }
@@ -172,10 +188,10 @@ impl Particle2DRenderer {
         let mut stroke_style = Paint::default();
         stroke_style.anti_alias = true;
         stroke_style.set_color_rgba8(
-            self.stroke_color[0],
-            self.stroke_color[1],
-            self.stroke_color[2],
-            self.stroke_color[3],
+            self.style.stroke_color[0],
+            self.style.stroke_color[1],
+            self.style.stroke_color[2],
+            self.style.stroke_color[3],
         );
         let mut stroke = Stroke::default();
 
@@ -184,17 +200,17 @@ impl Particle2DRenderer {
         // get window width, height, and zoom info
         let width = context.context.window().inner_size().width as f64;
         let height = context.context.window().inner_size().width as f64;
-        stroke.width = self.stroke_size * (context.view.parameterized_zoom() as f32);
+        stroke.width = self.style.stroke_size * (context.view.parameterized_zoom() as f32);
 
         // create buffer
         let mut draw_buffer = Pixmap::new(width as u32, height as u32).unwrap();
 
         // paint the background
         draw_buffer.fill(tiny_skia::Color::from_rgba8(
-            self.bg_color[0],
-            self.bg_color[1],
-            self.bg_color[2],
-            self.bg_color[3],
+            self.style.bg_color[0],
+            self.style.bg_color[1],
+            self.style.bg_color[2],
+            self.style.bg_color[3],
         ));
 
         //--------------------------------------------------------------------//

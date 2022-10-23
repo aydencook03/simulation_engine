@@ -105,7 +105,7 @@ impl System {
     pub fn static_constraint_pass(&mut self, iterations: u32) {
         for _ in 0..iterations {
             for constraint in &mut self.constraints {
-                constraint.project(&mut self.particles, 10_f64.powi(100));
+                constraint.project(&mut self.particles, core::f64::MIN_POSITIVE);
             }
         }
     }
