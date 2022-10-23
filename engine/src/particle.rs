@@ -151,7 +151,7 @@ impl ParticleReference {
         if list[self.index].id == self.id {
             return &mut list[self.index];
         } else {
-            for (index, particle) in list.into_iter().enumerate() {
+            for (index, particle) in list.iter_mut().enumerate() {
                 if particle.id == self.id {
                     self.index = index;
                     return particle;
@@ -165,7 +165,7 @@ impl ParticleReference {
         if list[self.index].id == self.id {
             return &list[self.index];
         } else {
-            for (index, particle) in list.into_iter().enumerate() {
+            for (index, particle) in list.iter().enumerate() {
                 if particle.id == self.id {
                     self.index = index;
                     return particle;

@@ -55,8 +55,10 @@
   - [ ] bending
   - [ ] isometric bending?
   - [ ] particle-triangle collisions
-  - [ ] contact plane collisions (for general purpose shapes & environment) w/ friction
-  - [ ] particle-particle non-penetration w/ friction (position level friction & averaging of velocity friction)
+  - [ ] contact plane collisions (for general purpose shapes & environment)
+    - [ ] w/ friction
+  - [X] particle-particle non-penetration
+    - [ ] w/ friction (position level friction & averaging of velocity friction)
   - [ ] tetrahedral volume conservation (for bulk modulus) (use neo-hookean bc it doesn't need polar decomposition?)
   - [ ] triangle area conservation
   - [ ] shear (for shear modulus)
