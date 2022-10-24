@@ -2,7 +2,7 @@ use engine::prelude::*;
 use rand::Rng;
 use rendering::particle_2d_renderer::Particle2DRenderer;
 
-const STAR_PARTICLE_COUNT: u32 = 1250;
+const STAR_PARTICLE_COUNT: u32 = 1500;
 const STAR_MASS: f64 = 1.989e30;
 const STAR_DENSITY: f64 = 1410.0;
 const G: f64 = 6.674e-11;
@@ -13,6 +13,7 @@ fn main() {
     let mut window = Particle2DRenderer::new();
     system.substeps = 1;
     window.style.stroke_size = 0.0;
+    window.style.bg_color = rendering::colors::BLACK;
     window
         .style
         .group_colors
@@ -21,7 +22,7 @@ fn main() {
         .style
         .group_colors
         .insert(2, rendering::colors::FOREST_GREEN);
-    window.scale.starting_zoom = -14.0;
+    window.scale.starting_zoom = -15.0;
     window.scale.physics_dt = 1.0 * 60.0;
     window.scale.time_unit = (60.0, "Minutes".to_string());
 
@@ -29,11 +30,11 @@ fn main() {
     let particle_mass = STAR_MASS / (STAR_PARTICLE_COUNT as f64);
     let mut rng = rand::thread_rng();
 
-    let star_1_pos = Vec3::new(-2.0 * star_radius, 2.0 * star_radius, 0.0);
-    let star_1_vel = Vec3::new(0.0005 * star_radius, -0.0003 * star_radius, 0.0);
+    let star_1_pos = Vec3::new(-2.0 * star_radius, 2.0 * star_radius, -2.0 * star_radius);
+    let star_1_vel = Vec3::new(0.0005 * star_radius, -0.0003 * star_radius, 0.0004 * star_radius);
 
-    let star_2_pos = Vec3::new(2.0 * star_radius, -2.0 * star_radius, 0.0);
-    let star_2_vel = Vec3::new(-0.0005 * star_radius, 0.0003 * star_radius, 0.0);
+    let star_2_pos = Vec3::new(2.0 * star_radius, -2.0 * star_radius, 2.0 * star_radius);
+    let star_2_vel = Vec3::new(-0.0005 * star_radius, 0.0003 * star_radius, -0.00065 * star_radius);
 
     // Create stars
     for _ in 0..STAR_PARTICLE_COUNT {
@@ -76,7 +77,7 @@ fn main() {
         index += 1;
     }
 
-    system.static_constraint_pass(100);
+    system.static_constraint_pass(50);
 
     window.run(system);
 }
