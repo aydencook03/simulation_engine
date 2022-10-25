@@ -57,7 +57,7 @@
   - [ ] bending
   - [ ] isometric bending?
   - [ ] particle-triangle collisions
-  - [ ] contact plane collisions (for general purpose shapes & environment)
+  - [X] contact plane collisions (for general purpose shapes & environment)
     - [ ] w/ friction
   - [X] particle-particle non-penetration
     - [ ] w/ friction (position level friction & averaging of velocity friction)

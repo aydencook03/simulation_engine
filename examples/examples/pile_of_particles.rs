@@ -13,7 +13,10 @@ fn main() {
     system.substeps = 20;
     let mut window = Particle2DRenderer::new();
     window.scale.physics_dt = 1.0 / 30.0;
-    window.style.group_colors.insert(1, rendering::colors::FOREST_GREEN);
+    window
+        .style
+        .group_colors
+        .insert(1, rendering::colors::FOREST_GREEN);
 
     let mut rng = rand::thread_rng();
     let bounds = [-500.0, 500.0, -500.0, 500.0];
