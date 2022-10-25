@@ -262,12 +262,12 @@ impl Particle2DRenderer {
         // convert the draw_buffer to the format that Softbuffer uses
         let framebuffer: Vec<u32> = draw_buffer
             .pixels()
-            .into_iter()
+            .iter()
             .map(|pixel| {
                 Particle2DRenderer::rgb_to_softbuffer([pixel.red(), pixel.green(), pixel.blue()])
             })
             .collect();
-
+        
         // write the contents of framebuffer to the window's framebuffer
         context
             .context
