@@ -2,40 +2,33 @@ use engine::prelude::*;
 use rand::Rng;
 use rendering::particle_2d_renderer::Particle2DRenderer;
 
-const COUNT: u32 = 200;
+const COUNT: u32 = 500;
 const DENSITY: f64 = 0.005;
 const MIN_MASS: f64 = 5.0;
 const MAX_MASS: f64 = 100.0;
 const GRAVITY: f64 = 600.0;
 
-const LARGEST_RADIUS_CUB: f64 = (3.0 * MAX_MASS) / (4.0 * DENSITY);
-
 fn main() {
     let mut system = System::new();
-    system.substeps = 10;
+    system.substeps = 20;
     let mut window = Particle2DRenderer::new();
-    window.physics_dt = 1.0 / 60.0;
+    window.scale.physics_dt = 1.0 / 30.0;
+    window.style.group_colors.insert(1, rendering::colors::FOREST_GREEN);
 
     let mut rng = rand::thread_rng();
-    let back_bottom_left = Vec3::new(-500.0, -500.0, -500.0);
-    let front_top_right = Vec3::new(500.0, 500.0, 500.0);
+    let bounds = [-500.0, 500.0, -500.0, 500.0];
 
     for _ in 0..COUNT {
-        let rand_x = rng.gen_range(
-            (back_bottom_left.x + LARGEST_RADIUS_CUB.cbrt())
-                ..(front_top_right.x - LARGEST_RADIUS_CUB.cbrt()),
-        );
-        let rand_y = rng.gen_range(
-            (back_bottom_left.y + LARGEST_RADIUS_CUB.cbrt())
-                ..(front_top_right.y - LARGEST_RADIUS_CUB.cbrt()),
-        );
+        let rand_x = rng.gen_range(bounds[0]..bounds[1]);
+        let rand_y = rng.gen_range(bounds[2]..bounds[3]);
         let rand_mass = rng.gen_range(MIN_MASS..MAX_MASS);
 
         system.add_particle(
             Particle::new()
                 .pos_xyz(rand_x, rand_y, 0.0)
                 .mass(rand_mass)
-                .radius_from_density(DENSITY),
+                .radius_from_density(DENSITY)
+                .group(1),
         );
     }
 
@@ -43,13 +36,35 @@ fn main() {
     gravity.add_particles(&system.all_particles());
     system.add_field(gravity);
 
-    let mut no_overlap = NoOverlapConstraint::new();
-    no_overlap.add_particles(&system.all_particles());
-    system.add_field(no_overlap);
+    // add a non_penetrate constraint to all particles
+    let mut index: usize = 0;
+    for ref1 in &system.all_particles() {
+        for ref2 in &system.all_particles()[(index + 1)..] {
+            system.add_constraint(Constraints::NonPenetrate::new([*ref1, *ref2]));
+        }
+        index += 1;
+    }
 
-    let mut rect_bound = BoxBoundConstraint::new(back_bottom_left, front_top_right);
-    rect_bound.add_particles(&system.all_particles());
-    system.add_field(rect_bound);
+    // add a boundary constraint to all particles
+    for part in &system.all_particles() {
+        system.add_constraint(Constraints::ContactPlane::new(
+            *part,
+            Vec3::new(bounds[0], 0.0, 0.0),
+            Vec3::new(1.0, 0.0, 0.0),
+        ));
+        system.add_constraint(Constraints::ContactPlane::new(
+            *part,
+            Vec3::new(bounds[1], 0.0, 0.0),
+            Vec3::new(-1.0, 0.0, 0.0),
+        ));
+        system.add_constraint(Constraints::ContactPlane::new(
+            *part,
+            Vec3::new(0.0, bounds[2], 0.0),
+            Vec3::new(0.0, 1.0, 0.0),
+        ));
+    }
+
+    system.static_constraint_pass(1);
 
     window.run(system);
 }

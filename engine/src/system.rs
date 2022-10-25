@@ -17,8 +17,9 @@ pub struct System {
     pub constraints: Vec<Box<dyn Constraint>>,
 
     pub collision_detector: Option<Box<dyn CollisionDetector>>,
-    //pub collision_fields
-    //pub collision_constraints
+    pub collision_fields: Vec<Box<dyn Field>>,
+    pub collision_constraints: Vec<Box<dyn Constraint>>,
+
     pub id_counter: u32,
 }
 

@@ -16,6 +16,7 @@ pub mod builtin_constraints {
     use crate::{
         constraint::Constraint,
         particle::{Particle, ParticleReference},
+        vec3::Vec3,
     };
 
     //--------------------------------------------------------------------//
@@ -101,6 +102,34 @@ pub mod builtin_constraints {
     }
 
     //--------------------------------------------------------------------//
+
+    pub struct ContactPlane {
+        particle: ParticleReference,
+        point: Vec3,
+        normal: Vec3,
+    }
+
+    impl ContactPlane {
+        pub fn new(particle: ParticleReference, point: Vec3, normal: Vec3) -> ContactPlane {
+            ContactPlane {
+                particle,
+                point,
+                normal,
+            }
+        }
+    }
+
+    impl Constraint for ContactPlane {
+        fn project(&mut self, particle_source: &mut [Particle], _dt: f64) {
+            let particle = self.particle.get_mut(particle_source);
+            let norm = self.normal.norm();
+            let dist = (particle.pos - self.point).dot(norm) - particle.radius;
+
+            if dist < 0.0 {
+                particle.pos += -dist * norm * particle.inverse_mass() * particle.mass;
+            }
+        }
+    }
 }
 
 //---------------------------------------------------------------------------------------------------//

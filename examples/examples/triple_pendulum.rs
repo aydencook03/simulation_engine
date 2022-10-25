@@ -3,7 +3,8 @@ use rendering::particle_2d_renderer::Particle2DRenderer;
 
 fn main() {
     let mut system = System::new();
-    let window = Particle2DRenderer::new();
+    let mut window = Particle2DRenderer::new();
+    window.scale.physics_dt = 1.0 / 120.0;
 
     let center = system.add_particle(Particle::new().mass(0.0));
     let mass1 = system.add_particle(Particle::new().pos_xyz(0.0, 250.0, 0.0).mass(15.0));

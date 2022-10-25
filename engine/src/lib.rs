@@ -1,6 +1,6 @@
 pub mod algorithms;
-pub mod constraint;
 pub mod collision;
+pub mod constraint;
 pub mod field;
 pub mod particle;
 pub mod system;
