@@ -19,6 +19,7 @@
     - [ ] different boundary conditions
   - [ ] investigate/solve weird lack of angular momentum conservation
     - total forces/interactions must not be central
+    - do 2 body test to see if two bodies stay in a plane
     - only occurs when multiple fields are being used simultaneously
   - [ ] builder methods for builtin fields & constraints
   - [ ] fix BoxBound instability
@@ -43,6 +44,7 @@
   - [ ] pile of sand
 
 - Fields
+  - [ ] electrostatic (Coulomb) force
   - [ ] particle-mesh-method newtonian gravity
   - [ ] SPH newtonian gravity mesh
   - [ ] electromagnetic
@@ -68,6 +70,7 @@
   - [ ] cloth drag
   - [ ] shape matching?
   - [ ] generic constraint API
+    - see what common behavior can be consolidated into the constraint trait
 
 - Collision Handling
   - [ ] collision / impulse forces
@@ -101,6 +104,7 @@
 - Algorithms
   - [ ] spawning composite shapes of particles (spheres, blocks, etc)
   - [ ] hash map collision detection
+  - [ ] tree method collision detection
   - [ ] tree methods for optimized n-body forces
 
 - Physics
@@ -110,7 +114,7 @@
       - [ ] smoothed-particle-hydrodynamics
       - [ ] material-point-method
     - [ ] liquids & gases (intermolecular forces & hydrogen bonds)
-      - [ ] Lennard-Jones 6-12, 6-9, 10-12
+      - [ ] Lennard-Jones 6-12, 6-9, 10-12, electrostatic attraction
       - [ ] smoothed-particle-hydrodynamics
       - [ ] material-point-method
       - [ ] position-based-fluids

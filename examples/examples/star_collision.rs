@@ -2,13 +2,13 @@ use engine::prelude::*;
 use rand::Rng;
 use rendering::particle_2d_renderer::Particle2DRenderer;
 
-const STAR_PARTICLE_COUNT: u32 = 1500;
+const STAR_PARTICLE_COUNT: u32 = 750;
 const STAR_MASS: f64 = 1.989e30;
 const STAR_DENSITY: f64 = 1410.0;
 const G: f64 = 6.674e-11;
 
 fn main() {
-    // Configure the system and rendering parameters
+    // configure the system and rendering parameters
     let mut system = System::new();
     let mut window = Particle2DRenderer::new();
     system.substeps = 1;
@@ -31,12 +31,20 @@ fn main() {
     let mut rng = rand::thread_rng();
 
     let star_1_pos = Vec3::new(-2.0 * star_radius, 2.0 * star_radius, -2.0 * star_radius);
-    let star_1_vel = Vec3::new(0.0005 * star_radius, -0.0003 * star_radius, 0.0004 * star_radius);
+    let star_1_vel = Vec3::new(
+        0.0005 * star_radius,
+        -0.0003 * star_radius,
+        0.0004 * star_radius,
+    );
 
     let star_2_pos = Vec3::new(2.0 * star_radius, -2.0 * star_radius, 2.0 * star_radius);
-    let star_2_vel = Vec3::new(-0.0005 * star_radius, 0.0003 * star_radius, -0.00065 * star_radius);
+    let star_2_vel = Vec3::new(
+        -0.0005 * star_radius,
+        0.0003 * star_radius,
+        -0.00065 * star_radius,
+    );
 
-    // Create stars
+    // create stars
     for _ in 0..STAR_PARTICLE_COUNT {
         let rand = Vec3::new(
             rng.gen_range(-1.0..1.0),
@@ -65,10 +73,12 @@ fn main() {
         );
     }
 
+    // create gravity
     let mut gravity = Fields::NGravity::new(G, 0.0);
     gravity.add_particles(&system.all_particles());
     system.add_field(gravity);
 
+    // add a non_penetrate constraint to all particles
     let mut index: usize = 0;
     for ref1 in &system.all_particles() {
         for ref2 in &system.all_particles()[(index + 1)..] {

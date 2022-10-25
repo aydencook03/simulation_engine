@@ -37,8 +37,12 @@ pub mod builtin_constraints {
             }
         }
 
-        pub fn compliance_dissipation(mut self, compliance: f64, dissipation: f64) -> Distance {
+        pub fn compliance(mut self, compliance: f64) -> Distance {
             self.compliance = compliance;
+            self
+        }
+
+        pub fn dissipation(mut self, dissipation: f64) -> Distance {
             self.dissipation = dissipation;
             self
         }

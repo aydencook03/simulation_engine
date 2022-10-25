@@ -1,3 +1,4 @@
+use crate::algorithms::CollisionDetector;
 use crate::constraint::Constraint;
 use crate::field::Field;
 use crate::particle::{Particle, ParticleReference};
@@ -14,6 +15,7 @@ pub struct System {
     pub particles: Vec<Particle>,
     pub fields: Vec<Box<dyn Field>>,
     pub constraints: Vec<Box<dyn Constraint>>,
+    pub collision_detector: Option<Box<dyn CollisionDetector>>,
 
     pub id_counter: u32,
 }
