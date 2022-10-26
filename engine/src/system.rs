@@ -113,6 +113,18 @@ impl System {
         dbg!(ke);
     }
 
+    pub fn debug_energy(&self) {
+        let mut ke = 0.0;
+        let mut pe = 0.0;
+        for particle in &self.particles {
+            ke += 0.5 * particle.mass * particle.vel.mag_squared();
+        }
+        for field in &self.fields {
+            pe += field.total_field_energy(&self.particles);
+        }
+        dbg!(ke + pe);
+    }
+
     //--------------------------------------------------------------------//
 
     pub fn static_constraint_pass(&mut self, iterations: u32) {
@@ -125,6 +137,8 @@ impl System {
 
     pub fn step_forward(&mut self, dt: f64) {
         if self.running && dt != 0_f64 {
+            self.debug_energy();
+            //self.debug_momentum();
             for _ in 0..self.substeps {
                 let sub_dt = dt / (self.substeps as f64);
 

@@ -82,31 +82,25 @@ impl ParticleAction {
 /// -
 ///
 /// ### Particle ⇄ Particle:
-/// - Field doesn't store any state of its own.
+/// - Field doesn't need to store any state of its own.
 /// - The force on each particle only depends on the current state of the other particles.
 #[derive(Copy, Clone)]
 pub enum InteractionType {
     FieldParticle,
     ParticleParticle,
+    Simple,
 }
 
 //---------------------------------------------------------------------------------------------------//
 // Field trait.
 
 pub trait Field {
+    // must be implemented
     fn coupled_particles(&self) -> &CoupledParticles;
     fn coupled_particles_mut(&mut self) -> &mut CoupledParticles;
     fn interaction_type(&self) -> InteractionType;
 
-    fn add_particle(&mut self, particle_reference: ParticleReference) {
-        self.coupled_particles_mut().0.push(particle_reference);
-    }
-    fn add_particles(&mut self, particle_references: &[ParticleReference]) {
-        for reference in particle_references {
-            self.coupled_particles_mut().0.push(*reference);
-        }
-    }
-
+    // behavior associated with a FieldParticle interaction type
     fn particle_to_field(&mut self, _particle: &Particle) {}
     fn integrate(&mut self, _dt: f64) {}
     fn field_to_particle(&self, _particle: &Particle) -> ParticleAction {
@@ -117,10 +111,19 @@ pub trait Field {
         0.0
     }
 
+    // behavior associated with a ParticleParticle interaction type
     fn particle_to_particle(&self, _particle1: &Particle, _particle2: &Particle) -> ParticleAction {
         ParticleAction::new()
     }
-    fn particle_to_particle_potential(&self, _particle1: &Particle, _particle2: &Particle) -> f64 {
+    fn particle_particle_potential(&self, _particle1: &Particle, _particle2: &Particle) -> f64 {
+        0.0
+    }
+
+    // behavior associated wtih a Simple interaction type
+    fn simple_action(&self, _particle: &Particle) -> ParticleAction {
+        ParticleAction::new()
+    }
+    fn simple_potential(&self, _particle: &Particle) -> f64 {
         0.0
     }
 }
@@ -128,6 +131,16 @@ pub trait Field {
 //--------------------------------------------------------------------//
 
 impl dyn Field {
+    pub fn add_particle(&mut self, particle_reference: ParticleReference) {
+        self.coupled_particles_mut().0.push(particle_reference);
+    }
+
+    pub fn add_particles(&mut self, particle_references: &[ParticleReference]) {
+        for reference in particle_references {
+            self.coupled_particles_mut().0.push(*reference);
+        }
+    }
+
     pub fn handle(&mut self, particles: &mut [Particle], dt: f64) {
         match self.interaction_type() {
             InteractionType::FieldParticle => {
@@ -162,6 +175,12 @@ impl dyn Field {
                     index += 1;
                 }
             }
+            InteractionType::Simple => {
+                for reference in &self.coupled_particles().0 {
+                    let action = self.simple_action(reference.get(particles));
+                    action.send_to_particle(reference.get_mut(particles));
+                }
+            }
         }
     }
 
@@ -173,12 +192,17 @@ impl dyn Field {
                 let mut index: usize = 0;
                 for ref1 in &self.coupled_particles().0 {
                     for ref2 in &self.coupled_particles().0[(index + 1)..] {
-                        potential += self.particle_to_particle_potential(
-                            ref1.get(particles),
-                            ref2.get(particles),
-                        );
+                        potential += self
+                            .particle_particle_potential(ref1.get(particles), ref2.get(particles));
                     }
                     index += 1;
+                }
+                potential
+            }
+            InteractionType::Simple => {
+                let mut potential = 0.0;
+                for reference in &self.coupled_particles().0 {
+                    potential += self.simple_potential(reference.get(particles));
                 }
                 potential
             }
@@ -213,9 +237,9 @@ pub mod builtin_fields {
             &mut self.0
         }
         fn interaction_type(&self) -> InteractionType {
-            InteractionType::FieldParticle
+            InteractionType::Simple
         }
-        fn field_to_particle(&self, _particle: &Particle) -> ParticleAction {
+        fn simple_action(&self, _particle: &Particle) -> ParticleAction {
             ParticleAction::new().force(self.1)
         }
     }
@@ -238,10 +262,13 @@ pub mod builtin_fields {
             &mut self.0
         }
         fn interaction_type(&self) -> InteractionType {
-            InteractionType::FieldParticle
+            InteractionType::Simple
         }
-        fn field_to_particle(&self, particle: &Particle) -> ParticleAction {
+        fn simple_action(&self, particle: &Particle) -> ParticleAction {
             ParticleAction::new().force(Vec3::new(0.0, -particle.mass * self.1, 0.0))
+        }
+        fn simple_potential(&self, particle: &Particle) -> f64 {
+            particle.mass * self.1 * particle.pos.y
         }
     }
 
@@ -283,6 +310,11 @@ pub mod builtin_fields {
                     / (dist_sqr + self.2.powi(2)).powi(3).sqrt()
                     * radial,
             )
+        }
+        fn particle_particle_potential(&self, particle1: &Particle, particle2: &Particle) -> f64 {
+            let radial = particle2.pos - particle1.pos;
+            -self.1 * particle1.mass * particle2.mass
+                / (radial.mag_squared() + self.2.powi(2)).sqrt()
         }
     }
 
