@@ -50,7 +50,7 @@ pub mod builtin_constraints {
     }
 
     impl Constraint for Distance {
-        fn project(&mut self, particle_source: &mut [Particle], dt: f64, _is_static: bool) {
+        fn project(&mut self, particle_source: &mut [Particle], dt: f64, _static_pass: bool) {
             let particle1 = self.particles[0].get(particle_source);
             let particle2 = self.particles[1].get(particle_source);
             let inv_mass1 = particle1.inverse_mass();
@@ -80,15 +80,12 @@ pub mod builtin_constraints {
 
     impl NonPenetrate {
         pub fn new(particles: [ParticleReference; 2], xpbd: bool) -> NonPenetrate {
-            NonPenetrate {
-                particles,
-                xpbd,
-            }
+            NonPenetrate { particles, xpbd }
         }
     }
 
     impl Constraint for NonPenetrate {
-        fn project(&mut self, particle_source: &mut [Particle], _dt: f64, is_static: bool) {
+        fn project(&mut self, particle_source: &mut [Particle], _dt: f64, static_pass: bool) {
             let particle1 = self.particles[0].get(particle_source);
             let particle2 = self.particles[1].get(particle_source);
             let radial = particle2.pos - particle1.pos;
@@ -99,7 +96,7 @@ pub mod builtin_constraints {
                 let inv_mass1 = particle1.inverse_mass();
                 let inv_mass2 = particle2.inverse_mass();
                 let lagrange = (-correction) / (inv_mass1 + inv_mass2);
-                if self.xpbd || is_static {
+                if self.xpbd || static_pass {
                     self.particles[0].get_mut(particle_source).pos += lagrange * inv_mass1 * norm;
                     self.particles[1].get_mut(particle_source).pos += -lagrange * inv_mass2 * norm;
                 } else {
@@ -142,13 +139,13 @@ pub mod builtin_constraints {
     }
 
     impl Constraint for ContactPlane {
-        fn project(&mut self, particle_source: &mut [Particle], _dt: f64, is_static: bool) {
+        fn project(&mut self, particle_source: &mut [Particle], _dt: f64, static_pass: bool) {
             let particle = self.particle.get_mut(particle_source);
             let norm = self.normal.norm();
             let dist = (particle.pos - self.point).dot(norm) - particle.radius;
 
             if dist < 0.0 {
-                if self.xpbd || is_static {
+                if self.xpbd || static_pass {
                     particle.pos += -dist * norm * particle.inverse_mass() * particle.mass;
                 } else {
                     particle

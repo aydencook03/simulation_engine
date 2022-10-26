@@ -1,15 +1,16 @@
-use engine::{constraint::Constraint, prelude::*};
+use engine::prelude::*;
 use rand::Rng;
 use rendering::particle_2d_renderer::Particle2DRenderer;
 
-const COUNT: u32 = 100;
+const COUNT: u32 = 500;
 const MASS: f64 = 10.0;
 const RADIUS: f64 = 8.0;
-const BOND_ENERGY: f64 = 800.0;
+const BOND_ENERGY: f64 = 80000.0;
 
 fn main() {
     let mut system = System::new();
-    let window = Particle2DRenderer::new();
+    let mut window = Particle2DRenderer::new();
+    window.scale.physics_dt = 1.0 / 30.0;
 
     let mut rng = rand::thread_rng();
     let bounds = [-500.0, 500.0, -500.0, 500.0];
@@ -26,7 +27,7 @@ fn main() {
         );
     }
 
-    let mut repulsion = Fields::VanDerWaals::new(BOND_ENERGY, None, 0.0);
+    let mut repulsion = Fields::VanDerWaals::new(BOND_ENERGY, None, 0.5);
     repulsion.add_particles(&system.all_particles());
     system.add_field(repulsion);
 
@@ -57,17 +58,19 @@ fn main() {
         ));
     }
 
-    // add a non_penetrate constraint to all particles
     let mut index: usize = 0;
-    let mut constraints = Vec::new();
+    let mut constraints: Vec<Constraints::NonPenetrate> = Vec::new();
     for ref1 in &system.all_particles() {
         for ref2 in &system.all_particles()[(index + 1)..] {
             constraints.push(Constraints::NonPenetrate::new([*ref1, *ref2], true));
         }
         index += 1;
     }
-    for constraint in &mut constraints {
-        constraint.project(&mut system.particles, core::f64::MIN_POSITIVE, true);
+    for _ in 0..100 {
+        for constraint in &mut constraints {
+            constraint.project(&mut system.particles, core::f64::MIN_POSITIVE, true);
+        }
+        system.static_constraint_pass(1);
     }
 
     window.run(system);
