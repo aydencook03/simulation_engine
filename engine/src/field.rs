@@ -224,12 +224,17 @@ pub mod builtin_fields {
     pub struct Gravity(CoupledParticles, f64, f64);
 
     impl Gravity {
-        pub fn new(gravitational_constant: f64, softening_parameter: f64) -> Gravity {
+        pub fn new(gravitational_constant: f64) -> Gravity {
             Gravity(
                 CoupledParticles::new(),
                 gravitational_constant,
-                softening_parameter,
+                0.0,
             )
+        }
+        
+        pub fn softening(mut self, softening_parameter: f64) -> Gravity {
+            self.2 = softening_parameter;
+            self
         }
     }
 

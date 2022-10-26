@@ -75,7 +75,7 @@ fn main() {
     }
 
     // create gravity
-    let mut gravity = Fields::Gravity::new(G, 0.0);
+    let mut gravity = Fields::Gravity::new(G);
     gravity.add_particles(&system.all_particles());
     system.add_field(gravity);
 

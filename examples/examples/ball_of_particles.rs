@@ -31,7 +31,7 @@ fn main() {
         );
     }
 
-    let mut gravity = Fields::Gravity::new(GRAVITY, 0.0);
+    let mut gravity = Fields::Gravity::new(GRAVITY);
     gravity.add_particles(&system.all_particles());
     system.add_field(gravity);
 

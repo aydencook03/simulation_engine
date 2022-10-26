@@ -28,7 +28,7 @@ fn main() {
         );
     }
 
-    let mut gravity = Fields::Gravity::new(GRAVITY, RADIUS / 2.0);
+    let mut gravity = Fields::Gravity::new(GRAVITY).softening(RADIUS / 2.0);
     gravity.add_particles(&system.all_particles());
     system.add_field(gravity);
 
