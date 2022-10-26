@@ -70,12 +70,12 @@ fn main() {
                 .vel(star_2_vel)
                 .mass(particle_mass)
                 .radius_from_density(STAR_DENSITY)
-                .group(rng.gen_range(1..3)),
+                .group(rng.gen_range(1..=2)),
         );
     }
 
     // create gravity
-    let mut gravity = Fields::NGravity::new(G, 0.0);
+    let mut gravity = Fields::Gravity::new(G, 0.0);
     gravity.add_particles(&system.all_particles());
     system.add_field(gravity);
 
@@ -83,7 +83,7 @@ fn main() {
     let mut index: usize = 0;
     for ref1 in &system.all_particles() {
         for ref2 in &system.all_particles()[(index + 1)..] {
-            system.add_constraint(Constraints::NonPenetrate::new([*ref1, *ref2]));
+            system.add_constraint(Constraints::NonPenetrate::new([*ref1, *ref2], true));
         }
         index += 1;
     }

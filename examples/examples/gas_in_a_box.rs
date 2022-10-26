@@ -1,4 +1,4 @@
-use engine::prelude::*;
+use engine::{constraint::Constraint, prelude::*};
 use rand::Rng;
 use rendering::particle_2d_renderer::Particle2DRenderer;
 
@@ -9,16 +9,14 @@ const BOND_ENERGY: f64 = 800.0;
 
 fn main() {
     let mut system = System::new();
-    system.running = false;
     let window = Particle2DRenderer::new();
 
     let mut rng = rand::thread_rng();
-    let back_bottom_left = Vec3::new(-500.0, -500.0, -500.0);
-    let front_top_right = Vec3::new(500.0, 500.0, 500.0);
+    let bounds = [-500.0, 500.0, -500.0, 500.0];
 
     for _ in 0..COUNT {
-        let rand_x = rng.gen_range((back_bottom_left.x + RADIUS)..(front_top_right.x - RADIUS));
-        let rand_y = rng.gen_range((back_bottom_left.y + RADIUS)..(front_top_right.y - RADIUS));
+        let rand_x = rng.gen_range((bounds[0] + RADIUS)..(bounds[1] - RADIUS));
+        let rand_y = rng.gen_range((bounds[2] + RADIUS)..(bounds[3] - RADIUS));
 
         system.add_particle(
             Particle::new()
@@ -28,13 +26,49 @@ fn main() {
         );
     }
 
-    let mut repulsion = Fields::VanDerWaals::new(BOND_ENERGY, None, 0.1);
+    let mut repulsion = Fields::VanDerWaals::new(BOND_ENERGY, None, 0.0);
     repulsion.add_particles(&system.all_particles());
     system.add_field(repulsion);
 
-    let mut walls = Fields::BoxBound::new(back_bottom_left, front_top_right);
-    walls.add_particles(&system.all_particles());
-    system.add_field(walls);
+    for particle in &system.all_particles() {
+        system.add_constraint(Constraints::ContactPlane::new(
+            *particle,
+            Vec3::new(bounds[0], 0.0, 0.0),
+            Vec3::new(1.0, 0.0, 0.0),
+            false,
+        ));
+        system.add_constraint(Constraints::ContactPlane::new(
+            *particle,
+            Vec3::new(bounds[1], 0.0, 0.0),
+            Vec3::new(-1.0, 0.0, 0.0),
+            false,
+        ));
+        system.add_constraint(Constraints::ContactPlane::new(
+            *particle,
+            Vec3::new(0.0, bounds[2], 0.0),
+            Vec3::new(0.0, 1.0, 0.0),
+            false,
+        ));
+        system.add_constraint(Constraints::ContactPlane::new(
+            *particle,
+            Vec3::new(0.0, bounds[3], 0.0),
+            Vec3::new(0.0, -1.0, 0.0),
+            false,
+        ));
+    }
+
+    // add a non_penetrate constraint to all particles
+    let mut index: usize = 0;
+    let mut constraints = Vec::new();
+    for ref1 in &system.all_particles() {
+        for ref2 in &system.all_particles()[(index + 1)..] {
+            constraints.push(Constraints::NonPenetrate::new([*ref1, *ref2], true));
+        }
+        index += 1;
+    }
+    for constraint in &mut constraints {
+        constraint.project(&mut system.particles, core::f64::MIN_POSITIVE, true);
+    }
 
     window.run(system);
 }

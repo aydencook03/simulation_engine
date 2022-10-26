@@ -31,14 +31,14 @@ fn main() {
         );
     }
 
-    let mut gravity = Fields::NGravity::new(GRAVITY, 0.0);
+    let mut gravity = Fields::Gravity::new(GRAVITY, 0.0);
     gravity.add_particles(&system.all_particles());
     system.add_field(gravity);
 
     let mut index: usize = 0;
     for ref1 in &system.all_particles() {
         for ref2 in &system.all_particles()[(index + 1)..] {
-            system.add_constraint(Constraints::NonPenetrate::new([*ref1, *ref2]));
+            system.add_constraint(Constraints::NonPenetrate::new([*ref1, *ref2], true));
         }
         index += 1;
     }

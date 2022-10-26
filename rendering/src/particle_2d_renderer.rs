@@ -267,7 +267,7 @@ impl Particle2DRenderer {
                 Particle2DRenderer::rgb_to_softbuffer([pixel.red(), pixel.green(), pixel.blue()])
             })
             .collect();
-        
+
         // write the contents of framebuffer to the window's framebuffer
         context
             .context

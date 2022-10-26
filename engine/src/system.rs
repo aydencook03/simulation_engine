@@ -110,7 +110,7 @@ impl System {
     pub fn static_constraint_pass(&mut self, iterations: u32) {
         for _ in 0..iterations {
             for constraint in &mut self.constraints {
-                constraint.project(&mut self.particles, core::f64::MIN_POSITIVE);
+                constraint.project(&mut self.particles, core::f64::MIN_POSITIVE, true);
             }
         }
     }
@@ -131,7 +131,7 @@ impl System {
                 }
 
                 for constraint in &mut self.constraints {
-                    constraint.project(&mut self.particles, sub_dt);
+                    constraint.project(&mut self.particles, sub_dt, false);
                 }
 
                 for particle in &mut self.particles {

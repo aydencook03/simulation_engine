@@ -196,15 +196,15 @@ pub mod builtin_fields {
 
     //--------------------------------------------------------------------//
 
-    pub struct Gravity(CoupledParticles, f64);
+    pub struct Falling(CoupledParticles, f64);
 
-    impl Gravity {
-        pub fn new(g: f64) -> Gravity {
-            Gravity(CoupledParticles::new(), g)
+    impl Falling {
+        pub fn new(g: f64) -> Falling {
+            Falling(CoupledParticles::new(), g)
         }
     }
 
-    impl Field for Gravity {
+    impl Field for Falling {
         fn coupled_particles(&self) -> &CoupledParticles {
             &self.0
         }
@@ -221,11 +221,11 @@ pub mod builtin_fields {
 
     //--------------------------------------------------------------------//
 
-    pub struct NGravity(CoupledParticles, f64, f64);
+    pub struct Gravity(CoupledParticles, f64, f64);
 
-    impl NGravity {
-        pub fn new(gravitational_constant: f64, softening_parameter: f64) -> NGravity {
-            NGravity(
+    impl Gravity {
+        pub fn new(gravitational_constant: f64, softening_parameter: f64) -> Gravity {
+            Gravity(
                 CoupledParticles::new(),
                 gravitational_constant,
                 softening_parameter,
@@ -233,7 +233,7 @@ pub mod builtin_fields {
         }
     }
 
-    impl Field for NGravity {
+    impl Field for Gravity {
         fn coupled_particles(&self) -> &CoupledParticles {
             &self.0
         }
@@ -306,83 +306,6 @@ pub mod builtin_fields {
             ParticleAction::new().force(
                 (-12_f64 * self.1 * (bond_6 / denom.powi(4) - bond_12 / denom.powi(7))) * radial,
             )
-        }
-    }
-
-    //--------------------------------------------------------------------//
-
-    pub struct BoxBound(CoupledParticles, Vec3, Vec3);
-
-    impl BoxBound {
-        pub fn new(back_bottom_left: Vec3, front_top_right: Vec3) -> BoxBound {
-            BoxBound(CoupledParticles::new(), back_bottom_left, front_top_right)
-        }
-    }
-
-    impl Field for BoxBound {
-        fn coupled_particles(&self) -> &CoupledParticles {
-            &self.0
-        }
-        fn coupled_particles_mut(&mut self) -> &mut CoupledParticles {
-            &mut self.0
-        }
-        fn interaction_type(&self) -> InteractionType {
-            InteractionType::FieldParticle
-        }
-        fn field_to_particle(&self, particle: &Particle) -> ParticleAction {
-            let mut unsatisfied = false;
-            let mut displacement = Vec3::zero();
-            let mut impulse = Vec3::zero();
-
-            if (particle.pos.x - particle.radius) < self.1.x {
-                unsatisfied = true;
-                displacement.x += self.1.x - (particle.pos.x - particle.radius);
-                if particle.vel.x < 0.0 {
-                    impulse.x += -2.0 * particle.vel.x * particle.mass;
-                }
-            } else if (particle.pos.x + particle.radius) > self.2.x {
-                unsatisfied = true;
-                displacement.x -= (particle.pos.x + particle.radius) - self.2.x;
-                if particle.vel.x > 0.0 {
-                    impulse.x += -2.0 * particle.vel.x * particle.mass;
-                }
-            }
-
-            if (particle.pos.y - particle.radius) < self.1.y {
-                unsatisfied = true;
-                displacement.y += self.1.y - (particle.pos.y - particle.radius);
-                if particle.vel.y < 0.0 {
-                    impulse.y += -2.0 * particle.vel.y * particle.mass;
-                }
-            } else if (particle.pos.y + particle.radius) > self.2.y {
-                unsatisfied = true;
-                displacement.y -= (particle.pos.y + particle.radius) - self.2.y;
-                if particle.vel.y > 0.0 {
-                    impulse.y += -2.0 * particle.vel.y * particle.mass;
-                }
-            }
-
-            if (particle.pos.z - particle.radius) < self.1.z {
-                unsatisfied = true;
-                displacement.z += self.1.z - (particle.pos.z - particle.radius);
-                if particle.vel.z < 0.0 {
-                    impulse.z += -2.0 * particle.vel.z * particle.mass;
-                }
-            } else if (particle.pos.z + particle.radius) > self.2.z {
-                unsatisfied = true;
-                displacement.z -= (particle.pos.z + particle.radius) - self.2.z;
-                if particle.vel.z > 0.0 {
-                    impulse.z += -2.0 * particle.vel.z * particle.mass;
-                }
-            }
-
-            if unsatisfied {
-                ParticleAction::new()
-                    .displacement(displacement)
-                    .impulse(impulse)
-            } else {
-                ParticleAction::new()
-            }
         }
     }
 }

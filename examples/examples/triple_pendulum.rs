@@ -21,7 +21,7 @@ fn main() {
             .mass(2.0),
     );
 
-    let mut gravity = Fields::Gravity::new(200.0);
+    let mut gravity = Fields::Falling::new(200.0);
     gravity.add_particles(&system.all_particles());
 
     let dist1 = Constraints::Distance::new([center, mass1], 250.);

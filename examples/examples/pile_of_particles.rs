@@ -10,7 +10,6 @@ const GRAVITY: f64 = 600.0;
 
 fn main() {
     let mut system = System::new();
-    system.substeps = 20;
     let mut window = Particle2DRenderer::new();
     window.scale.physics_dt = 1.0 / 30.0;
     window
@@ -35,7 +34,7 @@ fn main() {
         );
     }
 
-    let mut gravity = Fields::Gravity::new(GRAVITY);
+    let mut gravity = Fields::Falling::new(GRAVITY);
     gravity.add_particles(&system.all_particles());
     system.add_field(gravity);
 
@@ -43,7 +42,7 @@ fn main() {
     let mut index: usize = 0;
     for ref1 in &system.all_particles() {
         for ref2 in &system.all_particles()[(index + 1)..] {
-            system.add_constraint(Constraints::NonPenetrate::new([*ref1, *ref2]));
+            system.add_constraint(Constraints::NonPenetrate::new([*ref1, *ref2], true));
         }
         index += 1;
     }
@@ -54,16 +53,19 @@ fn main() {
             *part,
             Vec3::new(bounds[0], 0.0, 0.0),
             Vec3::new(1.0, 0.0, 0.0),
+            false,
         ));
         system.add_constraint(Constraints::ContactPlane::new(
             *part,
             Vec3::new(bounds[1], 0.0, 0.0),
             Vec3::new(-1.0, 0.0, 0.0),
+            false,
         ));
         system.add_constraint(Constraints::ContactPlane::new(
             *part,
             Vec3::new(0.0, bounds[2], 0.0),
             Vec3::new(0.0, 1.0, 0.0),
+            false,
         ));
     }
 

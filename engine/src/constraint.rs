@@ -5,7 +5,7 @@ pub use crate::vec3::Vec3;
 // Constraint trait.
 
 pub trait Constraint {
-    fn project(&mut self, particle_source: &mut [Particle], dt: f64);
+    fn project(&mut self, particle_source: &mut [Particle], dt: f64, static_pass: bool);
     // fn force_estimate;
 }
 
@@ -50,7 +50,7 @@ pub mod builtin_constraints {
     }
 
     impl Constraint for Distance {
-        fn project(&mut self, particle_source: &mut [Particle], dt: f64) {
+        fn project(&mut self, particle_source: &mut [Particle], dt: f64, _is_static: bool) {
             let particle1 = self.particles[0].get(particle_source);
             let particle2 = self.particles[1].get(particle_source);
             let inv_mass1 = particle1.inverse_mass();
@@ -75,16 +75,20 @@ pub mod builtin_constraints {
 
     pub struct NonPenetrate {
         particles: [ParticleReference; 2],
+        immediate: bool,
     }
 
     impl NonPenetrate {
-        pub fn new(particles: [ParticleReference; 2]) -> NonPenetrate {
-            NonPenetrate { particles }
+        pub fn new(particles: [ParticleReference; 2], immediate: bool) -> NonPenetrate {
+            NonPenetrate {
+                particles,
+                immediate,
+            }
         }
     }
 
     impl Constraint for NonPenetrate {
-        fn project(&mut self, particle_source: &mut [Particle], _dt: f64) {
+        fn project(&mut self, particle_source: &mut [Particle], _dt: f64, is_static: bool) {
             let particle1 = self.particles[0].get(particle_source);
             let particle2 = self.particles[1].get(particle_source);
             let radial = particle2.pos - particle1.pos;
@@ -95,8 +99,19 @@ pub mod builtin_constraints {
                 let inv_mass1 = particle1.inverse_mass();
                 let inv_mass2 = particle2.inverse_mass();
                 let lagrange = (-correction) / (inv_mass1 + inv_mass2);
-                self.particles[0].get_mut(particle_source).pos += lagrange * inv_mass1 * norm;
-                self.particles[1].get_mut(particle_source).pos += -lagrange * inv_mass2 * norm;
+                if self.immediate || is_static {
+                    self.particles[0].get_mut(particle_source).pos += lagrange * inv_mass1 * norm;
+                    self.particles[1].get_mut(particle_source).pos += -lagrange * inv_mass2 * norm;
+                } else {
+                    self.particles[0]
+                        .get_mut(particle_source)
+                        .displacements
+                        .push(lagrange * inv_mass1 * norm);
+                    self.particles[1]
+                        .get_mut(particle_source)
+                        .displacements
+                        .push(lagrange * inv_mass2 * norm);
+                }
             }
         }
     }
@@ -107,26 +122,39 @@ pub mod builtin_constraints {
         particle: ParticleReference,
         point: Vec3,
         normal: Vec3,
+        immediate: bool,
     }
 
     impl ContactPlane {
-        pub fn new(particle: ParticleReference, point: Vec3, normal: Vec3) -> ContactPlane {
+        pub fn new(
+            particle: ParticleReference,
+            point: Vec3,
+            normal: Vec3,
+            immediate: bool,
+        ) -> ContactPlane {
             ContactPlane {
                 particle,
                 point,
                 normal,
+                immediate,
             }
         }
     }
 
     impl Constraint for ContactPlane {
-        fn project(&mut self, particle_source: &mut [Particle], _dt: f64) {
+        fn project(&mut self, particle_source: &mut [Particle], _dt: f64, is_static: bool) {
             let particle = self.particle.get_mut(particle_source);
             let norm = self.normal.norm();
             let dist = (particle.pos - self.point).dot(norm) - particle.radius;
 
             if dist < 0.0 {
-                particle.pos += -dist * norm * particle.inverse_mass() * particle.mass;
+                if self.immediate || is_static {
+                    particle.pos += -dist * norm * particle.inverse_mass() * particle.mass;
+                } else {
+                    particle
+                        .displacements
+                        .push(-dist * norm * particle.inverse_mass() * particle.mass);
+                }
             }
         }
     }
