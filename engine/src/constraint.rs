@@ -107,7 +107,7 @@ pub mod builtin_constraints {
                     self.particles[1]
                         .get_mut(particle_source)
                         .displacements
-                        .push(lagrange * inv_mass2 * norm);
+                        .push(-lagrange * inv_mass2 * norm);
                 }
             }
         }

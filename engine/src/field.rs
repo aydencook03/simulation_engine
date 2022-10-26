@@ -113,9 +113,15 @@ pub trait Field {
         ParticleAction::new()
     }
     fn clear(&mut self) {}
+    fn field_energy(&self) -> f64 {
+        0.0
+    }
 
     fn particle_to_particle(&self, _particle1: &Particle, _particle2: &Particle) -> ParticleAction {
         ParticleAction::new()
+    }
+    fn particle_to_particle_potential(&self, _particle1: &Particle, _particle2: &Particle) -> f64 {
+        0.0
     }
 }
 
@@ -155,6 +161,26 @@ impl dyn Field {
                     }
                     index += 1;
                 }
+            }
+        }
+    }
+
+    pub fn total_field_energy(&self, particles: &[Particle]) -> f64 {
+        match self.interaction_type() {
+            InteractionType::FieldParticle => self.field_energy(),
+            InteractionType::ParticleParticle => {
+                let mut potential = 0.0;
+                let mut index: usize = 0;
+                for ref1 in &self.coupled_particles().0 {
+                    for ref2 in &self.coupled_particles().0[(index + 1)..] {
+                        potential += self.particle_to_particle_potential(
+                            ref1.get(particles),
+                            ref2.get(particles),
+                        );
+                    }
+                    index += 1;
+                }
+                potential
             }
         }
     }
@@ -225,13 +251,9 @@ pub mod builtin_fields {
 
     impl Gravity {
         pub fn new(gravitational_constant: f64) -> Gravity {
-            Gravity(
-                CoupledParticles::new(),
-                gravitational_constant,
-                0.0,
-            )
+            Gravity(CoupledParticles::new(), gravitational_constant, 0.0)
         }
-        
+
         pub fn softening(mut self, softening_parameter: f64) -> Gravity {
             self.2 = softening_parameter;
             self

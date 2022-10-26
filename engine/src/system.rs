@@ -105,6 +105,14 @@ impl System {
         dbg!(angular_momentum);
     }
 
+    pub fn debug_kinetic_energy(&self) {
+        let mut ke = 0.0;
+        for particle in &self.particles {
+            ke += 0.5 * particle.mass * particle.vel.mag_squared();
+        }
+        dbg!(ke);
+    }
+
     //--------------------------------------------------------------------//
 
     pub fn static_constraint_pass(&mut self, iterations: u32) {
@@ -117,7 +125,6 @@ impl System {
 
     pub fn step_forward(&mut self, dt: f64) {
         if self.running && dt != 0_f64 {
-            self.debug_angular_momentum();
             for _ in 0..self.substeps {
                 let sub_dt = dt / (self.substeps as f64);
 
