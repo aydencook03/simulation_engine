@@ -75,14 +75,14 @@ pub mod builtin_constraints {
 
     pub struct NonPenetrate {
         particles: [ParticleReference; 2],
-        immediate: bool,
+        xpbd: bool,
     }
 
     impl NonPenetrate {
-        pub fn new(particles: [ParticleReference; 2], immediate: bool) -> NonPenetrate {
+        pub fn new(particles: [ParticleReference; 2], xpbd: bool) -> NonPenetrate {
             NonPenetrate {
                 particles,
-                immediate,
+                xpbd,
             }
         }
     }
@@ -99,7 +99,7 @@ pub mod builtin_constraints {
                 let inv_mass1 = particle1.inverse_mass();
                 let inv_mass2 = particle2.inverse_mass();
                 let lagrange = (-correction) / (inv_mass1 + inv_mass2);
-                if self.immediate || is_static {
+                if self.xpbd || is_static {
                     self.particles[0].get_mut(particle_source).pos += lagrange * inv_mass1 * norm;
                     self.particles[1].get_mut(particle_source).pos += -lagrange * inv_mass2 * norm;
                 } else {
@@ -122,7 +122,7 @@ pub mod builtin_constraints {
         particle: ParticleReference,
         point: Vec3,
         normal: Vec3,
-        immediate: bool,
+        xpbd: bool,
     }
 
     impl ContactPlane {
@@ -130,13 +130,13 @@ pub mod builtin_constraints {
             particle: ParticleReference,
             point: Vec3,
             normal: Vec3,
-            immediate: bool,
+            xpbd: bool,
         ) -> ContactPlane {
             ContactPlane {
                 particle,
                 point,
                 normal,
-                immediate,
+                xpbd,
             }
         }
     }
@@ -148,7 +148,7 @@ pub mod builtin_constraints {
             let dist = (particle.pos - self.point).dot(norm) - particle.radius;
 
             if dist < 0.0 {
-                if self.immediate || is_static {
+                if self.xpbd || is_static {
                     particle.pos += -dist * norm * particle.inverse_mass() * particle.mass;
                 } else {
                     particle
