@@ -2,7 +2,9 @@
 
 - Short Term
   - [X] develop a good abstraction/api for constraints
-  - [ ] comment explaining math and equations of XPBD
+  - [ ] doc comment for Constraint
+    - [ ] comment explaining math and equations of XPBD
+    - [ ] static vs non-static, xpbd vs non-xpbd
     - [ ] how to derive constraint force from lagrange multiplier
   - [X] simplify the abstraction/api for fields
     - [X] remove dt
@@ -109,7 +111,8 @@
 
 - Physics
   - [ ] intermolecular forces
-    - [ ] solids (bonds)
+    - [ ] solids (covalent/ionic/metallic bonds)
+      - [ ] covalent bond potential, electrostatic attraction
       - [ ] xpbd distance constraints w/ compliance
       - [ ] smoothed-particle-hydrodynamics
       - [ ] material-point-method
