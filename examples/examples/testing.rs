@@ -3,7 +3,7 @@ use rendering::particle_2d_renderer::Particle2DRenderer;
 
 fn main() {
     let mut system = System::new();
-    let mut window = Particle2DRenderer::new();
+    let window = Particle2DRenderer::new();
 
     let bounds = [-500.0, 500.0, -500.0, 500.0];
 
@@ -29,7 +29,11 @@ fn main() {
     let mut index: usize = 0;
     for ref1 in &system.all_particles() {
         for ref2 in &system.all_particles()[(index + 1)..] {
-            system.add_constraint(Constraints::NonPenetrate::new([*ref1, *ref2], false));
+            system.add_constraint(
+                Constraints::NonPenetrate::new([*ref1, *ref2], false)
+                    .compliance(0.0001)
+                    .dissipation(5.0),
+            );
         }
         index += 1;
     }

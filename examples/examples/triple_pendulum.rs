@@ -32,6 +32,7 @@ fn main() {
     system.add_constraint(dist1);
     system.add_constraint(dist2);
     system.add_constraint(dist3);
+    system.static_constraint_pass(1);
 
     window.run(system);
 }
