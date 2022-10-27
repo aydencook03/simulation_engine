@@ -48,6 +48,7 @@
 
 - Fields
   - [ ] electrostatic (Coulomb) force
+  - [ ] general Lennard-Jones potential (Mie potential)
   - [ ] particle-mesh-method newtonian gravity
   - [ ] SPH newtonian gravity mesh
   - [ ] electromagnetic
@@ -118,7 +119,7 @@
       - [ ] smoothed-particle-hydrodynamics
       - [ ] material-point-method
     - [ ] liquids & gases (intermolecular forces & hydrogen bonds)
-      - [ ] Lennard-Jones 6-12, 6-9, 10-12, electrostatic attraction
+      - [ ] Lennard-Jones 6-12, 6-9, 10-12 (Mie), electrostatic attraction
       - [ ] smoothed-particle-hydrodynamics
       - [ ] material-point-method
       - [ ] position-based-fluids
