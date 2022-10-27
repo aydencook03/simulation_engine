@@ -13,6 +13,7 @@
     - [ ] why does non-xpbd conserve angular momentum while xpbd does not?
     - [ ] why does non-xpbd conserve kinetic energy while xpbd does not?
     - [ ] step through non-xpbd algorithm w/ variables to prove the conservation of quantities
+    - [ ] what is the physical correspondance to the xpbd dissipation? what is its behavior in relation to compliance?
   - [ ] real-time 3d renderer w/ simple interaction (using bevy)
   - [ ] support particle sources and sinks
   - [ ] different boundary conditions
