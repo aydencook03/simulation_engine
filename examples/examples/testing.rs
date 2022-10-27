@@ -31,8 +31,8 @@ fn main() {
         for ref2 in &system.all_particles()[(index + 1)..] {
             system.add_constraint(
                 Constraints::NonPenetrate::new([*ref1, *ref2], false)
-                    .compliance(0.0001)
-                    .dissipation(10.0),
+                    .compliance(0.00001)
+                    .dissipation(30.0),
             );
         }
         index += 1;

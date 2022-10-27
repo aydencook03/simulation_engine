@@ -10,6 +10,9 @@
     - [X] remove dt
   - [X] account for N's 3rd law in the ParticleParticle interaction (can enable optimizations?)
   - [ ] investigate
+    - [ ] read xpbd paper. understand mathematical derivation to see where my algorithm could come from
+    - [ ] cantilever beam w/ xpbd vs w/out
+    - [ ] derive constraint function for other potentials (like gravity?) (learn how to from neo-hookean paper)
     - [ ] why does non-xpbd conserve angular momentum while xpbd does not?
     - [ ] why does non-xpbd conserve kinetic energy while xpbd does not?
     - [ ] step through non-xpbd algorithm w/ variables to prove the conservation of quantities
