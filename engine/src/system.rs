@@ -137,8 +137,6 @@ impl System {
 
     pub fn step_forward(&mut self, dt: f64) {
         if self.running && dt != 0_f64 {
-            self.debug_energy();
-            //self.debug_momentum();
             for _ in 0..self.substeps {
                 let sub_dt = dt / (self.substeps as f64);
 

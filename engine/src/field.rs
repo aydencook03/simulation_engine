@@ -100,6 +100,16 @@ pub trait Field {
     fn coupled_particles_mut(&mut self) -> &mut CoupledParticles;
     fn interaction_type(&self) -> InteractionType;
 
+    // helper methods that are already implemented
+    fn add_particle(&mut self, particle_reference: ParticleReference) {
+        self.coupled_particles_mut().0.push(particle_reference);
+    }
+    fn add_particles(&mut self, particle_references: &[ParticleReference]) {
+        for reference in particle_references {
+            self.coupled_particles_mut().0.push(*reference);
+        }
+    }
+
     // behavior associated with a FieldParticle interaction type
     fn particle_to_field(&mut self, _particle: &Particle) {}
     fn integrate(&mut self, _dt: f64) {}
@@ -131,16 +141,6 @@ pub trait Field {
 //--------------------------------------------------------------------//
 
 impl dyn Field {
-    pub fn add_particle(&mut self, particle_reference: ParticleReference) {
-        self.coupled_particles_mut().0.push(particle_reference);
-    }
-
-    pub fn add_particles(&mut self, particle_references: &[ParticleReference]) {
-        for reference in particle_references {
-            self.coupled_particles_mut().0.push(*reference);
-        }
-    }
-
     pub fn handle(&mut self, particles: &mut [Particle], dt: f64) {
         match self.interaction_type() {
             InteractionType::FieldParticle => {
