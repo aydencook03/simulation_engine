@@ -9,6 +9,10 @@
   - [X] simplify the abstraction/api for fields
     - [X] remove dt
   - [X] account for N's 3rd law in the ParticleParticle interaction (can enable optimizations?)
+  - [ ] investigate
+    - [ ] why does non-xpbd conserve angular momentum while xpbd does not?
+    - [ ] why does non-xpbd conserve kinetic energy while xpbd does not?
+    - [ ] step through non-xpbd algorithm w/ variables to prove the conservation of quantities
   - [ ] real-time 3d renderer w/ simple interaction (using bevy)
   - [ ] support particle sources and sinks
   - [ ] different boundary conditions
@@ -19,12 +23,8 @@
     - [ ] different smoothing kernels & their gradient, divergence, laplacian, etc
     - [ ] different modifications to the kernels for certain symmetries and properties
     - [ ] different boundary conditions
-  - [ ] investigate/solve weird lack of angular momentum conservation
-    - total forces/interactions must not be central
-    - do 2 body test to see if two bodies stay in a plane
-    - only occurs when multiple fields are being used simultaneously
-  - [ ] builder methods for builtin fields & constraints
-  - [ ] fix BoxBound instability
+  - [X] builder methods for builtin fields & constraints
+  - [X] fix BoxBound instability
   - [ ] a general purpose (common functionality) Mesh object
     - [ ] derivatives, gradients, laplacian, etc defined on it
     - [ ] different types:
