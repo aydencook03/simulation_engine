@@ -1,23 +1,99 @@
-pub use crate::particle::{Particle, ParticleReference};
-pub use crate::vec3::Vec3;
-
-// pile: 30-35
-// star: 20-24
+use crate::{
+    particle::{Particle, ParticleReference},
+    vec3::Vec3,
+};
 
 //---------------------------------------------------------------------------------------------------//
-// Constraint trait.
 
-pub trait Constraint {
-    fn project(&mut self, particle_source: &mut [Particle], dt: f64, static_pass: bool);
-    // fn force_estimate;
+#[derive(Copy, Clone)]
+pub enum ConstraintType {
+    Equation,
+    Inequality,
+}
+
+#[derive(Copy, Clone)]
+pub struct ConstraintProperties<const COUNT: usize> {
+    particles: [ParticleReference; COUNT],
+    compliance: f64,
+    dissipation: f64,
+    xpbd: bool,
+    constraint_type: ConstraintType,
 }
 
 //---------------------------------------------------------------------------------------------------//
-// Different constraints implemented using the Constraint trait.
+// Constraint traits.
+
+pub trait Constraint {
+    fn project(&self, particle_source: &mut [Particle], dt: f64, static_pass: bool);
+    // fn force_estimate
+}
+
+pub trait ConstraintData<const COUNT: usize> {
+    fn properties(&self) -> ConstraintProperties<COUNT>;
+    fn constraint(&self, particles: [&Particle; COUNT]) -> f64;
+    fn gradients(&self, particles: [&Particle; COUNT]) -> [Vec3; COUNT];
+}
+
+impl<const COUNT: usize, C: ConstraintData<COUNT>> Constraint for C {
+    fn project(&self, particle_source: &mut [Particle], dt: f64, static_pass: bool) {
+        let data = self.properties();
+        let mut particles: [&Particle; COUNT] =
+            unsafe { std::mem::MaybeUninit::uninit().assume_init() };
+
+        for (index, reference) in data.particles.iter().enumerate() {
+            particles[index] = reference.get(particle_source);
+        }
+
+        let evaluated = self.constraint(particles);
+
+        let satisfied = match data.constraint_type {
+            ConstraintType::Equation => evaluated == 0.0,
+            ConstraintType::Inequality => evaluated >= 0.0,
+        };
+
+        if !satisfied {
+            let dt = if static_pass { core::f64::MAX } else { dt };
+            let alpha = data.compliance / dt.powi(2);
+            let gamma = data.compliance * data.dissipation / dt;
+            let gradients = self.gradients(particles);
+
+            let mut damp = 0.0;
+            let mut scale = 0.0;
+
+            for (i, grad) in gradients.iter().enumerate() {
+                damp += grad.dot(particles[i].pos - particles[i].prev_pos);
+                scale += particles[i].inverse_mass() * grad.mag_squared();
+            }
+
+            let lagrange = (-evaluated - gamma * damp) / ((1.0 + gamma) * scale + alpha);
+
+            let mut corrections = [Vec3::zero(); COUNT];
+
+            for (i, particle) in particles.iter().enumerate() {
+                corrections[i] = lagrange * particle.inverse_mass() * gradients[i];
+            }
+
+            drop(particles);
+
+            for (i, part) in data.particles.iter().enumerate() {
+                if data.xpbd || static_pass {
+                    part.get_mut(particle_source).pos += corrections[i];
+                } else {
+                    part.get_mut(particle_source)
+                        .displacements
+                        .push(corrections[i]);
+                }
+            }
+        }
+    }
+}
+
+//---------------------------------------------------------------------------------------------------//
+// Different constraints implemented using the Constraint traits.
 
 pub mod builtin_constraints {
     use crate::{
-        constraint::Constraint,
+        constraint::{ConstraintData, ConstraintProperties, ConstraintType},
         particle::{Particle, ParticleReference},
         vec3::Vec3,
     };
@@ -25,187 +101,114 @@ pub mod builtin_constraints {
     //--------------------------------------------------------------------//
 
     pub struct Distance {
-        particles: [ParticleReference; 2],
-        distance: f64,
-        compliance: f64,
-        dissipation: f64,
+        data: ConstraintProperties<2>,
+        dist: f64,
     }
 
     impl Distance {
-        pub fn new(particles: [ParticleReference; 2], distance: f64) -> Distance {
+        pub fn new(particles: [ParticleReference; 2], dist: f64) -> Distance {
             Distance {
-                particles,
-                distance,
-                compliance: 0.0,
-                dissipation: 0.0,
+                data: ConstraintProperties {
+                    particles,
+                    compliance: 0.0,
+                    dissipation: 0.0,
+                    xpbd: true,
+                    constraint_type: ConstraintType::Equation,
+                },
+                dist,
             }
-        }
-
-        pub fn compliance(mut self, compliance: f64) -> Distance {
-            self.compliance = compliance;
-            self
-        }
-
-        pub fn dissipation(mut self, dissipation: f64) -> Distance {
-            self.dissipation = dissipation;
-            self
         }
     }
 
-    impl Constraint for Distance {
-        fn project(&mut self, particle_source: &mut [Particle], dt: f64, static_pass: bool) {
-            let dt = if static_pass { core::f64::MAX } else { dt };
-            let particle1 = self.particles[0].get(particle_source);
-            let particle2 = self.particles[1].get(particle_source);
-            let inv_mass1 = particle1.inverse_mass();
-            let inv_mass2 = particle2.inverse_mass();
-            let alpha = self.compliance / dt.powi(2);
-            let gamma = self.compliance * self.dissipation / dt;
-            let radial = particle2.pos - particle1.pos;
-            let norm = radial.norm();
-            let correction = self.distance - radial.mag();
-            let lagrange = (-correction
-                - gamma
-                    * (norm.dot(particle1.pos - particle1.prev_pos)
-                        + (-norm).dot(particle2.pos - particle2.prev_pos)))
-                / ((1.0 + gamma) * (inv_mass1 + inv_mass2) + alpha);
-            self.particles[0].get_mut(particle_source).pos += lagrange * inv_mass1 * norm;
-            self.particles[1].get_mut(particle_source).pos += lagrange * inv_mass2 * -norm;
+    impl ConstraintData<2> for Distance {
+        fn properties(&self) -> ConstraintProperties<2> {
+            self.data
+        }
+
+        fn constraint(&self, particles: [&Particle; 2]) -> f64 {
+            self.dist.powi(2) - (particles[1].pos - particles[0].pos).mag_squared()
+        }
+
+        fn gradients(&self, particles: [&Particle; 2]) -> [Vec3; 2] {
+            let norm = (particles[1].pos - particles[0].pos).norm();
+            [norm, -norm]
         }
     }
 
     //--------------------------------------------------------------------//
 
-    pub struct NonPenetrate {
-        particles: [ParticleReference; 2],
-        xpbd: bool,
-        compliance: f64,
-        dissipation: f64,
-    }
+    pub struct NonPenetrate(ConstraintProperties<2>);
 
     impl NonPenetrate {
         pub fn new(particles: [ParticleReference; 2], xpbd: bool) -> NonPenetrate {
-            NonPenetrate {
+            NonPenetrate(ConstraintProperties {
                 particles,
                 compliance: 0.0,
                 dissipation: 0.0,
                 xpbd,
-            }
-        }
-
-        pub fn compliance(mut self, compliance: f64) -> NonPenetrate {
-            self.compliance = compliance;
-            self
-        }
-
-        pub fn dissipation(mut self, dissipation: f64) -> NonPenetrate {
-            self.dissipation = dissipation;
-            self
+                constraint_type: ConstraintType::Inequality,
+            })
         }
     }
 
-    impl Constraint for NonPenetrate {
-        fn project(&mut self, particle_source: &mut [Particle], dt: f64, static_pass: bool) {
-            let particle1 = self.particles[0].get(particle_source);
-            let particle2 = self.particles[1].get(particle_source);
-            let radial = particle2.pos - particle1.pos;
-            let correction = (particle1.radius + particle2.radius) - radial.mag();
+    impl ConstraintData<2> for NonPenetrate {
+        fn properties(&self) -> ConstraintProperties<2> {
+            self.0
+        }
 
-            if correction > 0.0 {
-                let dt = if static_pass { core::f64::MAX } else { dt };
-                let norm = radial.norm();
-                let inv_mass1 = particle1.inverse_mass();
-                let inv_mass2 = particle2.inverse_mass();
-                let alpha = self.compliance / dt.powi(2);
-                let gamma = self.compliance * self.dissipation / dt;
-                let lagrange = (-correction
-                    - gamma
-                        * (norm.dot(particle1.pos - particle1.prev_pos)
-                            + (-norm).dot(particle2.pos - particle2.prev_pos)))
-                    / ((1.0 + gamma) * (inv_mass1 + inv_mass2) + alpha);
+        fn constraint(&self, particles: [&Particle; 2]) -> f64 {
+            (particles[1].pos - particles[0].pos).mag_squared()
+                - (particles[0].radius + particles[1].radius).powi(2)
+        }
 
-                let correction1 = lagrange * inv_mass1 * norm;
-                let correction2 = lagrange * inv_mass2 * -norm;
-
-                if self.xpbd || static_pass {
-                    self.particles[0].get_mut(particle_source).pos += correction1;
-                    self.particles[1].get_mut(particle_source).pos += correction2;
-                } else {
-                    self.particles[0]
-                        .get_mut(particle_source)
-                        .displacements
-                        .push(correction1);
-                    self.particles[1]
-                        .get_mut(particle_source)
-                        .displacements
-                        .push(correction2);
-                }
-            }
+        fn gradients(&self, particles: [&Particle; 2]) -> [Vec3; 2] {
+            let norm = (particles[1].pos - particles[0].pos).norm();
+            [norm, -norm]
         }
     }
 
     //--------------------------------------------------------------------//
 
     pub struct ContactPlane {
-        particle: ParticleReference,
+        data: ConstraintProperties<1>,
         point: Vec3,
         normal: Vec3,
-        compliance: f64,
-        dissipation: f64,
-        xpbd: bool,
     }
 
     impl ContactPlane {
         pub fn new(
-            particle: ParticleReference,
+            particles: [ParticleReference; 1],
             point: Vec3,
             normal: Vec3,
             xpbd: bool,
         ) -> ContactPlane {
             ContactPlane {
-                particle,
+                data: ConstraintProperties {
+                    particles,
+                    compliance: 0.0,
+                    dissipation: 0.0,
+                    xpbd,
+                    constraint_type: ConstraintType::Equation,
+                },
                 point,
                 normal: normal.norm(),
-                compliance: 0.0,
-                dissipation: 0.0,
-                xpbd,
-            }
-        }
-
-        pub fn compliance(mut self, compliance: f64) -> ContactPlane {
-            self.compliance = compliance;
-            self
-        }
-
-        pub fn dissipation(mut self, dissipation: f64) -> ContactPlane {
-            self.dissipation = dissipation;
-            self
-        }
-    }
-
-    impl Constraint for ContactPlane {
-        fn project(&mut self, particle_source: &mut [Particle], dt: f64, static_pass: bool) {
-            let particle = self.particle.get_mut(particle_source);
-            let dist = (particle.pos - self.point).dot(self.normal) - particle.radius;
-
-            if dist < 0.0 {
-                let dt = if static_pass { core::f64::MAX } else { dt };
-                let inv_mass = particle.inverse_mass();
-                let alpha = self.compliance / dt.powi(2);
-                let gamma = self.compliance * self.dissipation / dt;
-                let lagrange = (-dist - gamma * self.normal.dot(particle.pos - particle.prev_pos))
-                    / ((1.0 + gamma) * inv_mass + alpha);
-
-                let correction = lagrange * inv_mass * self.normal;
-
-                if self.xpbd || static_pass {
-                    particle.pos += correction;
-                } else {
-                    particle.displacements.push(correction);
-                }
             }
         }
     }
+
+    impl ConstraintData<1> for ContactPlane {
+        fn properties(&self) -> ConstraintProperties<1> {
+            self.data
+        }
+
+        fn constraint(&self, particles: [&Particle; 1]) -> f64 {
+            (particles[0].pos - self.point).dot(self.normal) - particles[0].radius
+        }
+
+        fn gradients(&self, _particles: [&Particle; 1]) -> [Vec3; 1] {
+            [self.normal]
+        }
+    }
+
+    //--------------------------------------------------------------------//
 }
-
-//---------------------------------------------------------------------------------------------------//
