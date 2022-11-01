@@ -20,6 +20,22 @@ pub struct ConstraintProperties<const COUNT: usize> {
     constraint_type: ConstraintType,
 }
 
+impl<const COUNT: usize> ConstraintProperties<COUNT> {
+    pub fn new(
+        particles: [ParticleReference; COUNT],
+        constraint_type: ConstraintType,
+        xpbd: bool,
+    ) -> ConstraintProperties<COUNT> {
+        ConstraintProperties {
+            particles,
+            compliance: 0.0,
+            dissipation: 0.0,
+            xpbd,
+            constraint_type,
+        }
+    }
+}
+
 //---------------------------------------------------------------------------------------------------//
 // Constraint traits.
 
@@ -108,13 +124,7 @@ pub mod builtin_constraints {
     impl Distance {
         pub fn new(particles: [ParticleReference; 2], dist: f64) -> Distance {
             Distance {
-                data: ConstraintProperties {
-                    particles,
-                    compliance: 0.0,
-                    dissipation: 0.0,
-                    xpbd: true,
-                    constraint_type: ConstraintType::Equation,
-                },
+                data: ConstraintProperties::new(particles, ConstraintType::Equation, true),
                 dist,
             }
         }
@@ -141,13 +151,11 @@ pub mod builtin_constraints {
 
     impl NonPenetrate {
         pub fn new(particles: [ParticleReference; 2], xpbd: bool) -> NonPenetrate {
-            NonPenetrate(ConstraintProperties {
+            NonPenetrate(ConstraintProperties::new(
                 particles,
-                compliance: 0.0,
-                dissipation: 0.0,
+                ConstraintType::Inequality,
                 xpbd,
-                constraint_type: ConstraintType::Inequality,
-            })
+            ))
         }
     }
 
@@ -183,13 +191,7 @@ pub mod builtin_constraints {
             xpbd: bool,
         ) -> ContactPlane {
             ContactPlane {
-                data: ConstraintProperties {
-                    particles,
-                    compliance: 0.0,
-                    dissipation: 0.0,
-                    xpbd,
-                    constraint_type: ConstraintType::Equation,
-                },
+                data: ConstraintProperties::new(particles, ConstraintType::Equation, xpbd),
                 point,
                 normal: normal.norm(),
             }
