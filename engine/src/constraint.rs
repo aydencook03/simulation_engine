@@ -128,6 +128,21 @@ pub mod builtin_constraints {
                 dist,
             }
         }
+
+        pub fn compliance(mut self, compliance: f64) -> Distance {
+            self.data.compliance = compliance;
+            self
+        }
+
+        pub fn dissipation(mut self, dissipation: f64) -> Distance {
+            self.data.dissipation = dissipation;
+            self
+        }
+
+        pub fn as_chain(mut self) -> Distance {
+            self.data.constraint_type = ConstraintType::Inequality;
+            self
+        }
     }
 
     impl ConstraintData<2> for Distance {
@@ -136,7 +151,7 @@ pub mod builtin_constraints {
         }
 
         fn constraint(&self, particles: [&Particle; 2]) -> f64 {
-            self.dist.powi(2) - (particles[1].pos - particles[0].pos).mag_squared()
+            self.dist - (particles[1].pos - particles[0].pos).mag()
         }
 
         fn gradients(&self, particles: [&Particle; 2]) -> [Vec3; 2] {
@@ -157,6 +172,16 @@ pub mod builtin_constraints {
                 xpbd,
             ))
         }
+
+        pub fn compliance(mut self, compliance: f64) -> NonPenetrate {
+            self.0.compliance = compliance;
+            self
+        }
+
+        pub fn dissipation(mut self, dissipation: f64) -> NonPenetrate {
+            self.0.dissipation = dissipation;
+            self
+        }
     }
 
     impl ConstraintData<2> for NonPenetrate {
@@ -165,13 +190,13 @@ pub mod builtin_constraints {
         }
 
         fn constraint(&self, particles: [&Particle; 2]) -> f64 {
-            (particles[1].pos - particles[0].pos).mag_squared()
-                - (particles[0].radius + particles[1].radius).powi(2)
+            (particles[1].pos - particles[0].pos).mag()
+                - (particles[0].radius + particles[1].radius)
         }
 
         fn gradients(&self, particles: [&Particle; 2]) -> [Vec3; 2] {
             let norm = (particles[1].pos - particles[0].pos).norm();
-            [norm, -norm]
+            [-norm, norm]
         }
     }
 
@@ -195,6 +220,16 @@ pub mod builtin_constraints {
                 point,
                 normal: normal.norm(),
             }
+        }
+
+        pub fn compliance(mut self, compliance: f64) -> ContactPlane {
+            self.data.compliance = compliance;
+            self
+        }
+
+        pub fn dissipation(mut self, dissipation: f64) -> ContactPlane {
+            self.data.dissipation = dissipation;
+            self
         }
     }
 
