@@ -5,8 +5,8 @@ use rendering::particle_2d_renderer::Particle2DRenderer;
 const COUNT: u32 = 500;
 const MASS: f64 = 10.0;
 const RADIUS: f64 = 8.0;
-const BOND_ENERGY: f64 = 1000.0;
-const GRAVITY: f64 = 20.0;
+const BOND_ENERGY: f64 = 100000.0;
+const GRAVITY: f64 = 5.0;
 
 fn main() {
     let mut system = System::new();
@@ -67,8 +67,7 @@ fn main() {
     let mut constraints: Vec<Constraints::NonPenetrate> = Vec::new();
     for ref1 in &system.all_particles() {
         for ref2 in &system.all_particles()[(index + 1)..] {
-            constraints
-                .push(Constraints::NonPenetrate::new([*ref1, *ref2], true).with_distance(40.0));
+            constraints.push(Constraints::NonPenetrate::new([*ref1, *ref2], true));
         }
         index += 1;
     }
