@@ -246,11 +246,16 @@ pub mod builtin_fields {
 
     //--------------------------------------------------------------------//
 
-    pub struct Falling(CoupledParticles, f64);
+    pub struct Falling(CoupledParticles, f64, f64);
 
     impl Falling {
         pub fn new(g: f64) -> Falling {
-            Falling(CoupledParticles::new(), g)
+            Falling(CoupledParticles::new(), g, 0.0)
+        }
+
+        pub fn ground_reference(mut self, h: f64) -> Falling {
+            self.2 = h;
+            self
         }
     }
 
@@ -268,7 +273,7 @@ pub mod builtin_fields {
             ParticleAction::new().force(Vec3::new(0.0, -particle.mass * self.1, 0.0))
         }
         fn simple_potential(&self, particle: &Particle) -> f64 {
-            particle.mass * self.1 * particle.pos.y
+            particle.mass * self.1 * (particle.pos.y - self.2)
         }
     }
 

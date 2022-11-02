@@ -60,7 +60,7 @@ impl<C: ConstraintData> Constraint for C {
             .iter()
             .map(|p| p.get(particle_source))
             .collect();
-        
+
         let evaluated = self.constraint(&particles);
 
         let satisfied = match data.constraint_type {
@@ -142,6 +142,11 @@ pub mod builtin_constraints {
 
         pub fn as_chain(mut self) -> Distance {
             self.data.constraint_type = ConstraintType::Inequality;
+            self
+        }
+
+        pub fn as_non_xpbd(mut self) -> Distance {
+            self.data.xpbd = false;
             self
         }
     }

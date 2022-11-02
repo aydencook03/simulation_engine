@@ -14,6 +14,13 @@ pub struct Vec3 {
     pub z: f64,
 }
 
+#[derive(Copy, Clone, Debug)]
+pub enum Tensor {
+    Zero(f64),
+    One([f64; 3]),
+    Two([[f64; 3]; 3]),
+}
+
 //---------------------------------------------------------------------------------------------------//
 // Associated functions and methods.
 
