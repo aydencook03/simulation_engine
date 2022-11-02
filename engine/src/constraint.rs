@@ -5,27 +5,25 @@ use crate::{
 
 //---------------------------------------------------------------------------------------------------//
 
-#[derive(Copy, Clone)]
 pub enum ConstraintType {
     Equation,
     Inequality,
 }
 
-#[derive(Copy, Clone)]
-pub struct ConstraintProperties<const COUNT: usize> {
-    particles: [ParticleReference; COUNT],
+pub struct ConstraintProperties {
+    particles: Vec<ParticleReference>,
     compliance: f64,
     dissipation: f64,
     xpbd: bool,
     constraint_type: ConstraintType,
 }
 
-impl<const COUNT: usize> ConstraintProperties<COUNT> {
+impl ConstraintProperties {
     pub fn new(
-        particles: [ParticleReference; COUNT],
+        particles: Vec<ParticleReference>,
         constraint_type: ConstraintType,
         xpbd: bool,
-    ) -> ConstraintProperties<COUNT> {
+    ) -> ConstraintProperties {
         ConstraintProperties {
             particles,
             compliance: 0.0,
@@ -44,23 +42,22 @@ pub trait Constraint {
     // fn force_estimate
 }
 
-pub trait ConstraintData<const COUNT: usize> {
-    fn properties(&self) -> ConstraintProperties<COUNT>;
-    fn constraint(&self, particles: [&Particle; COUNT]) -> f64;
-    fn gradients(&self, particles: [&Particle; COUNT]) -> [Vec3; COUNT];
+pub trait ConstraintData {
+    fn properties(&self) -> &ConstraintProperties;
+    fn constraint(&self, particles: &[&Particle]) -> f64;
+    fn gradients(&self, particles: &[&Particle]) -> Vec<Vec3>;
 }
 
-impl<const COUNT: usize, C: ConstraintData<COUNT>> Constraint for C {
+impl<C: ConstraintData> Constraint for C {
     fn project(&self, particle_source: &mut [Particle], dt: f64, static_pass: bool) {
         let data = self.properties();
-        let mut particles: [&Particle; COUNT] =
-            unsafe { std::mem::MaybeUninit::uninit().assume_init() };
-
-        for (index, reference) in data.particles.iter().enumerate() {
-            particles[index] = reference.get(particle_source);
-        }
-
-        let evaluated = self.constraint(particles);
+        let particles: Vec<&Particle> = data
+            .particles
+            .iter()
+            .map(|p| p.get(particle_source))
+            .collect();
+        
+        let evaluated = self.constraint(&particles);
 
         let satisfied = match data.constraint_type {
             ConstraintType::Equation => evaluated == 0.0,
@@ -71,7 +68,7 @@ impl<const COUNT: usize, C: ConstraintData<COUNT>> Constraint for C {
             let dt = if static_pass { core::f64::MAX } else { dt };
             let alpha = data.compliance / dt.powi(2);
             let gamma = data.compliance * data.dissipation / dt;
-            let gradients = self.gradients(particles);
+            let gradients = self.gradients(&particles);
 
             let mut damp = 0.0;
             let mut scale = 0.0;
@@ -83,10 +80,10 @@ impl<const COUNT: usize, C: ConstraintData<COUNT>> Constraint for C {
 
             let lagrange = (-evaluated - gamma * damp) / ((1.0 + gamma) * scale + alpha);
 
-            let mut corrections = [Vec3::zero(); COUNT];
+            let mut corrections = Vec::new();
 
             for (i, particle) in particles.iter().enumerate() {
-                corrections[i] = lagrange * particle.inverse_mass() * gradients[i];
+                corrections.push(lagrange * particle.inverse_mass() * gradients[i]);
             }
 
             drop(particles);
@@ -117,14 +114,14 @@ pub mod builtin_constraints {
     //--------------------------------------------------------------------//
 
     pub struct Distance {
-        data: ConstraintProperties<2>,
+        data: ConstraintProperties,
         dist: f64,
     }
 
     impl Distance {
         pub fn new(particles: [ParticleReference; 2], dist: f64) -> Distance {
             Distance {
-                data: ConstraintProperties::new(particles, ConstraintType::Equation, true),
+                data: ConstraintProperties::new(particles.to_vec(), ConstraintType::Equation, true),
                 dist,
             }
         }
@@ -145,29 +142,29 @@ pub mod builtin_constraints {
         }
     }
 
-    impl ConstraintData<2> for Distance {
-        fn properties(&self) -> ConstraintProperties<2> {
-            self.data
+    impl ConstraintData for Distance {
+        fn properties(&self) -> &ConstraintProperties {
+            &self.data
         }
 
-        fn constraint(&self, particles: [&Particle; 2]) -> f64 {
+        fn constraint(&self, particles: &[&Particle]) -> f64 {
             self.dist - (particles[1].pos - particles[0].pos).mag()
         }
 
-        fn gradients(&self, particles: [&Particle; 2]) -> [Vec3; 2] {
+        fn gradients(&self, particles: &[&Particle]) -> Vec<Vec3> {
             let norm = (particles[1].pos - particles[0].pos).norm();
-            [norm, -norm]
+            vec![norm, -norm]
         }
     }
 
     //--------------------------------------------------------------------//
 
-    pub struct NonPenetrate(ConstraintProperties<2>);
+    pub struct NonPenetrate(ConstraintProperties);
 
     impl NonPenetrate {
         pub fn new(particles: [ParticleReference; 2], xpbd: bool) -> NonPenetrate {
             NonPenetrate(ConstraintProperties::new(
-                particles,
+                particles.to_vec(),
                 ConstraintType::Inequality,
                 xpbd,
             ))
@@ -184,39 +181,39 @@ pub mod builtin_constraints {
         }
     }
 
-    impl ConstraintData<2> for NonPenetrate {
-        fn properties(&self) -> ConstraintProperties<2> {
-            self.0
+    impl ConstraintData for NonPenetrate {
+        fn properties(&self) -> &ConstraintProperties {
+            &self.0
         }
 
-        fn constraint(&self, particles: [&Particle; 2]) -> f64 {
+        fn constraint(&self, particles: &[&Particle]) -> f64 {
             (particles[1].pos - particles[0].pos).mag()
                 - (particles[0].radius + particles[1].radius)
         }
 
-        fn gradients(&self, particles: [&Particle; 2]) -> [Vec3; 2] {
+        fn gradients(&self, particles: &[&Particle]) -> Vec<Vec3> {
             let norm = (particles[1].pos - particles[0].pos).norm();
-            [-norm, norm]
+            vec![-norm, norm]
         }
     }
 
     //--------------------------------------------------------------------//
 
     pub struct ContactPlane {
-        data: ConstraintProperties<1>,
+        data: ConstraintProperties,
         point: Vec3,
         normal: Vec3,
     }
 
     impl ContactPlane {
         pub fn new(
-            particles: [ParticleReference; 1],
+            particle: ParticleReference,
             point: Vec3,
             normal: Vec3,
             xpbd: bool,
         ) -> ContactPlane {
             ContactPlane {
-                data: ConstraintProperties::new(particles, ConstraintType::Equation, xpbd),
+                data: ConstraintProperties::new(vec![particle], ConstraintType::Inequality, xpbd),
                 point,
                 normal: normal.norm(),
             }
@@ -233,17 +230,17 @@ pub mod builtin_constraints {
         }
     }
 
-    impl ConstraintData<1> for ContactPlane {
-        fn properties(&self) -> ConstraintProperties<1> {
-            self.data
+    impl ConstraintData for ContactPlane {
+        fn properties(&self) -> &ConstraintProperties {
+            &self.data
         }
 
-        fn constraint(&self, particles: [&Particle; 1]) -> f64 {
+        fn constraint(&self, particles: &[&Particle]) -> f64 {
             (particles[0].pos - self.point).dot(self.normal) - particles[0].radius
         }
 
-        fn gradients(&self, _particles: [&Particle; 1]) -> [Vec3; 1] {
-            [self.normal]
+        fn gradients(&self, _particles: &[&Particle]) -> Vec<Vec3> {
+            vec![self.normal]
         }
     }
 
