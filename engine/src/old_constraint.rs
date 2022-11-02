@@ -1,9 +1,6 @@
 pub use crate::particle::{Particle, ParticleReference};
 pub use crate::vec3::Vec3;
 
-// pile: 30-35
-// star: 20-24
-
 //---------------------------------------------------------------------------------------------------//
 // Constraint trait.
 
