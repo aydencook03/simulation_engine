@@ -30,6 +30,11 @@ impl Force {
     pub fn from_displacement(displacement: Vec3, mass: f64, dt: f64) -> Force {
         Force(mass*displacement/dt.powi(2), None)
     }
+
+    pub fn location(mut self, location: Point3) -> Force {
+        self.1 = Some(location)
+        self
+    }
 }
 
 pub struct Extent {

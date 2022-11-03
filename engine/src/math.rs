@@ -1,4 +1,4 @@
-//! Provides a 3-dimensional vector object, a 3x3 matrix, and associated functions.
+//! Provides a 3-dimensional vector object, a 3x3 matrix, associated functions, and other useful things.
 //!
 //! Includes functions for things like polar coordinates, dot products,
 //! cross products, affine transformations, etc.
@@ -40,7 +40,7 @@ impl Vec3 {
         }
     }
 
-    /// Create a Vec3 using spherical coordinates
+    /// Create a Vec3 using spherical coordinates (radius, azimuth, polar)
     pub fn new_spherical(r: f64, theta: f64, phi: f64) -> Vec3 {
         Vec3 {
             x: r * phi.sin() * theta.cos(),
