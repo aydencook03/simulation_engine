@@ -1,10 +1,15 @@
-//! Provides a 3-dimensional vector object, and associated functions.
+//! Provides a 3-dimensional vector object, a 3x3 matrix, and associated functions.
 //!
 //! Includes functions for things like polar coordinates, dot products,
 //! cross products, affine transformations, etc.
 
 //---------------------------------------------------------------------------------------------------//
 // The Vec3 type.
+
+pub const PI: f64 = core::f64::consts::PI;
+
+/// Another name for a Vec3 for semantic purposes.
+pub type Point3 = Vec3;
 
 /// A 3d euclidean vector
 #[derive(Copy, Clone, Default, Debug)]
@@ -14,15 +19,11 @@ pub struct Vec3 {
     pub z: f64,
 }
 
-#[derive(Copy, Clone, Debug)]
-pub enum Tensor {
-    Zero(f64),
-    One([f64; 3]),
-    Two([[f64; 3]; 3]),
-}
+#[derive(Copy, Clone)]
+pub struct Matrix3([[f64; 3]; 3]);
 
 //---------------------------------------------------------------------------------------------------//
-// Associated functions and methods.
+// Associated functions and methods of Vec3.
 
 impl Vec3 {
     /// Create a Vec3 using x and y components
@@ -36,6 +37,15 @@ impl Vec3 {
             x: r * angle.cos(),
             y: r * angle.sin(),
             z: 0.0,
+        }
+    }
+
+    /// Create a Vec3 using spherical coordinates
+    pub fn new_spherical(r: f64, theta: f64, phi: f64) -> Vec3 {
+        Vec3 {
+            x: r * phi.sin() * theta.cos(),
+            y: r * phi.sin() * theta.sin(),
+            z: r * phi.cos(),
         }
     }
 
@@ -98,7 +108,7 @@ impl Vec3 {
 }
 
 //---------------------------------------------------------------------------------------------------//
-// Operator overloading.
+// Operator overloading on Vec3.
 
 impl core::ops::Add<Vec3> for Vec3 {
     type Output = Vec3;

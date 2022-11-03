@@ -6,8 +6,9 @@
     - [ ] comment explaining math and equations of XPBD
     - [ ] static vs non-static, xpbd vs non-xpbd
     - [ ] how to derive constraint force from lagrange multiplier
-  - [X] simplify the abstraction/api for fields
+  - [ ] simplify the abstraction/api for fields
     - [X] remove dt
+    - [ ] mimick constraint api. ie: Field trait: evolve, energy. SimpleFieldData, ParticleParticle, FieldParticle
   - [X] account for N's 3rd law in the ParticleParticle interaction (can enable optimizations?)
   - [ ] investigate
     - [ ] read xpbd paper. understand mathematical derivation to see where my algorithm could come from
@@ -20,7 +21,9 @@
   - [ ] real-time 3d renderer w/ simple interaction (using bevy)
   - [ ] support particle sources and sinks
   - [ ] different boundary conditions
-    - [ ] periodic (teleport)
+    - [ ] inflow
+    - [ ] outflow
+    - [ ] rigid
   - [ ] support breakable constraints (max constraint force and broken properties)
   - [ ] non-dynamical particles (central gravity bodies, boundary particles, constraint & spring attachments, platforms, etc.)
   - [ ] a common functionality implementation of SPH smoothing
@@ -39,6 +42,37 @@
         - [ ] surface mesh
     - [ ] mesh <=> connected particles
     - [ ] different boundary conditions (Neumann, dirichet, etc)
+
+- Big Picture
+  - math
+    - [X] pi
+    - [X] point
+    - [X] vector
+    - [ ] matrix
+    - [ ] mesh
+  - objects:
+    - [ ] system
+    - [ ] particles
+    - [ ] rigid bodies
+  - dynamics & interactions:
+    - [ ] fields
+    - [ ] compliant constraints
+    - [ ] sph
+    - [ ] collisions
+    - [ ] thermodynamics
+    - [ ] boundary conditions
+  - algorithms:
+    - [ ] n-body pairing
+    - [ ] composite shapes
+    - [ ] collision detection
+    - [ ] neighbor finding
+  - features:
+    - [ ] rendering
+    - [ ] serialization/deserialization
+    - [ ] simd
+    - [ ] wasm
+    - [ ] parallelization
+    - [ ] gpu acceleration
 
 - Examples
   - [ ] cantilever
@@ -86,9 +120,11 @@
 
 - Thermodynamics
   - [ ] research how to implement a good general macroscopic thermodynamics model
+  - [ ] is both orientation & size needed for proper thermodyanamics, or only size?
   - [ ] conduction, advection, radiation, friction, collisions
   - [ ] state variables & state equations
     - what is needed in this engine? pos, vel, temp, radius?
+    - pressure/volume, temperature/entropy, internal energy, work, heat
     - fields can alter any of these state variables. a field could implement a certain state eqn?
   - [ ] thermal expansion
   - [ ] phase changes

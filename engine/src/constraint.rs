@@ -1,6 +1,6 @@
 use crate::{
     particle::{Particle, ParticleReference},
-    vec3::Vec3,
+    math::Vec3,
 };
 
 // Old:                 New:
@@ -44,6 +44,7 @@ impl ConstraintProperties {
 pub trait Constraint {
     fn project(&self, particle_source: &mut [Particle], dt: f64, static_pass: bool);
     // fn force_estimate
+    // fn potential_energy
 }
 
 pub trait ConstraintData {
@@ -77,28 +78,21 @@ impl<C: ConstraintData> Constraint for C {
             let mut damp = 0.0;
             let mut scale = 0.0;
 
-            for (i, grad) in gradients.iter().enumerate() {
-                damp += grad.dot(particles[i].pos - particles[i].prev_pos);
-                scale += particles[i].inverse_mass() * grad.mag_squared();
+            for (i, part) in particles.iter().enumerate() {
+                damp += gradients[i].dot(part.pos - part.prev_pos);
+                scale += part.inverse_mass() * gradients[i].mag_squared();
             }
 
             let lagrange = (-evaluated - gamma * damp) / ((1.0 + gamma) * scale + alpha);
 
-            let mut corrections = Vec::new();
-
-            for (i, particle) in particles.iter().enumerate() {
-                corrections.push(lagrange * particle.inverse_mass() * gradients[i]);
-            }
-
-            drop(particles);
-
             for (i, part) in data.particles.iter().enumerate() {
                 if data.xpbd || static_pass {
-                    part.get_mut(particle_source).pos += corrections[i];
+                    let inv_mass = part.get(particle_source).inverse_mass();
+                    part.get_mut(particle_source).pos += lagrange * inv_mass * gradients[i];
                 } else {
                     part.get_mut(particle_source)
-                        .displacements
-                        .push(corrections[i]);
+                        .forces
+                        .push(lagrange * gradients[i] / dt.powi(2));
                 }
             }
         }
@@ -112,7 +106,7 @@ pub mod builtin_constraints {
     use crate::{
         constraint::{ConstraintData, ConstraintProperties, ConstraintType},
         particle::{Particle, ParticleReference},
-        vec3::Vec3,
+        math::Vec3,
     };
 
     //--------------------------------------------------------------------//

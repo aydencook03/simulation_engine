@@ -2,7 +2,7 @@ use crate::collision::CollisionDetector;
 use crate::constraint::Constraint;
 use crate::field::Field;
 use crate::particle::{Particle, ParticleReference};
-use crate::vec3::Vec3;
+use crate::math::Vec3;
 
 //---------------------------------------------------------------------------------------------------//
 
@@ -16,7 +16,7 @@ pub struct System {
     pub fields: Vec<Box<dyn Field>>,
     pub constraints: Vec<Box<dyn Constraint>>,
 
-    pub collision_detector: Option<Box<dyn CollisionDetector>>,
+    pub collision_detector: Option<Box<dyn CollisionDetector>>, // constains collision groups
     pub collision_fields: Vec<Box<dyn Field>>,
     pub collision_constraints: Vec<Box<dyn Constraint>>,
 

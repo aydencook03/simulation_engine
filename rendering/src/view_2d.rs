@@ -15,7 +15,7 @@
 //! draw_point((x + width / 2.0), (height / 2.0 - y));
 //! ```
 
-use engine::vec3::Vec3;
+use engine::math::Vec3;
 
 //---------------------------------------------------------------------------------------------------//
 // A useful object that can keep track of 2d camera panning and zooming.

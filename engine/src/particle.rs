@@ -1,5 +1,4 @@
-pub use crate::vec3::{Tensor, Vec3};
-use std::collections::HashMap;
+pub use crate::math::Vec3;
 
 //---------------------------------------------------------------------------------------------------//
 
@@ -11,7 +10,6 @@ pub struct Particle {
 
     // properties
     pub mass: f64,
-    pub properties: HashMap<String, Tensor>,
 
     // state
     pub pos: Vec3,
@@ -48,11 +46,6 @@ impl Particle {
 
     pub fn mass(mut self, mass: f64) -> Particle {
         self.mass = mass;
-        self
-    }
-
-    pub fn property(mut self, name: &str, value: Tensor) -> Particle {
-        self.properties.insert(name.to_string(), value);
         self
     }
 

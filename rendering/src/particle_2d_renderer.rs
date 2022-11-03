@@ -23,7 +23,7 @@
 //---------------------------------------------------------------------------------------------------//
 
 use crate::{colors::Color, view_2d::View2D};
-use engine::{system::System, vec3::Vec3};
+use engine::{system::System, math::Vec3};
 
 use std::{collections::HashMap, time::Instant};
 

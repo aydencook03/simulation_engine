@@ -2,7 +2,7 @@
 //! A field can also store its own state and have an integration method.
 
 use crate::particle::{Particle, ParticleReference};
-use crate::vec3::Vec3;
+use crate::math::Vec3;
 
 //---------------------------------------------------------------------------------------------------//
 // CoupledParticles.
