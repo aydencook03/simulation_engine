@@ -8,7 +8,7 @@
 
 pub const PI: f64 = core::f64::consts::PI;
 
-/// Another name for a Vec3 for semantic purposes.
+/// Another name for a Vec3 for semantic purposes
 pub type Point3 = Vec3;
 
 /// A 3d euclidean vector
@@ -19,6 +19,7 @@ pub struct Vec3 {
     pub z: f64,
 }
 
+/// A 3x3 matrix
 #[derive(Copy, Clone)]
 pub struct Matrix3([[f64; 3]; 3]);
 
@@ -161,7 +162,6 @@ impl core::ops::Mul<f64> for Vec3 {
 
 impl core::ops::Neg for Vec3 {
     type Output = Vec3;
-
     fn neg(self) -> Self::Output {
         Vec3 {
             x: -self.x,

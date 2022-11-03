@@ -1,8 +1,8 @@
 //! An object that enables dynamic interaction with and between particles.
 //! A field can also store its own state and have an integration method.
 
-use crate::particle::{Particle, ParticleReference};
 use crate::math::Vec3;
+use crate::particle::{Particle, ParticleReference};
 
 //---------------------------------------------------------------------------------------------------//
 // CoupledParticles.

@@ -1,8 +1,8 @@
 use crate::collision::CollisionDetector;
 use crate::constraint::Constraint;
 use crate::field::Field;
-use crate::particle::{Particle, ParticleReference};
 use crate::math::Vec3;
+use crate::particle::{Particle, ParticleReference};
 
 //---------------------------------------------------------------------------------------------------//
 

@@ -1,6 +1,6 @@
 use crate::{
-    particle::{Particle, ParticleReference},
     math::Vec3,
+    particle::{Particle, ParticleReference},
 };
 
 // Old:                 New:
@@ -105,8 +105,8 @@ impl<C: ConstraintData> Constraint for C {
 pub mod builtin_constraints {
     use crate::{
         constraint::{ConstraintData, ConstraintProperties, ConstraintType},
-        particle::{Particle, ParticleReference},
         math::Vec3,
+        particle::{Particle, ParticleReference},
     };
 
     //--------------------------------------------------------------------//

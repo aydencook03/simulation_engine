@@ -7,7 +7,7 @@ pub struct Particle {
     pub mass: f64,
     pub charge: f64,
 
-    // integration
+    // dynamical response
     pub inverse_mass: f64,
     pub prev_pos: Point3,
 
