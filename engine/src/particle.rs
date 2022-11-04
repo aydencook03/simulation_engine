@@ -87,37 +87,53 @@ impl Particle {
         Particle::default()
     }
 
+    // builder methods for particle identity
     pub fn id(mut self, id: u32) -> Particle {
         self.id = id;
         self
     }
-
     pub fn group(mut self, group: u32) -> Particle {
         self.group = group;
         self
     }
 
+    // builder methods for particle properties
+    pub fn mass(mut self, mass: f64) -> Particle {
+        self.mass = mass;
+        self
+    }
+    pub fn charge(mut self, charge: f64) -> Particle {
+        self.charge = charge;
+        self
+    }
+    pub fn inverse_mass(mut self, inverse_mass: f64) -> Particle {
+        self.inverse_mass = inverse_mass;
+        self
+    }
+
+    // builder methods for particle state
     pub fn pos(mut self, pos: Point3) -> Particle {
         self.pos = pos;
         self
     }
-
     pub fn pos_xyz(mut self, x: f64, y: f64, z: f64) -> Particle {
         self.pos.x = x;
         self.pos.y = y;
         self.pos.z = z;
         self
     }
-
     pub fn vel(mut self, vel: Vec3) -> Particle {
         self.vel = vel;
         self
     }
-
     pub fn vel_xyz(mut self, vel_x: f64, vel_y: f64, vel_z: f64) -> Particle {
         self.vel.x = vel_x;
         self.vel.y = vel_y;
         self.vel.z = vel_z;
+        self
+    }
+    pub fn temperature(mut self, temp: f64) -> Particle {
+        self.temperature = temp;
         self
     }
 
