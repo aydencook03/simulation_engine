@@ -21,7 +21,7 @@ pub struct Vec3 {
 
 /// A 3x3 matrix
 #[derive(Copy, Clone)]
-pub struct Matrix3([[f64; 3]; 3]);
+pub struct Matrix3(pub [[f64; 3]; 3]);
 
 //---------------------------------------------------------------------------------------------------//
 // Associated functions and methods of Vec3.
@@ -86,25 +86,6 @@ impl Vec3 {
     /// Return the normalized version of the Vec3
     pub fn norm(self) -> Vec3 {
         self / self.mag()
-    }
-
-    /// Perform an affine transformation on the Vec2.
-    ///
-    /// Uses a [[f64; 3]; 3] as the matrix, and another Vec3 as the translation.
-    ///
-    /// y = Ax + b
-    ///
-    /// A = [ [f64, f64, f64],
-    ///       [f64, f64, f64],
-    ///       [f64, f64, f64] ]
-    ///
-    /// b = Vec3
-    pub fn affine_transformation(self, a: [[f64; 3]; 3], b: Vec3) -> Vec3 {
-        Vec3 {
-            x: self.x * a[0][0] + self.y * a[0][1] + self.z * a[0][2] + b.x,
-            y: self.x * a[1][0] + self.y * a[1][1] + self.z * a[1][2] + b.y,
-            z: self.x * a[2][0] + self.z * a[2][1] + self.z * a[2][2] + b.z,
-        }
     }
 }
 
@@ -218,5 +199,61 @@ impl core::ops::DivAssign<f64> for Vec3 {
 impl Default for Matrix3 {
     fn default() -> Self {
         Self([[1., 0., 0.], [0., 1., 0.], [0., 0., 1.]])
+    }
+}
+
+impl core::ops::Mul<Vec3> for Matrix3 {
+    type Output = Vec3;
+    fn mul(self, rhs: Vec3) -> Self::Output {
+        Vec3 {
+            x: rhs.x * self.0[0][0] + rhs.y * self.0[0][1] + rhs.z * self.0[0][2],
+            y: rhs.x * self.0[1][0] + rhs.y * self.0[1][1] + rhs.z * self.0[1][2],
+            z: rhs.x * self.0[2][0] + rhs.y * self.0[2][1] + rhs.z * self.0[2][2],
+        }
+    }
+}
+
+impl core::ops::Mul<Matrix3> for f64 {
+    type Output = Matrix3;
+    fn mul(self, rhs: Matrix3) -> Self::Output {
+        Matrix3([
+            [self * rhs.0[0][0], self * rhs.0[0][1], self * rhs.0[0][2]],
+            [self * rhs.0[1][0], self * rhs.0[1][1], self * rhs.0[1][2]],
+            [self * rhs.0[2][0], self * rhs.0[2][1], self * rhs.0[2][2]],
+        ])
+    }
+}
+
+impl core::ops::Mul<f64> for Matrix3 {
+    type Output = Matrix3;
+    fn mul(self, rhs: f64) -> Self::Output {
+        Matrix3([
+            [self.0[0][0] * rhs, self.0[0][1] * rhs, self.0[0][2] * rhs],
+            [self.0[1][0] * rhs, self.0[1][1] * rhs, self.0[1][2] * rhs],
+            [self.0[2][0] * rhs, self.0[2][1] * rhs, self.0[2][2] * rhs],
+        ])
+    }
+}
+
+impl core::ops::Add<Matrix3> for Matrix3 {
+    type Output = Matrix3;
+    fn add(self, rhs: Matrix3) -> Self::Output {
+        Matrix3([
+            [
+                self.0[0][0] + rhs.0[0][0],
+                self.0[0][1] + rhs.0[0][1],
+                self.0[0][2] + rhs.0[0][2],
+            ],
+            [
+                self.0[1][0] + rhs.0[1][0],
+                self.0[1][1] + rhs.0[1][1],
+                self.0[1][2] + rhs.0[1][2],
+            ],
+            [
+                self.0[2][0] + rhs.0[2][0],
+                self.0[2][1] + rhs.0[2][1],
+                self.0[2][2] + rhs.0[2][2],
+            ],
+        ])
     }
 }
