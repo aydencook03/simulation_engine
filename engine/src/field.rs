@@ -32,6 +32,9 @@ impl FieldProperties {
 pub trait Field {
     fn handle(&mut self, particle_source: &mut [Particle], dt: f64);
     fn total_energy(&self, particle_source: &[Particle]) -> f64;
+
+    fn add_particle(&mut self, _particle_reference: ParticleReference);
+    fn add_particles(&mut self, _particle_references: &[ParticleReference]);
 }
 
 pub trait FieldData {
@@ -63,18 +66,6 @@ pub trait FieldData {
     }
     fn force_potential(&self, _particle: &Particle) -> f64 {
         0.0
-    }
-
-    fn add_particle(&mut self, particle_reference: ParticleReference) {
-        self.properties_mut()
-            .coupled_particles
-            .push(particle_reference);
-    }
-
-    fn add_particles(&mut self, particle_references: &[ParticleReference]) {
-        for reference in particle_references {
-            self.properties_mut().coupled_particles.push(*reference);
-        }
     }
 }
 
@@ -154,6 +145,18 @@ impl<F: FieldData> Field for F {
                 }
                 potential
             }
+        }
+    }
+
+    fn add_particle(&mut self, particle_reference: ParticleReference) {
+        self.properties_mut()
+            .coupled_particles
+            .push(particle_reference);
+    }
+
+    fn add_particles(&mut self, particle_references: &[ParticleReference]) {
+        for reference in particle_references {
+            self.properties_mut().coupled_particles.push(*reference);
         }
     }
 }

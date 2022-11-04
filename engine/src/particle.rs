@@ -68,6 +68,15 @@ pub struct Extent {
 pub enum Shape {
     #[default]
     Particle,
+    Sphere,
+    Cuboid,
+    Capsule,
+    Cylinder,
+    Cone,
+    Compound,
+    ConvexMesh,
+    TriangleMesh,
+    Heightfield,
 }
 
 //---------------------------------------------------------------------------------------------------//

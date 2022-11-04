@@ -48,7 +48,7 @@
     - [X] pi
     - [X] point
     - [X] vector
-    - [ ] matrix
+    - [X] matrix
     - [ ] mesh
   - objects:
     - [ ] system

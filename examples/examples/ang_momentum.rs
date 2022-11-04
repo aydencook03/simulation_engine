@@ -10,15 +10,12 @@ fn main() {
     system.add_particle(
         Particle::new()
             .pos_xyz(100.0, 0.0, 0.0)
-            .vel_xyz(0.0, 10.0, 0.0)
-            .radius(5.0)
-            .mass(0.4),
+            .vel_xyz(0.0, 10.0, 0.0),
     );
     system.add_particle(
         Particle::new()
             .pos_xyz(-100.0, 0.0, 0.0)
-            .vel_xyz(0.0, 0.0, 0.0)
-            .radius(20.0),
+            .vel_xyz(0.0, 0.0, 0.0),
     );
 
     let mut gravity = Fields::Gravity::new(60000.0);
@@ -30,7 +27,7 @@ fn main() {
     for ref1 in &system.all_particles() {
         for ref2 in &system.all_particles()[(index + 1)..] {
             system.add_constraint(
-                Constraints::NonPenetrate::new([*ref1, *ref2], false)
+                Constraints::NonPenetrate::new([*ref1, *ref2], system.particle_radius * 2., false)
                     .compliance(0.00001)
                     .dissipation(30.0),
             );
@@ -46,18 +43,21 @@ fn main() {
     for part in &system.all_particles() {
         system.add_constraint(Constraints::ContactPlane::new(
             *part,
+            system.particle_radius * 2.0,
             Vec3::new(bounds[0], 0.0, 0.0),
             Vec3::new(1.0, 0.0, 0.0),
             false,
         ));
         system.add_constraint(Constraints::ContactPlane::new(
             *part,
+            system.particle_radius * 2.0,
             Vec3::new(bounds[1], 0.0, 0.0),
             Vec3::new(-1.0, 0.0, 0.0),
             false,
         ));
         system.add_constraint(Constraints::ContactPlane::new(
             *part,
+            system.particle_radius * 2.0,
             Vec3::new(0.0, bounds[2], 0.0),
             Vec3::new(0.0, 1.0, 0.0),
             false,
