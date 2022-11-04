@@ -1,208 +1,156 @@
 //! An object that enables dynamic interaction with and between particles.
 //! A field can also store its own state and have an integration method.
 
-use crate::math::Vec3;
-use crate::particle::{Particle, ParticleReference};
+use crate::particle::{Force, Particle, ParticleReference};
 
 //---------------------------------------------------------------------------------------------------//
-// CoupledParticles.
+// FieldProperties
 
-pub struct CoupledParticles(pub Vec<ParticleReference>);
-
-impl CoupledParticles {
-    pub fn new() -> CoupledParticles {
-        CoupledParticles(Vec::new())
-    }
-}
-
-//---------------------------------------------------------------------------------------------------//
-// ParticleAction.
-
-#[derive(Default, Copy, Clone)]
-pub struct ParticleAction {
-    force: Option<Vec3>,
-    impulse: Option<Vec3>,
-    displacement: Option<Vec3>,
-    internal_work: Option<f64>,
-}
-
-impl ParticleAction {
-    pub fn new() -> ParticleAction {
-        ParticleAction::default()
-    }
-    pub fn force(mut self, force: Vec3) -> ParticleAction {
-        self.force = Some(force);
-        self
-    }
-    pub fn impulse(mut self, impulse: Vec3) -> ParticleAction {
-        self.impulse = Some(impulse);
-        self
-    }
-    pub fn displacement(mut self, displacement: Vec3) -> ParticleAction {
-        self.displacement = Some(displacement);
-        self
-    }
-    pub fn work(mut self, work: f64) -> ParticleAction {
-        self.internal_work = Some(work);
-        self
-    }
-
-    pub fn flipped(mut self) -> ParticleAction {
-        if let Some(force) = self.force {
-            self.force = Some(-1. * force);
-        }
-        if let Some(impulse) = self.impulse {
-            self.impulse = Some(-1. * impulse)
-        }
-        if let Some(displacement) = self.displacement {
-            self.displacement = Some(-1. * displacement);
-        }
-        self
-    }
-
-    pub fn send_to_particle(&self, particle: &mut Particle) {
-        if let Some(force) = self.force {
-            particle.forces.push(force);
-        }
-        if let Some(impulse) = self.impulse {
-            particle.impulses.push(impulse);
-        }
-        if let Some(displacement) = self.displacement {
-            particle.displacements.push(displacement);
-        }
-    }
-}
-
-//---------------------------------------------------------------------------------------------------//
-// InteractionType.
-
-/// # Describes the way the field interacts with its coupled particles.
-///
-/// ### Field ⇄ Particle:
-/// -
-///
-/// ### Particle ⇄ Particle:
-/// - Field doesn't need to store any state of its own.
-/// - The force on each particle only depends on the current state of the other particles.
-#[derive(Copy, Clone)]
 pub enum InteractionType {
     FieldParticle,
     ParticleParticle,
-    Simple,
+    SimpleForce,
+}
+
+pub struct FieldProperties {
+    coupled_particles: Vec<ParticleReference>,
+    interaction_type: InteractionType,
+}
+
+impl FieldProperties {
+    pub fn new(interaction_type: InteractionType) -> FieldProperties {
+        FieldProperties {
+            coupled_particles: Vec::new(),
+            interaction_type,
+        }
+    }
 }
 
 //---------------------------------------------------------------------------------------------------//
-// Field trait.
+// Field traits.
 
 pub trait Field {
-    // must be implemented
-    fn coupled_particles(&self) -> &CoupledParticles;
-    fn coupled_particles_mut(&mut self) -> &mut CoupledParticles;
-    fn interaction_type(&self) -> InteractionType;
+    fn handle(&mut self, particle_source: &mut [Particle], dt: f64);
+    fn total_energy(&self, particle_source: &[Particle]) -> f64;
+}
 
-    // helper methods that are already implemented
-    fn add_particle(&mut self, particle_reference: ParticleReference) {
-        self.coupled_particles_mut().0.push(particle_reference);
-    }
-    fn add_particles(&mut self, particle_references: &[ParticleReference]) {
-        for reference in particle_references {
-            self.coupled_particles_mut().0.push(*reference);
-        }
-    }
+pub trait FieldData {
+    fn properties(&self) -> &FieldProperties;
+    fn properties_mut(&mut self) -> &mut FieldProperties;
 
-    // behavior associated with a FieldParticle interaction type
+    // for FieldParticle interaction type
     fn particle_to_field(&mut self, _particle: &Particle) {}
     fn integrate(&mut self, _dt: f64) {}
-    fn field_to_particle(&self, _particle: &Particle) -> ParticleAction {
-        ParticleAction::new()
+    fn field_to_particle(&self, _particle: &Particle) -> Option<Force> {
+        None
     }
     fn clear(&mut self) {}
     fn field_energy(&self) -> f64 {
         0.0
     }
 
-    // behavior associated with a ParticleParticle interaction type
-    fn particle_to_particle(&self, _particle1: &Particle, _particle2: &Particle) -> ParticleAction {
-        ParticleAction::new()
+    // for ParticleParticle interaction type
+    fn particle_to_particle(&self, _particle1: &Particle, _particle2: &Particle) -> Option<Force> {
+        None
     }
-    fn particle_particle_potential(&self, _particle1: &Particle, _particle2: &Particle) -> f64 {
+    fn interaction_potential(&self, _particle1: &Particle, _particle2: &Particle) -> f64 {
         0.0
     }
 
-    // behavior associated wtih a Simple interaction type
-    fn simple_action(&self, _particle: &Particle) -> ParticleAction {
-        ParticleAction::new()
+    // for SimpleForce interaction type
+    fn simple_force(&self, _particle: &Particle) -> Option<Force> {
+        None
     }
-    fn simple_potential(&self, _particle: &Particle) -> f64 {
+    fn force_potential(&self, _particle: &Particle) -> f64 {
         0.0
+    }
+
+    fn add_particle(&mut self, particle_reference: ParticleReference) {
+        self.properties_mut()
+            .coupled_particles
+            .push(particle_reference);
+    }
+
+    fn add_particles(&mut self, particle_references: &[ParticleReference]) {
+        for reference in particle_references {
+            self.properties_mut().coupled_particles.push(*reference);
+        }
     }
 }
 
 //--------------------------------------------------------------------//
 
-impl dyn Field {
-    pub fn handle(&mut self, particles: &mut [Particle], dt: f64) {
-        match self.interaction_type() {
+impl<F: FieldData> Field for F {
+    fn handle(&mut self, particle_source: &mut [Particle], dt: f64) {
+        match &self.properties().interaction_type {
             InteractionType::FieldParticle => {
                 // ready field for fresh update
                 self.clear();
 
                 // particles -> act on field
-                for reference in &self.coupled_particles().0.to_owned() {
+                for reference in &self.properties().coupled_particles.to_owned() {
                     // need to find a way around the ".to_owned()"
-                    self.particle_to_field(reference.get(particles));
+                    self.particle_to_field(reference.get(particle_source));
                 }
 
                 // field dynamics
                 self.integrate(dt);
 
                 // field -> act on particles
-                for reference in &self.coupled_particles().0 {
-                    let particle = reference.get_mut(particles);
-                    let action = self.field_to_particle(particle);
-                    action.send_to_particle(particle);
+                for reference in &self.properties().coupled_particles {
+                    let particle = reference.get_mut(particle_source);
+                    if let Some(force) = self.field_to_particle(particle) {
+                        particle.forces.push(force);
+                    }
                 }
             }
             InteractionType::ParticleParticle => {
                 let mut index: usize = 0;
-                for ref1 in &self.coupled_particles().0 {
-                    for ref2 in &self.coupled_particles().0[(index + 1)..] {
-                        let action =
-                            self.particle_to_particle(ref1.get(particles), ref2.get(particles));
-                        action.send_to_particle(ref1.get_mut(particles));
-                        action.flipped().send_to_particle(ref2.get_mut(particles));
+                for ref1 in &self.properties().coupled_particles {
+                    for ref2 in &self.properties().coupled_particles[(index + 1)..] {
+                        if let Some(force) = self.particle_to_particle(
+                            ref1.get(particle_source),
+                            ref2.get(particle_source),
+                        ) {
+                            ref1.get_mut(particle_source).forces.push(force);
+                            ref2.get_mut(particle_source).forces.push(-force);
+                        }
                     }
                     index += 1;
                 }
             }
-            InteractionType::Simple => {
-                for reference in &self.coupled_particles().0 {
-                    let action = self.simple_action(reference.get(particles));
-                    action.send_to_particle(reference.get_mut(particles));
+            InteractionType::SimpleForce => {
+                for reference in &self.properties().coupled_particles {
+                    if let Some(force) = self.simple_force(reference.get(particle_source)) {
+                        reference.get_mut(particle_source).forces.push(force);
+                    }
                 }
             }
         }
     }
 
-    pub fn total_field_energy(&self, particles: &[Particle]) -> f64 {
-        match self.interaction_type() {
+    fn total_energy(&self, particle_source: &[Particle]) -> f64 {
+        let properties = &self.properties();
+        match self.properties().interaction_type {
             InteractionType::FieldParticle => self.field_energy(),
             InteractionType::ParticleParticle => {
                 let mut potential = 0.0;
                 let mut index: usize = 0;
-                for ref1 in &self.coupled_particles().0 {
-                    for ref2 in &self.coupled_particles().0[(index + 1)..] {
-                        potential += self
-                            .particle_particle_potential(ref1.get(particles), ref2.get(particles));
+                for ref1 in &properties.coupled_particles {
+                    for ref2 in &properties.coupled_particles[(index + 1)..] {
+                        potential += self.interaction_potential(
+                            ref1.get(particle_source),
+                            ref2.get(particle_source),
+                        );
                     }
                     index += 1;
                 }
                 potential
             }
-            InteractionType::Simple => {
+            InteractionType::SimpleForce => {
                 let mut potential = 0.0;
-                for reference in &self.coupled_particles().0 {
-                    potential += self.simple_potential(reference.get(particles));
+                for reference in &properties.coupled_particles {
+                    potential += self.force_potential(reference.get(particle_source));
                 }
                 potential
             }
@@ -211,79 +159,77 @@ impl dyn Field {
 }
 
 //---------------------------------------------------------------------------------------------------//
-// Different fields implemented using the Field trait.
+// Different fields implemented using the field traits.
 
 pub mod builtin_fields {
     use crate::{
-        field::{CoupledParticles, Field, InteractionType, ParticleAction},
-        particle::{Particle, Vec3},
+        field::{FieldData, FieldProperties, InteractionType},
+        particle::{Force, Particle, Vec3},
     };
 
     //--------------------------------------------------------------------//
 
-    pub struct ConstantForce(CoupledParticles, Vec3);
+    pub struct ConstantForce(FieldProperties, Vec3);
 
     impl ConstantForce {
         pub fn new(force: Vec3) -> ConstantForce {
-            ConstantForce(CoupledParticles::new(), force)
+            ConstantForce(FieldProperties::new(InteractionType::SimpleForce), force)
         }
     }
 
-    impl Field for ConstantForce {
-        fn coupled_particles(&self) -> &CoupledParticles {
+    impl FieldData for ConstantForce {
+        fn properties(&self) -> &FieldProperties {
             &self.0
         }
-        fn coupled_particles_mut(&mut self) -> &mut CoupledParticles {
+        fn properties_mut(&mut self) -> &mut FieldProperties {
             &mut self.0
         }
-        fn interaction_type(&self) -> InteractionType {
-            InteractionType::Simple
-        }
-        fn simple_action(&self, _particle: &Particle) -> ParticleAction {
-            ParticleAction::new().force(self.1)
+        fn simple_force(&self, _particle: &Particle) -> Option<Force> {
+            Some(Force(self.1, None))
         }
     }
 
     //--------------------------------------------------------------------//
 
-    pub struct Falling(CoupledParticles, f64, f64);
+    pub struct Falling(FieldProperties, f64, f64);
 
     impl Falling {
         pub fn new(g: f64) -> Falling {
-            Falling(CoupledParticles::new(), g, 0.0)
+            Falling(FieldProperties::new(InteractionType::SimpleForce), g, 0.0)
         }
 
-        pub fn ground_reference(mut self, h: f64) -> Falling {
-            self.2 = h;
+        pub fn ground_reference(mut self, height: f64) -> Falling {
+            self.2 = height;
             self
         }
     }
 
-    impl Field for Falling {
-        fn coupled_particles(&self) -> &CoupledParticles {
+    impl FieldData for Falling {
+        fn properties(&self) -> &FieldProperties {
             &self.0
         }
-        fn coupled_particles_mut(&mut self) -> &mut CoupledParticles {
+        fn properties_mut(&mut self) -> &mut FieldProperties {
             &mut self.0
         }
-        fn interaction_type(&self) -> InteractionType {
-            InteractionType::Simple
+        fn simple_force(&self, particle: &Particle) -> Option<Force> {
+            Some(Force(Vec3::new(0.0, -particle.mass * self.1, 0.0), None))
         }
-        fn simple_action(&self, particle: &Particle) -> ParticleAction {
-            ParticleAction::new().force(Vec3::new(0.0, -particle.mass * self.1, 0.0))
-        }
-        fn simple_potential(&self, particle: &Particle) -> f64 {
+        fn force_potential(&self, particle: &Particle) -> f64 {
             particle.mass * self.1 * (particle.pos.y - self.2)
         }
     }
 
     //--------------------------------------------------------------------//
 
-    pub struct Gravity(CoupledParticles, f64, f64);
+    pub struct Gravity(FieldProperties, f64, f64);
 
     impl Gravity {
         pub fn new(gravitational_constant: f64) -> Gravity {
-            Gravity(CoupledParticles::new(), gravitational_constant, 0.0)
+            Gravity(
+                FieldProperties::new(InteractionType::ParticleParticle),
+                gravitational_constant,
+                0.0,
+            )
         }
 
         pub fn softening(mut self, softening_parameter: f64) -> Gravity {
@@ -292,84 +238,32 @@ pub mod builtin_fields {
         }
     }
 
-    impl Field for Gravity {
-        fn coupled_particles(&self) -> &CoupledParticles {
+    impl FieldData for Gravity {
+        fn properties(&self) -> &FieldProperties {
             &self.0
         }
-        fn coupled_particles_mut(&mut self) -> &mut CoupledParticles {
+        fn properties_mut(&mut self) -> &mut FieldProperties {
             &mut self.0
-        }
-        fn interaction_type(&self) -> InteractionType {
-            InteractionType::ParticleParticle
         }
         fn particle_to_particle(
             &self,
             particle1: &Particle,
             particle2: &Particle,
-        ) -> ParticleAction {
+        ) -> Option<Force> {
             let radial = particle1.pos - particle2.pos;
             let dist_sqr = radial.mag_squared();
 
-            ParticleAction::new().force(
+            Some(Force(
                 -(self.1 * particle1.mass * particle2.mass)
                     / (dist_sqr + self.2.powi(2)).powi(3).sqrt()
                     * radial,
-            )
+                None,
+            ))
         }
-        fn particle_particle_potential(&self, particle1: &Particle, particle2: &Particle) -> f64 {
+        fn interaction_potential(&self, particle1: &Particle, particle2: &Particle) -> f64 {
             let radial = particle2.pos - particle1.pos;
             -self.1 * particle1.mass * particle2.mass
                 / (radial.mag_squared() + self.2.powi(2)).sqrt()
-        }
-    }
-
-    //--------------------------------------------------------------------//
-
-    pub struct VanDerWaals(CoupledParticles, f64, Option<f64>, f64);
-
-    impl VanDerWaals {
-        pub fn new(
-            bond_energy: f64,
-            bond_length: Option<f64>,
-            softening_parameter: f64,
-        ) -> VanDerWaals {
-            VanDerWaals(
-                CoupledParticles::new(),
-                bond_energy,
-                bond_length,
-                softening_parameter,
-            )
-        }
-    }
-
-    impl Field for VanDerWaals {
-        fn coupled_particles(&self) -> &CoupledParticles {
-            &self.0
-        }
-        fn coupled_particles_mut(&mut self) -> &mut CoupledParticles {
-            &mut self.0
-        }
-        fn interaction_type(&self) -> InteractionType {
-            InteractionType::ParticleParticle
-        }
-        fn particle_to_particle(
-            &self,
-            particle1: &Particle,
-            particle2: &Particle,
-        ) -> ParticleAction {
-            let radial = particle1.pos - particle2.pos;
-            let dist_sqr = radial.mag_squared();
-            let bond_6 = if let Some(length) = self.2 {
-                length.powi(6)
-            } else {
-                (particle1.radius + particle2.radius).powi(6)
-            };
-            let bond_12 = bond_6.powi(2);
-
-            let denom = dist_sqr + self.3.powi(2);
-            ParticleAction::new().force(
-                (-12_f64 * self.1 * (bond_6 / denom.powi(4) - bond_12 / denom.powi(7))) * radial,
-            )
         }
     }
 }

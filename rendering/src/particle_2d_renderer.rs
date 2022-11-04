@@ -224,14 +224,15 @@ impl Particle2DRenderer {
         //--------------------------------------------------------------------//
         let mut particles = Vec::new();
         for particle in &system.particles {
-            particles.push((particle.pos, particle.radius, particle.group));
+            particles.push((particle.pos, particle.group));
         }
         particles.sort_by(|a, b| a.0.z.partial_cmp(&b.0.z).unwrap());
 
-        for (pos, radius, group) in particles {
+        for (pos, group) in particles {
             let color = self.style.group_colors.get(&group).unwrap();
             // get particle position and radius mapped to window space
-            let (Vec3 { x, y, z: _ }, radius) = context.view.map_to_view(pos, radius);
+            let (Vec3 { x, y, z: _ }, radius) =
+                context.view.map_to_view(pos, system.particle_radius);
             particle_style.set_color_rgba8(color[0], color[1], color[2], color[3]);
 
             let path = {

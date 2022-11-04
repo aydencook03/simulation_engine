@@ -210,3 +210,13 @@ impl core::ops::DivAssign<f64> for Vec3 {
 }
 
 //---------------------------------------------------------------------------------------------------//
+// Associated functions and methods of Matrix3.
+
+//---------------------------------------------------------------------------------------------------//
+// Operator overloading on Matrix3.
+
+impl Default for Matrix3 {
+    fn default() -> Self {
+        Self([[1., 0., 0.], [0., 1., 0.], [0., 0., 1.]])
+    }
+}

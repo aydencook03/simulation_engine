@@ -1,6 +1,6 @@
 use crate::{
     math::Vec3,
-    particle::{Particle, ParticleReference},
+    particle::{Force, Particle, ParticleReference},
 };
 
 // Old:                 New:
@@ -80,19 +80,19 @@ impl<C: ConstraintData> Constraint for C {
 
             for (i, part) in particles.iter().enumerate() {
                 damp += gradients[i].dot(part.pos - part.prev_pos);
-                scale += part.inverse_mass() * gradients[i].mag_squared();
+                scale += part.inverse_mass * gradients[i].mag_squared();
             }
 
             let lagrange = (-evaluated - gamma * damp) / ((1.0 + gamma) * scale + alpha);
 
             for (i, part) in data.particles.iter().enumerate() {
                 if data.xpbd || static_pass {
-                    let inv_mass = part.get(particle_source).inverse_mass();
+                    let inv_mass = part.get(particle_source).inverse_mass;
                     part.get_mut(particle_source).pos += lagrange * inv_mass * gradients[i];
                 } else {
                     part.get_mut(particle_source)
                         .forces
-                        .push(lagrange * gradients[i] / dt.powi(2));
+                        .push(Force(lagrange * gradients[i] / dt.powi(2), None))
                 }
             }
         }
@@ -106,7 +106,7 @@ pub mod builtin_constraints {
     use crate::{
         constraint::{ConstraintData, ConstraintProperties, ConstraintType},
         math::Vec3,
-        particle::{Particle, ParticleReference},
+        particle::{Particle, ParticleReference, Point3},
     };
 
     //--------------------------------------------------------------------//
@@ -162,15 +162,18 @@ pub mod builtin_constraints {
 
     //--------------------------------------------------------------------//
 
-    pub struct NonPenetrate(ConstraintProperties);
+    pub struct NonPenetrate(ConstraintProperties, f64);
 
     impl NonPenetrate {
-        pub fn new(particles: [ParticleReference; 2], xpbd: bool) -> NonPenetrate {
-            NonPenetrate(ConstraintProperties::new(
-                particles.to_vec(),
-                ConstraintType::Inequality,
-                xpbd,
-            ))
+        pub fn new(
+            particles: [ParticleReference; 2],
+            collision_distance: f64,
+            xpbd: bool,
+        ) -> NonPenetrate {
+            NonPenetrate(
+                ConstraintProperties::new(particles.to_vec(), ConstraintType::Inequality, xpbd),
+                collision_distance,
+            )
         }
 
         pub fn compliance(mut self, compliance: f64) -> NonPenetrate {
@@ -190,8 +193,7 @@ pub mod builtin_constraints {
         }
 
         fn constraint(&self, particles: &[&Particle]) -> f64 {
-            (particles[1].pos - particles[0].pos).mag()
-                - (particles[0].radius + particles[1].radius)
+            (particles[1].pos - particles[0].pos).mag() - self.1
         }
 
         fn gradients(&self, particles: &[&Particle]) -> Vec<Vec3> {
@@ -204,19 +206,22 @@ pub mod builtin_constraints {
 
     pub struct ContactPlane {
         data: ConstraintProperties,
-        point: Vec3,
+        collision_distance: f64,
+        point: Point3,
         normal: Vec3,
     }
 
     impl ContactPlane {
         pub fn new(
             particle: ParticleReference,
-            point: Vec3,
+            collision_distance: f64,
+            point: Point3,
             normal: Vec3,
             xpbd: bool,
         ) -> ContactPlane {
             ContactPlane {
                 data: ConstraintProperties::new(vec![particle], ConstraintType::Inequality, xpbd),
+                collision_distance,
                 point,
                 normal: normal.norm(),
             }
@@ -239,7 +244,7 @@ pub mod builtin_constraints {
         }
 
         fn constraint(&self, particles: &[&Particle]) -> f64 {
-            (particles[0].pos - self.point).dot(self.normal) - particles[0].radius
+            (particles[0].pos - self.point).dot(self.normal) - self.collision_distance
         }
 
         fn gradients(&self, _particles: &[&Particle]) -> Vec<Vec3> {

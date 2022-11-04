@@ -12,6 +12,8 @@ pub struct System {
     pub running: bool,
     pub substeps: u32,
 
+    pub particle_radius: f64,
+
     pub particles: Vec<Particle>,
     pub fields: Vec<Box<dyn Field>>,
     pub constraints: Vec<Box<dyn Constraint>>,
@@ -30,6 +32,7 @@ impl System {
         System {
             running: true,
             substeps: 20,
+            particle_radius: 5.0,
             ..Default::default()
         }
     }
@@ -120,7 +123,7 @@ impl System {
             ke += 0.5 * particle.mass * particle.vel.mag_squared();
         }
         for field in &self.fields {
-            pe += field.total_field_energy(&self.particles);
+            pe += field.total_energy(&self.particles);
         }
         dbg!(ke + pe);
     }
