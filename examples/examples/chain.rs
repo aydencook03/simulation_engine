@@ -1,23 +1,26 @@
 use engine::prelude::*;
 use rendering::particle_2d_renderer::Particle2DRenderer;
 
-const LINK_COUNT: u32 = 75;
-const LINK_MASS: f64 = 15.0;
-const LINK_RADIUS: f64 = 2.5;
-const LINK_GAP: f64 = 1.5;
+const CHAIN_LENGTH: f64 = 400.0;
+const CHAIN_MASS: f64 = 1.0;
+const LINK_COUNT: u32 = 250;
 const GRAVITY: f64 = 200.0;
+
+const LINK_RADIUS: f64 = (CHAIN_LENGTH / (LINK_COUNT as f64)) / 2.0;
+const LINK_MASS: f64 = CHAIN_MASS / (LINK_COUNT as f64);
 
 fn main() {
     let mut system = System::new();
+
+    system.particle_radius = LINK_RADIUS;
     let mut window = Particle2DRenderer::new();
-    window.scale.physics_dt = 1.0 / 120.0;
+    window.scale.physics_dt = 1.0 / 60.0;
     window.style.stroke_size = 0.0;
 
     for i in 0..LINK_COUNT {
         system.add_particle(
             Particle::new()
-                .pos_xyz((i as f64) * (2.0 * LINK_RADIUS + LINK_GAP), 0.0, 0.0)
-                .radius(LINK_RADIUS)
+                .pos_xyz((i as f64) * (2.0 * LINK_RADIUS), 0.0, 0.0)
                 .mass(if i == 0 { 0.0 } else { LINK_MASS }),
         );
     }
@@ -26,29 +29,29 @@ fn main() {
         if (i as u32) != 0 {
             system.add_constraint(Constraints::Distance::new(
                 [*p1, *&system.all_particles()[(i as usize) - 1]],
-                2.0 * LINK_RADIUS + LINK_GAP,
+                2.0 * LINK_RADIUS,
             ));
         }
 
         if (i as u32) < LINK_COUNT - 1 {
             system.add_constraint(Constraints::Distance::new(
                 [*p1, *&system.all_particles()[(i as usize) + 1]],
-                2.0 * LINK_RADIUS + LINK_GAP,
+                2.0 * LINK_RADIUS,
             ));
         }
     }
 
-    system.add_particle(
-        Particle::new()
-            .pos_xyz(100.0, -250.0, 0.0)
-            .radius(20.0)
-            .mass(0.0),
-    );
+    system.add_particle(Particle::new().pos_xyz(100.0, -250.0, 0.0).mass(0.0));
+    system.add_particle(Particle::new().pos_xyz(60.0, -250.0, 0.0).mass(0.0));
 
     let mut index: usize = 0;
     for ref1 in &system.all_particles() {
         for ref2 in &system.all_particles()[(index + 1)..] {
-            system.add_constraint(Constraints::NonPenetrate::new([*ref1, *ref2], false));
+            system.add_constraint(Constraints::NonPenetrate::new(
+                [*ref1, *ref2],
+                2.0 * system.particle_radius,
+                true,
+            ));
         }
         index += 1;
     }
@@ -57,7 +60,7 @@ fn main() {
     gravity.add_particles(&system.all_particles());
 
     system.add_field(gravity);
-    system.static_constraint_pass(0);
+    system.static_constraint_pass(1);
 
     window.run(system);
 }

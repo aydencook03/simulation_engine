@@ -3,22 +3,25 @@ use rendering::particle_2d_renderer::Particle2DRenderer;
 
 fn main() {
     let mut system = System::new();
-    let window = Particle2DRenderer::new();
+    let mut window = Particle2DRenderer::new();
+    window.scale.physics_dt = 1.0 / 240.0;
 
     let bounds = [-500.0, 500.0, -500.0, 500.0];
 
     system.add_particle(
         Particle::new()
             .pos_xyz(100.0, 0.0, 0.0)
-            .vel_xyz(0.0, 10.0, 0.0),
+            .vel_xyz(0.0, 5.0, 0.0)
+            .mass(50.0),
     );
     system.add_particle(
         Particle::new()
             .pos_xyz(-100.0, 0.0, 0.0)
-            .vel_xyz(0.0, 0.0, 0.0),
+            .vel_xyz(0.0, 0.0, 0.0)
+            .mass(10.0),
     );
 
-    let mut gravity = Fields::Gravity::new(60000.0);
+    let mut gravity = Fields::Gravity::new(6000.0);
     gravity.add_particles(&system.all_particles());
     system.add_field(gravity);
 
@@ -27,7 +30,7 @@ fn main() {
     for ref1 in &system.all_particles() {
         for ref2 in &system.all_particles()[(index + 1)..] {
             system.add_constraint(
-                Constraints::NonPenetrate::new([*ref1, *ref2], system.particle_radius * 2., false)
+                Constraints::NonPenetrate::new([*ref1, *ref2], 2.0 * system.particle_radius, false)
                     .compliance(0.00001)
                     .dissipation(30.0),
             );

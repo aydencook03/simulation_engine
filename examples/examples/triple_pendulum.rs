@@ -8,18 +8,8 @@ fn main() {
 
     let center = system.add_particle(Particle::new().mass(0.0));
     let mass1 = system.add_particle(Particle::new().pos_xyz(0.0, 250.0, 0.0).mass(15.0));
-    let mass2 = system.add_particle(
-        Particle::new()
-            .pos_xyz(100.0, 250.0, 0.0)
-            .radius(8.0)
-            .mass(8.0),
-    );
-    let mass3 = system.add_particle(
-        Particle::new()
-            .pos_xyz(200.0, 250.0, 0.0)
-            .radius(4.0)
-            .mass(2.0),
-    );
+    let mass2 = system.add_particle(Particle::new().pos_xyz(100.0, 250.0, 0.0).mass(8.0));
+    let mass3 = system.add_particle(Particle::new().pos_xyz(200.0, 250.0, 0.0).mass(2.0));
 
     let mut gravity = Fields::Falling::new(200.0);
     gravity.add_particles(&system.all_particles());

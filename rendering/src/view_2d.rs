@@ -15,7 +15,7 @@
 //! draw_point((x + width / 2.0), (height / 2.0 - y));
 //! ```
 
-use engine::math::{Matrix3, Vec3};
+use engine::math::Vec3;
 
 //---------------------------------------------------------------------------------------------------//
 // A useful object that can keep track of 2d camera panning and zooming.
@@ -93,12 +93,7 @@ impl View2D {
     /// maps a set of coordinates in the simulation space to what they would be on the panned and zoomed view.
     pub fn map_to_view(self: &Self, pos: Vec3, radius: f64) -> (Vec3, f64) {
         let zoom = self.parameterized_zoom();
-        // create affine transformation data
-        let project_xy = Matrix3([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 0.0]]);
-        let scale = Matrix3([[zoom, 0.0, 0.0], [0.0, zoom, 0.0], [0.0, 0.0, 0.0]]);
-        let pan = self.view_offset * -1.0;
-
-        let vec = scale * (project_xy * pos + pan);
+        let vec = zoom * (pos - self.view_offset);
         let radius = radius * zoom;
 
         (vec, radius)

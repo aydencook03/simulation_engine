@@ -27,8 +27,10 @@ fn main() {
     window.scale.physics_dt = 1.0 * 60.0;
     window.scale.time_unit = (60.0, "Minutes".to_string());
 
-    let star_radius = ((3.0 * STAR_MASS) / (4.0 * 3.1415 * STAR_DENSITY)).cbrt();
+    let star_radius = ((3.0 * STAR_MASS) / (4.0 * engine::math::PI * STAR_DENSITY)).cbrt();
     let particle_mass = STAR_MASS / (STAR_PARTICLE_COUNT as f64);
+    system.particle_radius =
+        ((3.0 * particle_mass) / (4.0 * engine::math::PI * STAR_DENSITY)).cbrt();
     let mut rng = rand::thread_rng();
 
     let star_1_pos = Vec3::new(-2.0 * star_radius, 2.0 * star_radius, -2.0 * star_radius);
@@ -59,7 +61,6 @@ fn main() {
                 .pos(star_1_pos + rand)
                 .vel(star_1_vel)
                 .mass(particle_mass)
-                .radius_from_density(STAR_DENSITY)
                 .group(3),
         );
 
@@ -69,7 +70,6 @@ fn main() {
                 .pos(star_2_pos + rand)
                 .vel(star_2_vel)
                 .mass(particle_mass)
-                .radius_from_density(STAR_DENSITY)
                 .group(rng.gen_range(1..=2)),
         );
     }
@@ -83,7 +83,11 @@ fn main() {
     let mut index: usize = 0;
     for ref1 in &system.all_particles() {
         for ref2 in &system.all_particles()[(index + 1)..] {
-            system.add_constraint(Constraints::NonPenetrate::new([*ref1, *ref2], true));
+            system.add_constraint(Constraints::NonPenetrate::new(
+                [*ref1, *ref2],
+                2.0 * system.particle_radius,
+                true,
+            ));
         }
         index += 1;
     }

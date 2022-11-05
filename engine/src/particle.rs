@@ -12,7 +12,7 @@ pub struct Particle {
     pub mass: f64,
     pub charge: f64,
 
-    // dynamical response
+    // dynamicals
     pub inverse_mass: f64,
     pub prev_pos: Point3,
     pub forces: Vec<Force>,
@@ -28,7 +28,7 @@ pub struct Particle {
 
 //--------------------------------------------------------------------//
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Default)]
 pub struct Force(pub Vec3, pub Option<Point3>);
 impl Force {
     pub fn from_impulse(impulse: Vec3, dt: f64) -> Force {
@@ -98,7 +98,7 @@ impl Particle {
     }
 
     // builder methods for particle properties
-    pub fn mass(mut self, mass: f64) -> Particle {
+    pub fn force_mass(mut self, mass: f64) -> Particle {
         self.mass = mass;
         self
     }
@@ -108,6 +108,11 @@ impl Particle {
     }
     pub fn inverse_mass(mut self, inverse_mass: f64) -> Particle {
         self.inverse_mass = inverse_mass;
+        self
+    }
+    pub fn mass(mut self, mass: f64) -> Particle {
+        self.mass = mass;
+        self.inverse_mass = if mass != 0.0 { 1.0 / mass } else { 0.0 };
         self
     }
 
@@ -138,6 +143,7 @@ impl Particle {
     }
 
     //--------------------------------------------------------------------//
+    // physics methods
 
     pub fn integrate(&mut self, dt: f64) {
         let mut total_force = Vec3::zero();
@@ -147,9 +153,7 @@ impl Particle {
         }
 
         self.vel += total_force * self.inverse_mass * dt;
-
         self.prev_pos = self.pos;
-
         self.pos += self.vel * dt;
     }
 }
