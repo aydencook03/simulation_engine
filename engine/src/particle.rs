@@ -8,11 +8,12 @@ pub struct Particle {
     pub id: u32,
     pub group: u32,
 
-    // force calculations
+    // properties
     pub mass: f64,
     pub charge: f64,
+    pub extra: u128,
 
-    // dynamicals
+    // dynamics
     pub inverse_mass: f64,
     pub prev_pos: Point3,
     pub forces: Vec<Force>,
@@ -21,8 +22,6 @@ pub struct Particle {
     pub pos: Point3,
     pub vel: Vec3,
     pub temperature: f64,
-
-    // rigid body extension to state
     pub extent: Option<Extent>,
 }
 
@@ -53,7 +52,7 @@ impl core::ops::Neg for Force {
 
 //--------------------------------------------------------------------//
 
-#[derive(Copy, Clone, Default)]
+#[derive(Copy, Clone)]
 pub struct Extent {
     pub inverse_inertia: Matrix3,
     pub prev_orientation: Vec3,
@@ -64,10 +63,8 @@ pub struct Extent {
     pub shape: Shape,
 }
 
-#[derive(Copy, Clone, Default)]
+#[derive(Copy, Clone)]
 pub enum Shape {
-    #[default]
-    Particle,
     Sphere,
     Cuboid,
     Capsule,
@@ -84,7 +81,7 @@ pub enum Shape {
 
 impl Particle {
     pub fn new() -> Particle {
-        Particle::default()
+        Particle::default().mass(10.0)
     }
 
     // builder methods for particle identity
@@ -155,6 +152,10 @@ impl Particle {
         self.vel += total_force * self.inverse_mass * dt;
         self.prev_pos = self.pos;
         self.pos += self.vel * dt;
+    }
+
+    pub fn update_vel(&mut self, dt: f64) {
+        self.vel = (self.pos - self.prev_pos) / dt;
     }
 }
 

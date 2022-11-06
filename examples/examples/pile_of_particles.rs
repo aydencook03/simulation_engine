@@ -2,7 +2,7 @@ use engine::prelude::*;
 use rand::Rng;
 use rendering::particle_2d_renderer::Particle2DRenderer;
 
-const COUNT: u32 = 500;
+const COUNT: u32 = 300;
 const DENSITY: f64 = 0.005;
 const MIN_MASS: f64 = 5.0;
 const MAX_MASS: f64 = 100.0;
@@ -77,7 +77,7 @@ fn main() {
         ));
     }
 
-    system.static_constraint_pass(1);
+    system.static_constraint_pass(2);
 
     window.run(system);
 }

@@ -140,12 +140,9 @@ impl System {
 
     pub fn step_forward(&mut self, dt: f64) {
         if self.running && dt != 0_f64 {
-            //self.debug_energy();
-            //self.debug_momentum();
-            //self.debug_angular_momentum();
+            let sub_dt = dt / (self.substeps as f64);
+            // collision detection
             for _ in 0..self.substeps {
-                let sub_dt = dt / (self.substeps as f64);
-
                 for field in &mut self.fields {
                     field.handle(&mut self.particles, sub_dt);
                 }
@@ -160,8 +157,10 @@ impl System {
                 }
 
                 for particle in &mut self.particles {
-                    particle.vel = (particle.pos - particle.prev_pos) / sub_dt;
+                    particle.update_vel(sub_dt);
                 }
+
+                // handle boundaries
             }
             self.time += dt;
         }

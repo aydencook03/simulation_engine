@@ -16,10 +16,17 @@ pub enum ConstraintType {
 
 pub struct ConstraintProperties {
     particles: Vec<ParticleReference>,
+
     compliance: f64,
     dissipation: f64,
+
+    force: f64,
+    max_force: Option<f64>,
+    broken: bool,
+
     xpbd: bool,
     constraint_type: ConstraintType,
+    // projection_type: ProjectionType,
 }
 
 impl ConstraintProperties {
@@ -30,8 +37,14 @@ impl ConstraintProperties {
     ) -> ConstraintProperties {
         ConstraintProperties {
             particles,
+
             compliance: 0.0,
             dissipation: 0.0,
+
+            force: 0.0,
+            max_force: None,
+            broken: false,
+
             xpbd,
             constraint_type,
         }
@@ -42,60 +55,77 @@ impl ConstraintProperties {
 // Constraint traits.
 
 pub trait Constraint {
-    fn project(&self, particle_source: &mut [Particle], dt: f64, static_pass: bool);
-    // fn force_estimate
-    // fn potential_energy
+    fn project(&mut self, particle_source: &mut [Particle], dt: f64, static_pass: bool);
+    fn force_estimate(&self) -> f64;
 }
 
 pub trait ConstraintData {
     fn properties(&self) -> &ConstraintProperties;
+    fn properties_mut(&mut self) -> &mut ConstraintProperties;
     fn constraint(&self, particles: &[&Particle]) -> f64;
     fn gradients(&self, particles: &[&Particle]) -> Vec<Vec3>;
 }
 
 impl<C: ConstraintData> Constraint for C {
-    fn project(&self, particle_source: &mut [Particle], dt: f64, static_pass: bool) {
+    fn project(&mut self, particle_source: &mut [Particle], dt: f64, static_pass: bool) {
         let data = self.properties();
-        let particles: Vec<&Particle> = data
-            .particles
-            .iter()
-            .map(|p| p.get(particle_source))
-            .collect();
-
-        let evaluated = self.constraint(&particles);
-
-        let satisfied = match data.constraint_type {
-            ConstraintType::Equation => evaluated == 0.0,
-            ConstraintType::Inequality => evaluated >= 0.0,
+        let (breakable, max_force) = match data.max_force {
+            Some(force) => (true, force),
+            None => (false, 0.0),
         };
 
-        if !satisfied {
-            let dt = if static_pass { core::f64::MAX } else { dt };
-            let alpha = data.compliance / dt.powi(2);
-            let gamma = data.compliance * data.dissipation / dt;
-            let gradients = self.gradients(&particles);
+        if !breakable || !data.broken {
+            let particles: Vec<&Particle> = data
+                .particles
+                .iter()
+                .map(|p| p.get(particle_source))
+                .collect();
 
-            let mut damp = 0.0;
-            let mut scale = 0.0;
+            let evaluated = self.constraint(&particles);
 
-            for (i, part) in particles.iter().enumerate() {
-                damp += gradients[i].dot(part.pos - part.prev_pos);
-                scale += part.inverse_mass * gradients[i].mag_squared();
-            }
+            let satisfied = match data.constraint_type {
+                ConstraintType::Equation => evaluated == 0.0,
+                ConstraintType::Inequality => evaluated >= 0.0,
+            };
 
-            let lagrange = (-evaluated - gamma * damp) / ((1.0 + gamma) * scale + alpha);
+            if !satisfied {
+                let dt = if static_pass { core::f64::MAX } else { dt };
+                let alpha = data.compliance / dt.powi(2);
+                let gamma = data.compliance * data.dissipation / dt;
+                let gradients = self.gradients(&particles);
 
-            for (i, part) in data.particles.iter().enumerate() {
-                if data.xpbd || static_pass {
-                    let inv_mass = part.get(particle_source).inverse_mass;
-                    part.get_mut(particle_source).pos += lagrange * inv_mass * gradients[i];
-                } else {
-                    part.get_mut(particle_source)
-                        .forces
-                        .push(Force(lagrange * gradients[i] / dt.powi(2), None))
+                let mut damp = 0.0;
+                let mut scale = 0.0;
+
+                for (i, part) in particles.iter().enumerate() {
+                    damp += gradients[i].dot(part.pos - part.prev_pos);
+                    scale += part.inverse_mass * gradients[i].mag_squared();
+                }
+
+                let lagrange = (-evaluated - gamma * damp) / ((1.0 + gamma) * scale + alpha);
+
+                for (i, part) in data.particles.iter().enumerate() {
+                    if data.xpbd || static_pass {
+                        let inv_mass = part.get(particle_source).inverse_mass;
+                        part.get_mut(particle_source).pos += lagrange * inv_mass * gradients[i];
+                    } else {
+                        part.get_mut(particle_source)
+                            .forces
+                            .push(Force(lagrange * gradients[i] / dt.powi(2), None))
+                    }
+                }
+
+                let force = lagrange / dt.powi(2);
+                self.properties_mut().force = force;
+                if breakable {
+                    self.properties_mut().broken = force > max_force;
                 }
             }
         }
+    }
+
+    fn force_estimate(&self) -> f64 {
+        self.properties().force
     }
 }
 
@@ -134,6 +164,11 @@ pub mod builtin_constraints {
             self
         }
 
+        pub fn max_tension(mut self, force: f64) -> Distance {
+            self.data.max_force = Some(force);
+            self
+        }
+
         pub fn as_chain(mut self) -> Distance {
             self.data.constraint_type = ConstraintType::Inequality;
             self
@@ -148,6 +183,10 @@ pub mod builtin_constraints {
     impl ConstraintData for Distance {
         fn properties(&self) -> &ConstraintProperties {
             &self.data
+        }
+
+        fn properties_mut(&mut self) -> &mut ConstraintProperties {
+            &mut self.data
         }
 
         fn constraint(&self, particles: &[&Particle]) -> f64 {
@@ -190,6 +229,10 @@ pub mod builtin_constraints {
     impl ConstraintData for NonPenetrate {
         fn properties(&self) -> &ConstraintProperties {
             &self.0
+        }
+
+        fn properties_mut(&mut self) -> &mut ConstraintProperties {
+            &mut self.0
         }
 
         fn constraint(&self, particles: &[&Particle]) -> f64 {
@@ -241,6 +284,10 @@ pub mod builtin_constraints {
     impl ConstraintData for ContactPlane {
         fn properties(&self) -> &ConstraintProperties {
             &self.data
+        }
+
+        fn properties_mut(&mut self) -> &mut ConstraintProperties {
+            &mut self.data
         }
 
         fn constraint(&self, particles: &[&Particle]) -> f64 {

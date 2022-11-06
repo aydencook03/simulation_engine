@@ -11,7 +11,6 @@ const LINK_MASS: f64 = CHAIN_MASS / (LINK_COUNT as f64);
 
 fn main() {
     let mut system = System::new();
-
     system.particle_radius = LINK_RADIUS;
     let mut window = Particle2DRenderer::new();
     window.scale.physics_dt = 1.0 / 60.0;
@@ -26,18 +25,11 @@ fn main() {
     }
 
     for (i, p1) in system.all_particles().iter().enumerate() {
-        if (i as u32) != 0 {
-            system.add_constraint(Constraints::Distance::new(
-                [*p1, *&system.all_particles()[(i as usize) - 1]],
-                2.0 * LINK_RADIUS,
-            ));
-        }
-
         if (i as u32) < LINK_COUNT - 1 {
             system.add_constraint(Constraints::Distance::new(
                 [*p1, *&system.all_particles()[(i as usize) + 1]],
                 2.0 * LINK_RADIUS,
-            ));
+            ).max_tension(220000.0 / ((i + 1) as f64)));
         }
     }
 
