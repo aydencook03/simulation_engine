@@ -116,7 +116,7 @@ impl System {
         dbg!(ke);
     }
 
-    pub fn debug_energy(&self) {
+    pub fn debug_mechanical_energy(&self) {
         let mut ke = 0.0;
         let mut pe = 0.0;
         for particle in &self.particles {

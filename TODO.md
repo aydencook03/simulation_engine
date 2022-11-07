@@ -24,8 +24,9 @@
     - [ ] inflow
     - [ ] outflow
     - [ ] rigid
+    - [ ] periodic
   - [X] support breakable constraints (max constraint force and broken properties)
-  - [ ] non-dynamical particles (central gravity bodies, boundary particles, constraint & spring attachments, platforms, etc.)
+  - [X] non-dynamical particles (central gravity bodies, boundary particles, constraint & spring attachments, platforms, etc.)
   - [ ] a common functionality implementation of SPH smoothing
     - [ ] different smoothing kernels & their gradient, divergence, laplacian, etc
     - [ ] different modifications to the kernels for certain symmetries and properties

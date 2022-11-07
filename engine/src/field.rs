@@ -253,11 +253,11 @@ pub mod builtin_fields {
             particle1: &Particle,
             particle2: &Particle,
         ) -> Option<Force> {
-            let radial = particle1.pos - particle2.pos;
+            let radial = particle2.pos - particle1.pos;
             let dist_sqr = radial.mag_squared();
 
             Some(Force(
-                -(self.1 * particle1.mass * particle2.mass)
+                (self.1 * particle1.mass * particle2.mass)
                     / (dist_sqr + self.2.powi(2)).powi(3).sqrt()
                     * radial,
                 None,
@@ -266,6 +266,56 @@ pub mod builtin_fields {
         fn interaction_potential(&self, particle1: &Particle, particle2: &Particle) -> f64 {
             let radial = particle2.pos - particle1.pos;
             -self.1 * particle1.mass * particle2.mass
+                / (radial.mag_squared() + self.2.powi(2)).sqrt()
+        }
+    }
+
+    //--------------------------------------------------------------------//
+
+    pub struct ElectroStatic(FieldProperties, f64, f64);
+
+    impl ElectroStatic {
+        pub fn new(electrostatic_constant: f64) -> ElectroStatic {
+            ElectroStatic(
+                FieldProperties::new(InteractionType::ParticleParticle),
+                electrostatic_constant,
+                0.0,
+            )
+        }
+
+        pub fn softening(mut self, softening_parameter: f64) -> ElectroStatic {
+            self.2 = softening_parameter;
+            self
+        }
+    }
+
+    impl FieldData for ElectroStatic {
+        fn properties(&self) -> &FieldProperties {
+            &self.0
+        }
+
+        fn properties_mut(&mut self) -> &mut FieldProperties {
+            &mut self.0
+        }
+        fn particle_to_particle(
+            &self,
+            particle1: &Particle,
+            particle2: &Particle,
+        ) -> Option<Force> {
+            let radial = particle2.pos - particle1.pos;
+            let dist_sqr = radial.mag_squared();
+
+            Some(Force(
+                -(self.1 * particle1.charge * particle2.charge)
+                    / (dist_sqr + self.2.powi(2)).powi(3).sqrt()
+                    * radial,
+                None,
+            ))
+        }
+
+        fn interaction_potential(&self, particle1: &Particle, particle2: &Particle) -> f64 {
+            let radial = particle2.pos - particle1.pos;
+            self.1 * particle1.charge * particle2.charge
                 / (radial.mag_squared() + self.2.powi(2)).sqrt()
         }
     }
