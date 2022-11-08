@@ -4,7 +4,7 @@ use rendering::particle_2d_renderer::Particle2DRenderer;
 fn main() {
     let mut system = System::new();
     let mut window = Particle2DRenderer::new();
-    window.scale.physics_dt = 1.0 / 180.0;
+    window.scale.physics_dt = 1.0 / 160.0;
 
     let center = system.add_particle(Particle::new().mass(0.0));
     let mass1 = system.add_particle(Particle::new().pos_xyz(0.0, 250.0, 0.0).mass(15.0));
@@ -22,7 +22,7 @@ fn main() {
     system.add_constraint(dist1);
     system.add_constraint(dist2);
     system.add_constraint(dist3);
-    system.static_constraint_pass(1);
+    system.static_constraint_pass(5);
 
     window.run(system);
 }

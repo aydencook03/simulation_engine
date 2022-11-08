@@ -224,20 +224,14 @@ pub mod builtin_fields {
 
     //--------------------------------------------------------------------//
 
-    pub struct Gravity(FieldProperties, f64, f64);
+    pub struct Gravity(FieldProperties, f64);
 
     impl Gravity {
         pub fn new(gravitational_constant: f64) -> Gravity {
             Gravity(
                 FieldProperties::new(InteractionType::ParticleParticle),
                 gravitational_constant,
-                0.0,
             )
-        }
-
-        pub fn softening(mut self, softening_parameter: f64) -> Gravity {
-            self.2 = softening_parameter;
-            self
         }
     }
 
@@ -254,38 +248,29 @@ pub mod builtin_fields {
             particle2: &Particle,
         ) -> Option<Force> {
             let radial = particle2.pos - particle1.pos;
-            let dist_sqr = radial.mag_squared();
+            let dist = radial.mag();
 
             Some(Force(
-                (self.1 * particle1.mass * particle2.mass)
-                    / (dist_sqr + self.2.powi(2)).powi(3).sqrt()
-                    * radial,
+                ((self.1 * particle1.mass * particle2.mass) / dist.powi(3)) * radial,
                 None,
             ))
         }
         fn interaction_potential(&self, particle1: &Particle, particle2: &Particle) -> f64 {
             let radial = particle2.pos - particle1.pos;
-            -self.1 * particle1.mass * particle2.mass
-                / (radial.mag_squared() + self.2.powi(2)).sqrt()
+            -self.1 * particle1.mass * particle2.mass / radial.mag()
         }
     }
 
     //--------------------------------------------------------------------//
 
-    pub struct ElectroStatic(FieldProperties, f64, f64);
+    pub struct ElectroStatic(FieldProperties, f64);
 
     impl ElectroStatic {
         pub fn new(electrostatic_constant: f64) -> ElectroStatic {
             ElectroStatic(
                 FieldProperties::new(InteractionType::ParticleParticle),
                 electrostatic_constant,
-                0.0,
             )
-        }
-
-        pub fn softening(mut self, softening_parameter: f64) -> ElectroStatic {
-            self.2 = softening_parameter;
-            self
         }
     }
 
@@ -303,20 +288,79 @@ pub mod builtin_fields {
             particle2: &Particle,
         ) -> Option<Force> {
             let radial = particle2.pos - particle1.pos;
-            let dist_sqr = radial.mag_squared();
+            let dist = radial.mag();
 
             Some(Force(
-                -(self.1 * particle1.charge * particle2.charge)
-                    / (dist_sqr + self.2.powi(2)).powi(3).sqrt()
-                    * radial,
+                -((self.1 * particle1.charge * particle2.charge) / dist.powi(3)) * radial,
                 None,
             ))
         }
 
         fn interaction_potential(&self, particle1: &Particle, particle2: &Particle) -> f64 {
             let radial = particle2.pos - particle1.pos;
-            self.1 * particle1.charge * particle2.charge
-                / (radial.mag_squared() + self.2.powi(2)).sqrt()
+            self.1 * particle1.charge * particle2.charge / radial.mag()
+        }
+    }
+
+    //--------------------------------------------------------------------//
+
+    pub struct LennardJones {
+        properties: FieldProperties,
+        dispersion_energy: f64,
+        collision_radius: f64,
+        repulsion: f64,
+        attraction: f64,
+    }
+
+    impl LennardJones {
+        pub fn new(dispersion_energy: f64, collision_radius: f64) -> LennardJones {
+            LennardJones {
+                properties: FieldProperties::new(InteractionType::ParticleParticle),
+                dispersion_energy,
+                collision_radius,
+                repulsion: 12.,
+                attraction: 6.,
+            }
+        }
+
+        pub fn mie_potential(mut self, repulsion: f64, attraction: f64) -> LennardJones {
+            self.repulsion = repulsion;
+            self.attraction = attraction;
+            self
+        }
+    }
+
+    impl FieldData for LennardJones {
+        fn properties(&self) -> &FieldProperties {
+            &self.properties
+        }
+        fn properties_mut(&mut self) -> &mut FieldProperties {
+            &mut self.properties
+        }
+        fn particle_to_particle(
+            &self,
+            particle1: &Particle,
+            particle2: &Particle,
+        ) -> Option<Force> {
+            let (n, m) = (self.repulsion, self.attraction);
+            let c = (n / (n - m)) * ((n / m).powf(m / (n - m))) * self.dispersion_energy;
+            let radial = particle2.pos - particle1.pos;
+            let sigma = self.collision_radius;
+            let r = radial.mag();
+
+            Some(Force(
+                -c * ((n * sigma.powf(n) / r.powf(n + 2.)) - (m * sigma.powf(m) / r.powf(m + 2.)))
+                    * radial,
+                None,
+            ))
+        }
+        fn interaction_potential(&self, particle1: &Particle, particle2: &Particle) -> f64 {
+            let (n, m) = (self.repulsion, self.attraction);
+            let c = (n / (n - m)) * ((n / m).powf(m / (n - m))) * self.dispersion_energy;
+            let sigma = self.collision_radius;
+            let r = (particle2.pos - particle1.pos).mag();
+
+            c * ((sigma / r).powf(n) - (sigma / r).powf(m))
         }
     }
 }

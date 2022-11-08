@@ -2,7 +2,7 @@ use engine::prelude::*;
 use rand::Rng;
 use rendering::particle_2d_renderer::Particle2DRenderer;
 
-const COUNT: u32 = 500;
+const COUNT: u32 = 200;
 const MASS: f64 = 10.0;
 const RADIUS: f64 = 8.0;
 const BOND_ENERGY: f64 = 100000.0;
@@ -23,7 +23,7 @@ fn main() {
         system.add_particle(Particle::new().pos_xyz(rand_x, rand_y, 0.0).mass(MASS));
     }
 
-    let mut repulsion = Fields::VanDerWaals::new(BOND_ENERGY, None, 0.0);
+    let mut repulsion = Fields::LennardJones::new(BOND_ENERGY, 2. * RADIUS);
     repulsion.add_particles(&system.all_particles());
     system.add_field(repulsion);
 

@@ -10,6 +10,7 @@ const GRAVITY: f64 = 5.0;
 
 fn main() {
     let mut system = System::new();
+    system.particle_radius = RADIUS;
     let mut window = Particle2DRenderer::new();
     window.scale.physics_dt = 1.0 / 30.0;
 
@@ -20,15 +21,10 @@ fn main() {
         let rand_x = rng.gen_range((bounds[0] + RADIUS)..(bounds[1] - RADIUS));
         let rand_y = rng.gen_range((bounds[2] + RADIUS)..(bounds[3] - RADIUS));
 
-        system.add_particle(
-            Particle::new()
-                .pos_xyz(rand_x, rand_y, 0.0)
-                .mass(MASS)
-                .radius(RADIUS),
-        );
+        system.add_particle(Particle::new().pos_xyz(rand_x, rand_y, 0.0).mass(MASS));
     }
 
-    let mut repulsion = Fields::VanDerWaals::new(BOND_ENERGY, None, 0.0);
+    let mut repulsion = Fields::LennardJones::new(BOND_ENERGY, 2. * RADIUS);
     repulsion.add_particles(&system.all_particles());
     system.add_field(repulsion);
 
@@ -39,24 +35,28 @@ fn main() {
     for particle in &system.all_particles() {
         system.add_constraint(Constraints::ContactPlane::new(
             *particle,
+            RADIUS,
             Vec3::new(bounds[0], 0.0, 0.0),
             Vec3::new(1.0, 0.0, 0.0),
             false,
         ));
         system.add_constraint(Constraints::ContactPlane::new(
             *particle,
+            RADIUS,
             Vec3::new(bounds[1], 0.0, 0.0),
             Vec3::new(-1.0, 0.0, 0.0),
             false,
         ));
         system.add_constraint(Constraints::ContactPlane::new(
             *particle,
+            RADIUS,
             Vec3::new(0.0, bounds[2], 0.0),
             Vec3::new(0.0, 1.0, 0.0),
             true,
         ));
         system.add_constraint(Constraints::ContactPlane::new(
             *particle,
+            RADIUS,
             Vec3::new(0.0, bounds[3], 0.0),
             Vec3::new(0.0, -1.0, 0.0),
             false,
@@ -67,7 +67,11 @@ fn main() {
     let mut constraints: Vec<Constraints::NonPenetrate> = Vec::new();
     for ref1 in &system.all_particles() {
         for ref2 in &system.all_particles()[(index + 1)..] {
-            constraints.push(Constraints::NonPenetrate::new([*ref1, *ref2], true));
+            constraints.push(Constraints::NonPenetrate::new(
+                [*ref1, *ref2],
+                2. * RADIUS,
+                true,
+            ));
         }
         index += 1;
     }

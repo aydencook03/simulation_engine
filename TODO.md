@@ -64,7 +64,7 @@
     - [ ] boundary conditions
   - algorithms:
     - [ ] n-body pairing
-    - [ ] composite shapes
+    - [ ] composite shapes (rigid body <-> collection of particles)
     - [ ] collision detection
     - [ ] neighbor finding
   - features:
@@ -85,8 +85,8 @@
   - [ ] pile of sand
 
 - Fields
-  - [ ] electrostatic (Coulomb) force
-  - [ ] general Lennard-Jones potential (Mie potential)
+  - [X] electrostatic (Coulomb) force
+  - [X] general Lennard-Jones potential (Mie potential)
   - [ ] particle-mesh-method newtonian gravity
   - [ ] SPH newtonian gravity mesh
   - [ ] electromagnetic
@@ -152,14 +152,14 @@
   - [ ] tree methods for optimized n-body forces
 
 - Physics
-  - [ ] intermolecular forces
+  - [ ] intermolecular forces & interatomic potentials from molecular mechanics
     - [ ] solids (covalent/ionic/metallic bonds)
       - [ ] covalent bond potential, electrostatic attraction
       - [ ] xpbd distance constraints w/ compliance
       - [ ] smoothed-particle-hydrodynamics
       - [ ] material-point-method
     - [ ] liquids & gases (intermolecular forces & hydrogen bonds)
-      - [ ] Lennard-Jones 6-12, 6-9, 10-12 (Mie), electrostatic attraction
+      - [X] Lennard-Jones 6-12, 6-9, 10-12 (Mie), electrostatic attraction
       - [ ] smoothed-particle-hydrodynamics
       - [ ] material-point-method
       - [ ] position-based-fluids

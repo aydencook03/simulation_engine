@@ -76,6 +76,12 @@ pub enum Shape {
     Heightfield,
 }
 
+impl Shape {
+    pub fn inertia_matrix(&self) -> Matrix3 {
+        todo!()
+    }
+}
+
 //---------------------------------------------------------------------------------------------------//
 // Particle associated functions and methods.
 
