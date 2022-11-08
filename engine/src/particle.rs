@@ -90,7 +90,9 @@ impl Particle {
         Particle::default().mass(10.0)
     }
 
+    //--------------------------------------------------------------------//
     // builder methods for particle identity
+
     pub fn id(mut self, id: u32) -> Particle {
         self.id = id;
         self
@@ -100,7 +102,9 @@ impl Particle {
         self
     }
 
+    //--------------------------------------------------------------------//
     // builder methods for particle properties
+
     pub fn force_mass(mut self, mass: f64) -> Particle {
         self.mass = mass;
         self
@@ -119,7 +123,9 @@ impl Particle {
         self
     }
 
+    //--------------------------------------------------------------------//
     // builder methods for particle state
+
     pub fn pos(mut self, pos: Point3) -> Particle {
         self.pos = pos;
         self

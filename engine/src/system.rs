@@ -37,6 +37,9 @@ impl System {
         }
     }
 
+    //--------------------------------------------------------------------//
+    // adder methods
+
     pub fn add_particle(&mut self, particle: Particle) -> ParticleReference {
         let id = self.id_counter;
         self.particles.push(particle.id(id));
@@ -67,6 +70,7 @@ impl System {
     }
 
     //--------------------------------------------------------------------//
+    // methods for retrieving particle references
 
     pub fn all_particles(&self) -> Vec<ParticleReference> {
         let mut references = Vec::new();
@@ -91,6 +95,7 @@ impl System {
     }
 
     //--------------------------------------------------------------------//
+    // debugging
 
     pub fn debug_momentum(&self) {
         let mut momentum = Vec3::zero();
@@ -129,6 +134,7 @@ impl System {
     }
 
     //--------------------------------------------------------------------//
+    // time evolution
 
     pub fn static_constraint_pass(&mut self, iterations: u32) {
         for _ in 0..iterations {

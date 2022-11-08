@@ -6,9 +6,9 @@
     - [ ] comment explaining math and equations of XPBD
     - [ ] static vs non-static, xpbd vs non-xpbd
     - [ ] how to derive constraint force from lagrange multiplier
-  - [ ] simplify the abstraction/api for fields
+  - [X] simplify the abstraction/api for fields
     - [X] remove dt
-    - [ ] mimick constraint api. ie: Field trait: evolve, energy. SimpleFieldData, ParticleParticle, FieldParticle
+    - [X] mimick constraint api. ie: Field trait: evolve, energy. SimpleFieldData, ParticleParticle, FieldParticle
   - [X] account for N's 3rd law in the ParticleParticle interaction (can enable optimizations?)
   - [ ] investigate
     - [ ] read xpbd paper. understand mathematical derivation to see where my algorithm could come from
@@ -52,8 +52,8 @@
     - [X] matrix
     - [ ] mesh
   - objects:
-    - [ ] system
-    - [ ] particles
+    - [X] system
+    - [X] particles
     - [ ] rigid bodies
   - dynamics & interactions:
     - [ ] fields
@@ -63,7 +63,7 @@
     - [ ] thermodynamics
     - [ ] boundary conditions
   - algorithms:
-    - [ ] n-body pairing
+    - [ ] n-body pairing (take a generic slice and return an iterator)
     - [ ] composite shapes (rigid body <-> collection of particles)
     - [ ] collision detection
     - [ ] neighbor finding

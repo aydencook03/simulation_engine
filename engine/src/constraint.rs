@@ -3,10 +3,6 @@ use crate::{
     particle::{Force, Particle, ParticleReference},
 };
 
-// Old:                 New:
-// star: 20-24 fps      star: 14-18 fps
-// pile: 30-36 fps      pile: 14-16 fps
-
 //---------------------------------------------------------------------------------------------------//
 
 pub enum ConstraintType {
