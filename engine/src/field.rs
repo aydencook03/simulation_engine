@@ -10,7 +10,37 @@ pub enum InteractionType {
     FieldParticle,
     ParticleParticle,
     SimpleForce,
+    //SPH,
+    //MPM,
 }
+
+/*
+pub trait Field {
+    fn handle(&mut self, particle_source: &mut [Particle], dt: f64);
+    fn total_energy(&self, particle_source: &[Particle]) -> f64;
+
+    fn add_particle(&mut self, _particle_reference: ParticleReference);
+    fn add_particles(&mut self, _particle_references: &[ParticleReference]);
+}
+
+pub enum Interaction {
+    FieldParticle(Box<dyn FieldParticle>),
+    ParticleParticle(Box<dyn ParticleParticle>),
+    SimpleForce(Box<dyn SimpleForce>),
+    //Sph(Box<dyn Sph>),
+    //Mpm(Box<dyn Mpm>),
+}
+
+pub trait FieldProperties {
+    fn coupled_particles(&self) -> &[ParticleReference];
+    fn coupled_particles_mut(&mut self) -> &mut [ParticleReference];
+    fn properties(&self) -> &Interaction;
+}
+
+impl Field for FieldProperties {
+
+}
+*/
 
 pub struct FieldProperties {
     coupled_particles: Vec<ParticleReference>,
@@ -37,7 +67,7 @@ pub trait Field {
     fn add_particles(&mut self, _particle_references: &[ParticleReference]);
 }
 
-pub trait FieldData {
+pub trait FieldImpl {
     fn properties(&self) -> &FieldProperties;
     fn properties_mut(&mut self) -> &mut FieldProperties;
 
@@ -71,7 +101,7 @@ pub trait FieldData {
 
 //--------------------------------------------------------------------//
 
-impl<F: FieldData> Field for F {
+impl<F: FieldImpl> Field for F {
     fn handle(&mut self, particle_source: &mut [Particle], dt: f64) {
         match &self.properties().interaction_type {
             InteractionType::FieldParticle => {
@@ -166,8 +196,9 @@ impl<F: FieldData> Field for F {
 
 pub mod builtin_fields {
     use crate::{
-        field::{FieldData, FieldProperties, InteractionType},
-        particle::{Force, Particle, Vec3},
+        field::{FieldImpl, FieldProperties, InteractionType},
+        math::Vec3,
+        particle::{Force, Particle},
     };
 
     //--------------------------------------------------------------------//
@@ -180,7 +211,7 @@ pub mod builtin_fields {
         }
     }
 
-    impl FieldData for ConstantForce {
+    impl FieldImpl for ConstantForce {
         fn properties(&self) -> &FieldProperties {
             &self.0
         }
@@ -207,7 +238,7 @@ pub mod builtin_fields {
         }
     }
 
-    impl FieldData for Falling {
+    impl FieldImpl for Falling {
         fn properties(&self) -> &FieldProperties {
             &self.0
         }
@@ -235,7 +266,7 @@ pub mod builtin_fields {
         }
     }
 
-    impl FieldData for Gravity {
+    impl FieldImpl for Gravity {
         fn properties(&self) -> &FieldProperties {
             &self.0
         }
@@ -274,7 +305,7 @@ pub mod builtin_fields {
         }
     }
 
-    impl FieldData for ElectroStatic {
+    impl FieldImpl for ElectroStatic {
         fn properties(&self) -> &FieldProperties {
             &self.0
         }
@@ -330,7 +361,7 @@ pub mod builtin_fields {
         }
     }
 
-    impl FieldData for LennardJones {
+    impl FieldImpl for LennardJones {
         fn properties(&self) -> &FieldProperties {
             &self.properties
         }

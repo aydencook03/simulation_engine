@@ -55,14 +55,14 @@ pub trait Constraint {
     fn force_estimate(&self) -> f64;
 }
 
-pub trait ConstraintData {
+pub trait XPBD {
     fn properties(&self) -> &ConstraintProperties;
     fn properties_mut(&mut self) -> &mut ConstraintProperties;
     fn constraint(&self, particles: &[&Particle]) -> f64;
     fn gradients(&self, particles: &[&Particle]) -> Vec<Vec3>;
 }
 
-impl<C: ConstraintData> Constraint for C {
+impl<C: XPBD> Constraint for C {
     fn project(&mut self, particle_source: &mut [Particle], dt: f64, static_pass: bool) {
         let data = self.properties();
         let (breakable, max_force) = match data.max_force {
@@ -130,9 +130,9 @@ impl<C: ConstraintData> Constraint for C {
 
 pub mod builtin_constraints {
     use crate::{
-        constraint::{ConstraintData, ConstraintProperties, ConstraintType},
-        math::Vec3,
-        particle::{Particle, ParticleReference, Point3},
+        constraint::{ConstraintProperties, ConstraintType, XPBD},
+        math::{Point3, Vec3},
+        particle::{Particle, ParticleReference},
     };
 
     //--------------------------------------------------------------------//
@@ -176,7 +176,7 @@ pub mod builtin_constraints {
         }
     }
 
-    impl ConstraintData for Distance {
+    impl XPBD for Distance {
         fn properties(&self) -> &ConstraintProperties {
             &self.data
         }
@@ -222,7 +222,7 @@ pub mod builtin_constraints {
         }
     }
 
-    impl ConstraintData for NonPenetrate {
+    impl XPBD for NonPenetrate {
         fn properties(&self) -> &ConstraintProperties {
             &self.0
         }
@@ -277,7 +277,7 @@ pub mod builtin_constraints {
         }
     }
 
-    impl ConstraintData for ContactPlane {
+    impl XPBD for ContactPlane {
         fn properties(&self) -> &ConstraintProperties {
             &self.data
         }

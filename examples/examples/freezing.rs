@@ -2,7 +2,7 @@ use engine::prelude::*;
 use rand::Rng;
 use rendering::particle_2d_renderer::Particle2DRenderer;
 
-const COUNT: u32 = 500;
+const COUNT: u32 = 200;
 const MASS: f64 = 10.0;
 const RADIUS: f64 = 8.0;
 const BOND_ENERGY: f64 = 100000.0;

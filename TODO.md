@@ -19,12 +19,6 @@
     - [ ] step through non-xpbd algorithm w/ variables to prove the conservation of quantities
     - [ ] what is the physical correspondance to the xpbd dissipation? what is its behavior in relation to compliance?
   - [ ] real-time 3d renderer w/ simple interaction (using bevy)
-  - [ ] support particle sources and sinks
-  - [ ] different boundary conditions
-    - [ ] inflow
-    - [ ] outflow
-    - [ ] rigid
-    - [ ] periodic
   - [X] support breakable constraints (max constraint force and broken properties)
   - [X] non-dynamical particles (central gravity bodies, boundary particles, constraint & spring attachments, platforms, etc.)
   - [ ] a common functionality implementation of SPH smoothing
@@ -34,7 +28,6 @@
   - [X] builder methods for builtin fields & constraints
   - [X] fix BoxBound instability
   - [ ] a general purpose (common functionality) Mesh object
-    - [ ] derivatives, gradients, laplacian, etc defined on it
     - [ ] different types:
       - [ ] structured (FDM, FVM, FEM)
         - [ ] 2d: orthogonal quadrilateral / lattice graph. 3d: hexahedral
@@ -43,6 +36,7 @@
         - [ ] surface mesh
     - [ ] mesh <=> connected particles
     - [ ] different boundary conditions (Neumann, dirichet, etc)
+    - [ ] mpm algorithms implemented on it?
 
 - Big Picture
   - math
@@ -50,23 +44,40 @@
     - [X] point
     - [X] vector
     - [X] matrix
-    - [ ] mesh
   - objects:
     - [X] system
     - [X] particles
     - [ ] rigid bodies
+    - [ ] mesh
+      - [ ] structured
+        - [ ] differential operators
+      - [ ] unstructured
   - dynamics & interactions:
-    - [ ] fields
-    - [ ] compliant constraints
-    - [ ] sph
+    - [ ] forces
+      - [ ] generic
+      - [ ] field interaction
+      - [ ] pair-wise interaction
+      - [ ] simple force
+    - [ ] xpbd compliant constraints
+    - [ ] sph, mpm
     - [ ] collisions
     - [ ] thermodynamics
     - [ ] boundary conditions
+      - [ ] sources & sinks
+      - [ ] inlet
+      - [ ] outlet
+      - [ ] no-slip
+      - [ ] constant pressure
+      - [ ] symmetric
+      - [ ] periodic
+      - [ ] rigid / fixed
   - algorithms:
     - [ ] n-body pairing (take a generic slice and return an iterator)
     - [ ] composite shapes (rigid body <-> collection of particles)
-    - [ ] collision detection
-    - [ ] neighbor finding
+    - [ ] Barnes–Hut algorithm
+    - [ ] collision detection & neighbor finding
+      - [ ] spatial dividing (octree)
+      - [ ] hashmap
   - features:
     - [ ] rendering
     - [ ] serialization/deserialization
@@ -85,8 +96,11 @@
   - [ ] pile of sand
 
 - Fields
-  - [X] electrostatic (Coulomb) force
-  - [X] general Lennard-Jones potential (Mie potential)
+  - [ ] interatomic / intermolecular potentials
+    - [X] electrostatic (Coulomb) force
+    - [X] general Lennard-Jones potential (Mie potential)
+    - [ ] Morse potential
+    - [ ] many-body potentials
   - [ ] particle-mesh-method newtonian gravity
   - [ ] SPH newtonian gravity mesh
   - [ ] electromagnetic
@@ -100,9 +114,9 @@
   - [ ] isometric bending?
   - [ ] particle-triangle collisions
   - [X] contact plane collisions (for general purpose shapes & environment)
-    - [ ] w/ friction
+    - [ ] w/ friction (small steps, survey of pbd, rigid bodies, using average velocity)
   - [X] particle-particle non-penetration
-    - [ ] w/ friction (position level friction & averaging of velocity friction)
+    - [ ] w/ friction (small steps, survey of pbd, rigid bodies, using average velocity)
   - [ ] tetrahedral volume conservation (for bulk modulus) (use neo-hookean bc it doesn't need polar decomposition?)
   - [ ] triangle area conservation
   - [ ] shear (for shear modulus)
@@ -145,17 +159,11 @@
     - [ ] isosurface/isoline rendering?
     - [ ] sph-like smoothing
 
-- Algorithms
-  - [ ] spawning composite shapes of particles (spheres, blocks, etc)
-  - [ ] hash map collision detection
-  - [ ] tree method collision detection
-  - [ ] tree methods for optimized n-body forces
-
 - Physics
   - [ ] intermolecular forces & interatomic potentials from molecular mechanics
     - [ ] solids (covalent/ionic/metallic bonds)
       - [ ] covalent bond potential, electrostatic attraction
-      - [ ] xpbd distance constraints w/ compliance
+      - [X] xpbd distance constraints w/ compliance (harmonic oscillator)
       - [ ] smoothed-particle-hydrodynamics
       - [ ] material-point-method
     - [ ] liquids & gases (intermolecular forces & hydrogen bonds)
