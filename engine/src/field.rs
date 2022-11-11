@@ -1,7 +1,10 @@
 //! An object that enables dynamic interaction with and between particles.
 //! A field can also store its own state and have an integration method.
 
-use crate::particle::{Force, Particle, ParticleReference};
+use crate::{
+    math::Vec3,
+    particle::{Particle, ParticleReference},
+};
 
 //---------------------------------------------------------------------------------------------------//
 // FieldProperties
@@ -10,37 +13,7 @@ pub enum InteractionType {
     FieldParticle,
     ParticleParticle,
     SimpleForce,
-    //SPH,
-    //MPM,
 }
-
-/*
-pub trait Field {
-    fn handle(&mut self, particle_source: &mut [Particle], dt: f64);
-    fn total_energy(&self, particle_source: &[Particle]) -> f64;
-
-    fn add_particle(&mut self, _particle_reference: ParticleReference);
-    fn add_particles(&mut self, _particle_references: &[ParticleReference]);
-}
-
-pub enum Interaction {
-    FieldParticle(Box<dyn FieldParticle>),
-    ParticleParticle(Box<dyn ParticleParticle>),
-    SimpleForce(Box<dyn SimpleForce>),
-    //Sph(Box<dyn Sph>),
-    //Mpm(Box<dyn Mpm>),
-}
-
-pub trait FieldProperties {
-    fn coupled_particles(&self) -> &[ParticleReference];
-    fn coupled_particles_mut(&mut self) -> &mut [ParticleReference];
-    fn properties(&self) -> &Interaction;
-}
-
-impl Field for FieldProperties {
-
-}
-*/
 
 pub struct FieldProperties {
     coupled_particles: Vec<ParticleReference>,
@@ -74,7 +47,7 @@ pub trait FieldImpl {
     // for FieldParticle interaction type
     fn particle_to_field(&mut self, _particle: &Particle) {}
     fn integrate(&mut self, _dt: f64) {}
-    fn field_to_particle(&self, _particle: &Particle) -> Option<Force> {
+    fn field_to_particle(&self, _particle: &Particle) -> Option<Vec3> {
         None
     }
     fn clear(&mut self) {}
@@ -83,7 +56,7 @@ pub trait FieldImpl {
     }
 
     // for ParticleParticle interaction type
-    fn particle_to_particle(&self, _particle1: &Particle, _particle2: &Particle) -> Option<Force> {
+    fn particle_to_particle(&self, _particle1: &Particle, _particle2: &Particle) -> Option<Vec3> {
         None
     }
     fn interaction_potential(&self, _particle1: &Particle, _particle2: &Particle) -> f64 {
@@ -91,7 +64,7 @@ pub trait FieldImpl {
     }
 
     // for SimpleForce interaction type
-    fn simple_force(&self, _particle: &Particle) -> Option<Force> {
+    fn simple_force(&self, _particle: &Particle) -> Option<Vec3> {
         None
     }
     fn force_potential(&self, _particle: &Particle) -> f64 {
@@ -198,7 +171,7 @@ pub mod builtin_fields {
     use crate::{
         field::{FieldImpl, FieldProperties, InteractionType},
         math::Vec3,
-        particle::{Force, Particle},
+        particle::Particle,
     };
 
     //--------------------------------------------------------------------//
@@ -218,8 +191,8 @@ pub mod builtin_fields {
         fn properties_mut(&mut self) -> &mut FieldProperties {
             &mut self.0
         }
-        fn simple_force(&self, _particle: &Particle) -> Option<Force> {
-            Some(Force(self.1, None))
+        fn simple_force(&self, _particle: &Particle) -> Option<Vec3> {
+            Some(self.1)
         }
     }
 
@@ -245,8 +218,8 @@ pub mod builtin_fields {
         fn properties_mut(&mut self) -> &mut FieldProperties {
             &mut self.0
         }
-        fn simple_force(&self, particle: &Particle) -> Option<Force> {
-            Some(Force(Vec3::new(0.0, -particle.mass * self.1, 0.0), None))
+        fn simple_force(&self, particle: &Particle) -> Option<Vec3> {
+            Some(Vec3::new(0.0, -particle.mass * self.1, 0.0))
         }
         fn force_potential(&self, particle: &Particle) -> f64 {
             particle.mass * self.1 * (particle.pos.y - self.2)
@@ -273,18 +246,11 @@ pub mod builtin_fields {
         fn properties_mut(&mut self) -> &mut FieldProperties {
             &mut self.0
         }
-        fn particle_to_particle(
-            &self,
-            particle1: &Particle,
-            particle2: &Particle,
-        ) -> Option<Force> {
+        fn particle_to_particle(&self, particle1: &Particle, particle2: &Particle) -> Option<Vec3> {
             let radial = particle2.pos - particle1.pos;
             let dist = radial.mag();
 
-            Some(Force(
-                ((self.1 * particle1.mass * particle2.mass) / dist.powi(3)) * radial,
-                None,
-            ))
+            Some(((self.1 * particle1.mass * particle2.mass) / dist.powi(3)) * radial)
         }
         fn interaction_potential(&self, particle1: &Particle, particle2: &Particle) -> f64 {
             let radial = particle2.pos - particle1.pos;
@@ -313,18 +279,11 @@ pub mod builtin_fields {
         fn properties_mut(&mut self) -> &mut FieldProperties {
             &mut self.0
         }
-        fn particle_to_particle(
-            &self,
-            particle1: &Particle,
-            particle2: &Particle,
-        ) -> Option<Force> {
+        fn particle_to_particle(&self, particle1: &Particle, particle2: &Particle) -> Option<Vec3> {
             let radial = particle2.pos - particle1.pos;
             let dist = radial.mag();
 
-            Some(Force(
-                -((self.1 * particle1.charge * particle2.charge) / dist.powi(3)) * radial,
-                None,
-            ))
+            Some(-((self.1 * particle1.charge * particle2.charge) / dist.powi(3)) * radial)
         }
 
         fn interaction_potential(&self, particle1: &Particle, particle2: &Particle) -> f64 {
@@ -368,22 +327,17 @@ pub mod builtin_fields {
         fn properties_mut(&mut self) -> &mut FieldProperties {
             &mut self.properties
         }
-        fn particle_to_particle(
-            &self,
-            particle1: &Particle,
-            particle2: &Particle,
-        ) -> Option<Force> {
+        fn particle_to_particle(&self, particle1: &Particle, particle2: &Particle) -> Option<Vec3> {
             let (n, m) = (self.repulsion, self.attraction);
             let c = (n / (n - m)) * ((n / m).powf(m / (n - m))) * self.dispersion_energy;
             let radial = particle2.pos - particle1.pos;
             let sigma = self.collision_radius;
             let r = radial.mag();
 
-            Some(Force(
+            Some(
                 -c * ((n * sigma.powf(n) / r.powf(n + 2.)) - (m * sigma.powf(m) / r.powf(m + 2.)))
                     * radial,
-                None,
-            ))
+            )
         }
         fn interaction_potential(&self, particle1: &Particle, particle2: &Particle) -> f64 {
             let (n, m) = (self.repulsion, self.attraction);

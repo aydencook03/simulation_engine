@@ -16,7 +16,7 @@ pub struct Particle {
     // dynamics
     pub inverse_mass: f64,
     pub prev_pos: Point3,
-    pub forces: Vec<Force>,
+    pub forces: Vec<Vec3>,
 
     // state
     pub pos: Point3,
@@ -27,35 +27,10 @@ pub struct Particle {
 
 //--------------------------------------------------------------------//
 
-#[derive(Copy, Clone, Default)]
-pub struct Force(pub Vec3, pub Option<Point3>);
-impl Force {
-    pub fn from_impulse(impulse: Vec3, dt: f64) -> Force {
-        Force(impulse / dt, None)
-    }
-
-    pub fn from_displacement(displacement: Vec3, mass: f64, dt: f64) -> Force {
-        Force(mass * displacement / dt.powi(2), None)
-    }
-
-    pub fn location(mut self, location: Point3) -> Force {
-        self.1 = Some(location);
-        self
-    }
-}
-impl core::ops::Neg for Force {
-    type Output = Force;
-    fn neg(self) -> Self::Output {
-        Force(-self.0, self.1)
-    }
-}
-
-//--------------------------------------------------------------------//
-
-#[derive(Copy, Clone)]
 pub struct Extent {
     pub inverse_inertia: Matrix3,
     pub prev_orientation: Vec3,
+    pub torques: Vec<Vec3>,
 
     pub orientation: Vec3,
     pub angular_velocity: Vec3,
@@ -158,12 +133,34 @@ impl Particle {
         let mut total_force = Vec3::zero();
 
         for force in &self.forces {
-            total_force += force.0;
+            total_force += *force;
+        }
+
+        if let Some(extent) = &mut self.extent {
+            todo!();
         }
 
         self.vel += total_force * self.inverse_mass * dt;
         self.prev_pos = self.pos;
         self.pos += self.vel * dt;
+    }
+
+    pub fn add_force(&mut self, force: Vec3, at_point: Point3) {
+        self.forces.push(force);
+
+        if let Some(extent) = &mut self.extent {
+            extent.torques.push((at_point - self.pos).cross(force));
+        }
+    }
+
+    pub fn add_displacement(
+        &mut self,
+        displacement: Vec3,
+        at_point: Point3,
+        as_force: bool,
+        dt: f64,
+    ) {
+        todo!();
     }
 
     pub fn update_vel(&mut self, dt: f64) {

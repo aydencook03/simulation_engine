@@ -124,7 +124,7 @@
   - [ ] closed triangle mesh overpressure
   - [ ] fluid w/ surface tension, cohesion, viscosity
   - [ ] cloth drag
-  - [ ] shape matching?
+  - [ ] shape matching for soft/rigid bodies
   - [ ] generic constraint API
     - see what common behavior can be consolidated into the constraint trait
 

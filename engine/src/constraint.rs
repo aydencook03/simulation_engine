@@ -1,6 +1,6 @@
 use crate::{
     math::Vec3,
-    particle::{Force, Particle, ParticleReference},
+    particle::{Particle, ParticleReference},
 };
 
 //---------------------------------------------------------------------------------------------------//
@@ -48,21 +48,38 @@ impl ConstraintProperties {
 }
 
 //---------------------------------------------------------------------------------------------------//
-// Constraint traits.
+// Constraint trait.
 
 pub trait Constraint {
     fn project(&mut self, particle_source: &mut [Particle], dt: f64, static_pass: bool);
     fn force_estimate(&self) -> f64;
 }
 
-pub trait XPBD {
+//---------------------------------------------------------------------------------------------------//
+// Types of constraints.
+
+pub trait XPBDConstraint {
     fn properties(&self) -> &ConstraintProperties;
     fn properties_mut(&mut self) -> &mut ConstraintProperties;
     fn constraint(&self, particles: &[&Particle]) -> f64;
     fn gradients(&self, particles: &[&Particle]) -> Vec<Vec3>;
 }
 
-impl<C: XPBD> Constraint for C {
+/* future optimized version
+pub trait XPBDConstraint {
+    const COUNT: usize;
+    fn properties(&self) -> &ConstraintProperties<{Self::COUNT}>;
+    fn properties_mut(&mut self) -> &mut ConstraintProperties;
+    fn constraint(&self, particles: &[&Particle; Self::COUNT]) -> f64;
+    fn gradients(&self, particles: &[&Particle; Self::COUNT]) -> [Vec3; Self::COUNT];
+} */
+
+pub trait BoundaryConstraint {}
+
+//---------------------------------------------------------------------------------------------------//
+// Implementations for the different constraint types.
+
+impl<C: XPBDConstraint> Constraint for C {
     fn project(&mut self, particle_source: &mut [Particle], dt: f64, static_pass: bool) {
         let data = self.properties();
         let (breakable, max_force) = match data.max_force {
@@ -107,7 +124,7 @@ impl<C: XPBD> Constraint for C {
                     } else {
                         part.get_mut(particle_source)
                             .forces
-                            .push(Force(lagrange * gradients[i] / dt.powi(2), None))
+                            .push(lagrange * gradients[i] / dt.powi(2));
                     }
                 }
 
@@ -126,11 +143,11 @@ impl<C: XPBD> Constraint for C {
 }
 
 //---------------------------------------------------------------------------------------------------//
-// Different constraints implemented using the Constraint traits.
+// Different constraints implemented using the constraint traits.
 
 pub mod builtin_constraints {
     use crate::{
-        constraint::{ConstraintProperties, ConstraintType, XPBD},
+        constraint::{ConstraintProperties, ConstraintType, XPBDConstraint},
         math::{Point3, Vec3},
         particle::{Particle, ParticleReference},
     };
@@ -176,7 +193,7 @@ pub mod builtin_constraints {
         }
     }
 
-    impl XPBD for Distance {
+    impl XPBDConstraint for Distance {
         fn properties(&self) -> &ConstraintProperties {
             &self.data
         }
@@ -222,7 +239,7 @@ pub mod builtin_constraints {
         }
     }
 
-    impl XPBD for NonPenetrate {
+    impl XPBDConstraint for NonPenetrate {
         fn properties(&self) -> &ConstraintProperties {
             &self.0
         }
@@ -277,7 +294,7 @@ pub mod builtin_constraints {
         }
     }
 
-    impl XPBD for ContactPlane {
+    impl XPBDConstraint for ContactPlane {
         fn properties(&self) -> &ConstraintProperties {
             &self.data
         }
