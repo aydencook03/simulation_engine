@@ -11,8 +11,10 @@ pub mod system;
 
 pub mod prelude {
     pub use crate::{
-        constraint::builtin_constraints as Constraints, constraint::Constraint,
-        field::builtin_fields as Fields, field::Field, math::Vec3, particle::Particle,
+        constraint::{builtin_constraints as Constraints, Constraint},
+        interaction::{builtin_interactions as Interactions, Interaction},
+        math::Vec3,
+        particle::Particle,
         system::System,
     };
 }

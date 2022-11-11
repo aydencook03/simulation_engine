@@ -75,9 +75,9 @@ fn main() {
     }
 
     // create gravity
-    let mut gravity = Fields::Gravity::new(G);
+    let mut gravity = Interactions::Gravity::new(G).build();
     gravity.add_particles(&system.all_particles());
-    system.add_field(gravity);
+    system.add_interaction(gravity);
 
     // add a non_penetrate constraint to all particles
     let mut index: usize = 0;

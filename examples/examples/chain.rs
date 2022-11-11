@@ -51,10 +51,12 @@ fn main() {
         index += 1;
     }
 
-    let mut gravity = Fields::Falling::new(GRAVITY).ground_reference(-500.0);
+    let mut gravity = Interactions::Falling::new(GRAVITY)
+        .ground_reference(-500.0)
+        .build();
     gravity.add_particles(&system.all_particles());
 
-    system.add_field(gravity);
+    system.add_interaction(gravity);
     system.static_constraint_pass(1);
 
     window.run(system);

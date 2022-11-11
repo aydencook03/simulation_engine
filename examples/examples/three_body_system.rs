@@ -18,9 +18,9 @@ fn main() {
             .vel_xyz(100.0, 0.0, 0.0),
     );
 
-    let mut gravity = Fields::Gravity::new(40000.0);
+    let mut gravity = Interactions::Gravity::new(40000.0).build();
     gravity.add_particles(&system.all_particles());
-    system.add_field(gravity);
+    system.add_interaction(gravity);
 
     window.run(system);
 }

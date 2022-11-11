@@ -11,7 +11,10 @@ use crate::{
 //    pile:         24-27 fps
 //
 // new interactions:
-//    gas_in_a_box: 
+//    gas_in_a_box: 25-26 fps
+//    chain:        68-70 fps
+//    star:         10-12 fps
+//    pile:         25-27 fps
 
 //---------------------------------------------------------------------------------------------------//
 
@@ -175,7 +178,7 @@ pub trait MpmInteraction {}
 
 //---------------------------------------------------------------------------------------------------//
 
-/* future better version
+/* future better version?
 pub trait Interaction {
     fn handle(&mut self, particle_source: &mut [Particle], dt: f64);
     fn interaction_energy(&self, particle_source: &[Particle]) -> f64;
@@ -201,7 +204,7 @@ impl<T: FieldParticleInteraction> Interaction for T {
 
 pub mod builtin_interactions {
     use crate::{
-        interaction::{PairWiseForce, SimpleForce},
+        interaction::{Interaction, InteractionType, PairWiseForce, SimpleForce},
         math::Vec3,
         particle::Particle,
     };
@@ -212,6 +215,10 @@ pub mod builtin_interactions {
     impl ConstantForce {
         pub fn new(force: Vec3) -> ConstantForce {
             ConstantForce(force)
+        }
+
+        pub fn build(self) -> Interaction {
+            Interaction::new(InteractionType::SimpleForce(Box::new(self)))
         }
     }
 
@@ -234,6 +241,10 @@ pub mod builtin_interactions {
             self.1 = height;
             self
         }
+
+        pub fn build(self) -> Interaction {
+            Interaction::new(InteractionType::SimpleForce(Box::new(self)))
+        }
     }
 
     impl SimpleForce for Falling {
@@ -252,6 +263,10 @@ pub mod builtin_interactions {
     impl Gravity {
         pub fn new(gravitational_constant: f64) -> Gravity {
             Gravity(gravitational_constant)
+        }
+
+        pub fn build(self) -> Interaction {
+            Interaction::new(InteractionType::PairWiseForce(Box::new(self)))
         }
     }
 
@@ -275,6 +290,10 @@ pub mod builtin_interactions {
     impl ElectroStatic {
         pub fn new(electrostatic_constant: f64) -> ElectroStatic {
             ElectroStatic(electrostatic_constant)
+        }
+
+        pub fn build(self) -> Interaction {
+            Interaction::new(InteractionType::PairWiseForce(Box::new(self)))
         }
     }
 
@@ -315,6 +334,10 @@ pub mod builtin_interactions {
             self.repulsion = repulsion;
             self.attraction = attraction;
             self
+        }
+
+        pub fn build(self) -> Interaction {
+            Interaction::new(InteractionType::PairWiseForce(Box::new(self)))
         }
     }
 

@@ -35,9 +35,9 @@ fn main() {
         );
     }
 
-    let mut gravity = Fields::Falling::new(GRAVITY);
+    let mut gravity = Interactions::Falling::new(GRAVITY).build();
     gravity.add_particles(&system.all_particles());
-    system.add_field(gravity);
+    system.add_interaction(gravity);
 
     // add a non_penetrate constraint to all particles
     let mut index: usize = 0;

@@ -1,6 +1,6 @@
 use crate::collision::CollisionDetector;
 use crate::constraint::Constraint;
-use crate::field::Field;
+use crate::interaction::Interaction;
 use crate::math::Vec3;
 use crate::particle::{Particle, ParticleReference};
 
@@ -15,11 +15,11 @@ pub struct System {
     pub particle_radius: f64,
 
     pub particles: Vec<Particle>,
-    pub fields: Vec<Box<dyn Field>>,
+    pub interactions: Vec<Interaction>,
     pub constraints: Vec<Box<dyn Constraint>>,
 
     pub collision_detector: Option<Box<dyn CollisionDetector>>, // constains collision groups
-    pub collision_fields: Vec<Box<dyn Field>>,
+    pub collision_interactions: Vec<Interaction>,
     pub collision_constraints: Vec<Box<dyn Constraint>>,
 
     pub id_counter: u32,
@@ -59,9 +59,9 @@ impl System {
         references
     }
 
-    pub fn add_field(&mut self, field: impl Field + 'static) -> usize {
-        self.fields.push(Box::new(field));
-        self.fields.len() - 1
+    pub fn add_interaction(&mut self, interaction: Interaction) -> usize {
+        self.interactions.push(interaction);
+        self.interactions.len() - 1
     }
 
     pub fn add_constraint(&mut self, constraint: impl Constraint + 'static) -> usize {
@@ -127,8 +127,8 @@ impl System {
         for particle in &self.particles {
             ke += 0.5 * particle.mass * particle.vel.mag_squared();
         }
-        for field in &self.fields {
-            pe += field.total_energy(&self.particles);
+        for interaction in &self.interactions {
+            pe += interaction.interaction_energy(&self.particles);
         }
         dbg!(ke + pe);
     }
@@ -149,8 +149,8 @@ impl System {
             let sub_dt = dt / (self.substeps as f64);
             // collision detection
             for _ in 0..self.substeps {
-                for field in &mut self.fields {
-                    field.handle(&mut self.particles, sub_dt);
+                for interaction in &mut self.interactions {
+                    interaction.handle(&mut self.particles, sub_dt);
                 }
 
                 for particle in &mut self.particles {

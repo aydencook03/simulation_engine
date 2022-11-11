@@ -136,7 +136,7 @@ impl Particle {
             total_force += *force;
         }
 
-        if let Some(extent) = &mut self.extent {
+        if let Some(_extent) = &mut self.extent {
             todo!();
         }
 
@@ -155,10 +155,10 @@ impl Particle {
 
     pub fn add_displacement(
         &mut self,
-        displacement: Vec3,
-        at_point: Point3,
-        as_force: bool,
-        dt: f64,
+        _displacement: Vec3,
+        _at_point: Point3,
+        _as_force: bool,
+        _dt: f64,
     ) {
         todo!();
     }

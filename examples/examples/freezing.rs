@@ -24,13 +24,15 @@ fn main() {
         system.add_particle(Particle::new().pos_xyz(rand_x, rand_y, 0.0).mass(MASS));
     }
 
-    let mut repulsion = Fields::LennardJones::new(BOND_ENERGY, 2. * RADIUS);
+    let mut repulsion = Interactions::LennardJones::new(BOND_ENERGY, 2. * RADIUS).build();
     repulsion.add_particles(&system.all_particles());
-    system.add_field(repulsion);
+    system.add_interaction(repulsion);
 
-    let mut gravity = Fields::Falling::new(GRAVITY).ground_reference(-500.0);
+    let mut gravity = Interactions::Falling::new(GRAVITY)
+        .ground_reference(-500.0)
+        .build();
     gravity.add_particles(&system.all_particles());
-    system.add_field(gravity);
+    system.add_interaction(gravity);
 
     for particle in &system.all_particles() {
         system.add_constraint(Constraints::ContactPlane::new(
