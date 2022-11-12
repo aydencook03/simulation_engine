@@ -35,45 +35,51 @@ fn main() {
     system.add_interaction(gravity);
 
     for particle in &system.all_particles() {
-        system.add_constraint(Constraints::ContactPlane::new(
-            *particle,
-            RADIUS,
-            Vec3::new(bounds[0], 0.0, 0.0),
-            Vec3::new(1.0, 0.0, 0.0),
-            false,
-        ));
-        system.add_constraint(Constraints::ContactPlane::new(
-            *particle,
-            RADIUS,
-            Vec3::new(bounds[1], 0.0, 0.0),
-            Vec3::new(-1.0, 0.0, 0.0),
-            false,
-        ));
-        system.add_constraint(Constraints::ContactPlane::new(
-            *particle,
-            RADIUS,
-            Vec3::new(0.0, bounds[2], 0.0),
-            Vec3::new(0.0, 1.0, 0.0),
-            true,
-        ));
-        system.add_constraint(Constraints::ContactPlane::new(
-            *particle,
-            RADIUS,
-            Vec3::new(0.0, bounds[3], 0.0),
-            Vec3::new(0.0, -1.0, 0.0),
-            false,
-        ));
+        system.add_constraint(
+            Constraints::ContactPlane::new(
+                *particle,
+                RADIUS,
+                Vec3::new(bounds[0], 0.0, 0.0),
+                Vec3::new(1.0, 0.0, 0.0),
+            )
+            .as_force()
+            .build(),
+        );
+        system.add_constraint(
+            Constraints::ContactPlane::new(
+                *particle,
+                RADIUS,
+                Vec3::new(bounds[1], 0.0, 0.0),
+                Vec3::new(-1.0, 0.0, 0.0),
+            )
+            .as_force()
+            .build(),
+        );
+        system.add_constraint(
+            Constraints::ContactPlane::new(
+                *particle,
+                RADIUS,
+                Vec3::new(0.0, bounds[2], 0.0),
+                Vec3::new(0.0, 1.0, 0.0),
+            )
+            .build(),
+        );
+        system.add_constraint(
+            Constraints::ContactPlane::new(
+                *particle,
+                RADIUS,
+                Vec3::new(0.0, bounds[3], 0.0),
+                Vec3::new(0.0, -1.0, 0.0),
+            )
+            .build(),
+        );
     }
 
     let mut index: usize = 0;
-    let mut constraints: Vec<Constraints::NonPenetrate> = Vec::new();
+    let mut constraints: Vec<Constraint> = Vec::new();
     for ref1 in &system.all_particles() {
         for ref2 in &system.all_particles()[(index + 1)..] {
-            constraints.push(Constraints::NonPenetrate::new(
-                [*ref1, *ref2],
-                2. * RADIUS,
-                true,
-            ));
+            constraints.push(Constraints::NonPenetrate::new([*ref1, *ref2], 2. * RADIUS).build());
         }
         index += 1;
     }

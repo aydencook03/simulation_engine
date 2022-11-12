@@ -43,38 +43,46 @@ fn main() {
     let mut index: usize = 0;
     for ref1 in &system.all_particles() {
         for ref2 in &system.all_particles()[(index + 1)..] {
-            system.add_constraint(Constraints::NonPenetrate::new(
-                [*ref1, *ref2],
-                2.0 * system.particle_radius,
-                true,
-            ));
+            system.add_constraint(
+                Constraints::NonPenetrate::new([*ref1, *ref2], 2.0 * system.particle_radius)
+                    .build(),
+            );
         }
         index += 1;
     }
 
     // add a boundary constraint to all particles
     for part in &system.all_particles() {
-        system.add_constraint(Constraints::ContactPlane::new(
-            *part,
-            system.particle_radius,
-            Vec3::new(bounds[0], 0.0, 0.0),
-            Vec3::new(1.0, 0.0, 0.0),
-            false,
-        ));
-        system.add_constraint(Constraints::ContactPlane::new(
-            *part,
-            system.particle_radius,
-            Vec3::new(bounds[1], 0.0, 0.0),
-            Vec3::new(-1.0, 0.0, 0.0),
-            false,
-        ));
-        system.add_constraint(Constraints::ContactPlane::new(
-            *part,
-            system.particle_radius,
-            Vec3::new(0.0, bounds[2], 0.0),
-            Vec3::new(0.0, 1.0, 0.0),
-            false,
-        ));
+        system.add_constraint(
+            Constraints::ContactPlane::new(
+                *part,
+                system.particle_radius,
+                Vec3::new(bounds[0], 0.0, 0.0),
+                Vec3::new(1.0, 0.0, 0.0),
+            )
+            .as_force()
+            .build(),
+        );
+        system.add_constraint(
+            Constraints::ContactPlane::new(
+                *part,
+                system.particle_radius,
+                Vec3::new(bounds[1], 0.0, 0.0),
+                Vec3::new(-1.0, 0.0, 0.0),
+            )
+            .as_force()
+            .build(),
+        );
+        system.add_constraint(
+            Constraints::ContactPlane::new(
+                *part,
+                system.particle_radius,
+                Vec3::new(0.0, bounds[2], 0.0),
+                Vec3::new(0.0, 1.0, 0.0),
+            )
+            .as_force()
+            .build(),
+        );
     }
 
     system.static_constraint_pass(2);

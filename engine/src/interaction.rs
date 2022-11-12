@@ -3,19 +3,6 @@ use crate::{
     particle::{Particle, ParticleReference},
 };
 
-//
-// old:
-//    gas_in_a_box: 25-26 fps
-//    chain:        68-70 fps
-//    star:         11-13 fps
-//    pile:         24-27 fps
-//
-// new interactions:
-//    gas_in_a_box: 25-26 fps
-//    chain:        68-70 fps
-//    star:         10-12 fps
-//    pile:         25-27 fps
-
 //---------------------------------------------------------------------------------------------------//
 
 pub struct Interaction {

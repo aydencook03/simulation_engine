@@ -5,13 +5,98 @@ use crate::{
 
 //---------------------------------------------------------------------------------------------------//
 
-pub enum ConstraintType {
-    Equation,
-    Inequality,
+pub struct Constraint {
+    constraint_type: ConstraintType,
 }
 
-pub struct ConstraintProperties {
-    particles: Vec<ParticleReference>,
+pub enum ConstraintType {
+    Xpbd(XpbdConstraint),
+    Boundary(Box<dyn BoundaryConstraint>),
+}
+
+impl Constraint {
+    pub fn new(constraint_type: ConstraintType) -> Constraint {
+        Constraint { constraint_type }
+    }
+
+    //--------------------------------------------------------------------//
+
+    pub fn project(&mut self, particle_source: &mut [Particle], dt: f64, static_pass: bool) {
+        match &mut self.constraint_type {
+            ConstraintType::Xpbd(constraint) => {
+                let (breakable, max_force) = match constraint.max_force {
+                    Some(force) => (true, force),
+                    None => (false, 0.0),
+                };
+
+                if !breakable || !constraint.broken {
+                    let particles: Vec<&Particle> = constraint
+                        .implementation
+                        .particles()
+                        .iter()
+                        .map(|p| p.get(particle_source))
+                        .collect();
+
+                    let evaluated = constraint.implementation.constraint(&particles);
+
+                    let satisfied = match constraint.as_inequality {
+                        false => evaluated == 0.0,
+                        true => evaluated >= 0.0,
+                    };
+
+                    if !satisfied {
+                        let dt = if static_pass { core::f64::MAX } else { dt };
+                        let alpha = constraint.compliance / dt.powi(2);
+                        let gamma = constraint.compliance * constraint.dissipation / dt;
+                        let gradients = constraint.implementation.gradients(&particles);
+
+                        let mut damp = 0.0;
+                        let mut scale = 0.0;
+
+                        for (i, part) in particles.iter().enumerate() {
+                            damp += gradients[i].dot(part.pos - part.prev_pos);
+                            scale += part.inverse_mass * gradients[i].mag_squared();
+                        }
+
+                        let lagrange =
+                            (-evaluated - gamma * damp) / ((1.0 + gamma) * scale + alpha);
+
+                        for (i, part) in constraint.implementation.particles().iter().enumerate() {
+                            if !constraint.as_force || static_pass {
+                                let inv_mass = part.get(particle_source).inverse_mass;
+                                part.get_mut(particle_source).pos +=
+                                    lagrange * inv_mass * gradients[i];
+                            } else {
+                                part.get_mut(particle_source)
+                                    .forces
+                                    .push(lagrange * gradients[i] / dt.powi(2));
+                            }
+                        }
+
+                        let force = lagrange / dt.powi(2);
+                        constraint.force = force;
+                        if breakable {
+                            constraint.broken = force > max_force;
+                        }
+                    }
+                }
+            }
+            ConstraintType::Boundary(_constraint) => todo!(),
+        }
+    }
+
+    pub fn force_estimate(&self) -> f64 {
+        match &self.constraint_type {
+            ConstraintType::Xpbd(constraint) => constraint.force,
+            ConstraintType::Boundary(_constraint) => todo!(),
+        }
+    }
+}
+
+//---------------------------------------------------------------------------------------------------//
+
+pub struct XpbdConstraint {
+    implementation: Box<dyn XpbdImplementation>,
 
     compliance: f64,
     dissipation: f64,
@@ -20,190 +105,98 @@ pub struct ConstraintProperties {
     max_force: Option<f64>,
     broken: bool,
 
-    xpbd: bool,
-    constraint_type: ConstraintType,
-    // projection_type: ProjectionType,
+    as_force: bool,
+    as_inequality: bool,
 }
 
-impl ConstraintProperties {
-    pub fn new(
-        particles: Vec<ParticleReference>,
-        constraint_type: ConstraintType,
-        xpbd: bool,
-    ) -> ConstraintProperties {
-        ConstraintProperties {
-            particles,
-
+impl XpbdConstraint {
+    pub fn new(implementation: impl XpbdImplementation + 'static) -> XpbdConstraint {
+        XpbdConstraint {
+            implementation: Box::new(implementation),
             compliance: 0.0,
             dissipation: 0.0,
-
             force: 0.0,
             max_force: None,
             broken: false,
-
-            xpbd,
-            constraint_type,
+            as_force: false,
+            as_inequality: false,
         }
+    }
+
+    pub fn compliance(mut self, compliance: f64) -> XpbdConstraint {
+        self.compliance = compliance;
+        self
+    }
+
+    pub fn dissipation(mut self, dissipation: f64) -> XpbdConstraint {
+        self.dissipation = dissipation;
+        self
+    }
+
+    pub fn max_force(mut self, max_force: f64) -> XpbdConstraint {
+        self.max_force = Some(max_force);
+        self
+    }
+
+    pub fn as_force(mut self) -> XpbdConstraint {
+        self.as_force = true;
+        self
+    }
+
+    pub fn as_inequality(mut self) -> XpbdConstraint {
+        self.as_inequality = true;
+        self
+    }
+
+    pub fn build(self) -> Constraint {
+        Constraint::new(ConstraintType::Xpbd(self))
     }
 }
 
-//---------------------------------------------------------------------------------------------------//
-// Constraint trait.
-
-pub trait Constraint {
-    fn project(&mut self, particle_source: &mut [Particle], dt: f64, static_pass: bool);
-    fn force_estimate(&self) -> f64;
-}
-
-//---------------------------------------------------------------------------------------------------//
-// Types of constraints.
-
-pub trait XPBDConstraint {
-    fn properties(&self) -> &ConstraintProperties;
-    fn properties_mut(&mut self) -> &mut ConstraintProperties;
+pub trait XpbdImplementation {
+    fn particles(&self) -> &[ParticleReference];
     fn constraint(&self, particles: &[&Particle]) -> f64;
     fn gradients(&self, particles: &[&Particle]) -> Vec<Vec3>;
 }
 
-/* future optimized version
+/* future optimized version?
 pub trait XPBDConstraint {
     const COUNT: usize;
-    fn properties(&self) -> &ConstraintProperties<{Self::COUNT}>;
-    fn properties_mut(&mut self) -> &mut ConstraintProperties;
+    fn particles(&self) -> &[ParticleReference];
     fn constraint(&self, particles: &[&Particle; Self::COUNT]) -> f64;
     fn gradients(&self, particles: &[&Particle; Self::COUNT]) -> [Vec3; Self::COUNT];
 } */
 
+//--------------------------------------------------------------------//
+
 pub trait BoundaryConstraint {}
 
 //---------------------------------------------------------------------------------------------------//
-// Implementations for the different constraint types.
-
-impl<C: XPBDConstraint> Constraint for C {
-    fn project(&mut self, particle_source: &mut [Particle], dt: f64, static_pass: bool) {
-        let data = self.properties();
-        let (breakable, max_force) = match data.max_force {
-            Some(force) => (true, force),
-            None => (false, 0.0),
-        };
-
-        if !breakable || !data.broken {
-            let particles: Vec<&Particle> = data
-                .particles
-                .iter()
-                .map(|p| p.get(particle_source))
-                .collect();
-
-            let evaluated = self.constraint(&particles);
-
-            let satisfied = match data.constraint_type {
-                ConstraintType::Equation => evaluated == 0.0,
-                ConstraintType::Inequality => evaluated >= 0.0,
-            };
-
-            if !satisfied {
-                let dt = if static_pass { core::f64::MAX } else { dt };
-                let alpha = data.compliance / dt.powi(2);
-                let gamma = data.compliance * data.dissipation / dt;
-                let gradients = self.gradients(&particles);
-
-                let mut damp = 0.0;
-                let mut scale = 0.0;
-
-                for (i, part) in particles.iter().enumerate() {
-                    damp += gradients[i].dot(part.pos - part.prev_pos);
-                    scale += part.inverse_mass * gradients[i].mag_squared();
-                }
-
-                let lagrange = (-evaluated - gamma * damp) / ((1.0 + gamma) * scale + alpha);
-
-                for (i, part) in data.particles.iter().enumerate() {
-                    if data.xpbd || static_pass {
-                        let inv_mass = part.get(particle_source).inverse_mass;
-                        part.get_mut(particle_source).pos += lagrange * inv_mass * gradients[i];
-                    } else {
-                        part.get_mut(particle_source)
-                            .forces
-                            .push(lagrange * gradients[i] / dt.powi(2));
-                    }
-                }
-
-                let force = lagrange / dt.powi(2);
-                self.properties_mut().force = force;
-                if breakable {
-                    self.properties_mut().broken = force > max_force;
-                }
-            }
-        }
-    }
-
-    fn force_estimate(&self) -> f64 {
-        self.properties().force
-    }
-}
-
-//---------------------------------------------------------------------------------------------------//
-// Different constraints implemented using the constraint traits.
 
 pub mod builtin_constraints {
     use crate::{
-        constraint::{ConstraintProperties, ConstraintType, XPBDConstraint},
+        constraint::{XpbdConstraint, XpbdImplementation},
         math::{Point3, Vec3},
         particle::{Particle, ParticleReference},
     };
 
     //--------------------------------------------------------------------//
 
-    pub struct Distance {
-        data: ConstraintProperties,
-        dist: f64,
-    }
+    pub struct Distance([ParticleReference; 2], f64);
 
     impl Distance {
-        pub fn new(particles: [ParticleReference; 2], dist: f64) -> Distance {
-            Distance {
-                data: ConstraintProperties::new(particles.to_vec(), ConstraintType::Equation, true),
-                dist,
-            }
-        }
-
-        pub fn compliance(mut self, compliance: f64) -> Distance {
-            self.data.compliance = compliance;
-            self
-        }
-
-        pub fn dissipation(mut self, dissipation: f64) -> Distance {
-            self.data.dissipation = dissipation;
-            self
-        }
-
-        pub fn max_tension(mut self, force: f64) -> Distance {
-            self.data.max_force = Some(force);
-            self
-        }
-
-        pub fn as_chain(mut self) -> Distance {
-            self.data.constraint_type = ConstraintType::Inequality;
-            self
-        }
-
-        pub fn as_non_xpbd(mut self) -> Distance {
-            self.data.xpbd = false;
-            self
+        pub fn new(particles: [ParticleReference; 2], dist: f64) -> XpbdConstraint {
+            XpbdConstraint::new(Distance(particles, dist))
         }
     }
 
-    impl XPBDConstraint for Distance {
-        fn properties(&self) -> &ConstraintProperties {
-            &self.data
-        }
-
-        fn properties_mut(&mut self) -> &mut ConstraintProperties {
-            &mut self.data
+    impl XpbdImplementation for Distance {
+        fn particles(&self) -> &[ParticleReference] {
+            &self.0
         }
 
         fn constraint(&self, particles: &[&Particle]) -> f64 {
-            self.dist - (particles[1].pos - particles[0].pos).mag()
+            self.1 - (particles[1].pos - particles[0].pos).mag()
         }
 
         fn gradients(&self, particles: &[&Particle]) -> Vec<Vec3> {
@@ -214,38 +207,17 @@ pub mod builtin_constraints {
 
     //--------------------------------------------------------------------//
 
-    pub struct NonPenetrate(ConstraintProperties, f64);
+    pub struct NonPenetrate([ParticleReference; 2], f64);
 
     impl NonPenetrate {
-        pub fn new(
-            particles: [ParticleReference; 2],
-            collision_distance: f64,
-            xpbd: bool,
-        ) -> NonPenetrate {
-            NonPenetrate(
-                ConstraintProperties::new(particles.to_vec(), ConstraintType::Inequality, xpbd),
-                collision_distance,
-            )
-        }
-
-        pub fn compliance(mut self, compliance: f64) -> NonPenetrate {
-            self.0.compliance = compliance;
-            self
-        }
-
-        pub fn dissipation(mut self, dissipation: f64) -> NonPenetrate {
-            self.0.dissipation = dissipation;
-            self
+        pub fn new(particles: [ParticleReference; 2], collision_distance: f64) -> XpbdConstraint {
+            XpbdConstraint::new(NonPenetrate(particles, collision_distance)).as_inequality()
         }
     }
 
-    impl XPBDConstraint for NonPenetrate {
-        fn properties(&self) -> &ConstraintProperties {
+    impl XpbdImplementation for NonPenetrate {
+        fn particles(&self) -> &[ParticleReference] {
             &self.0
-        }
-
-        fn properties_mut(&mut self) -> &mut ConstraintProperties {
-            &mut self.0
         }
 
         fn constraint(&self, particles: &[&Particle]) -> f64 {
@@ -261,7 +233,7 @@ pub mod builtin_constraints {
     //--------------------------------------------------------------------//
 
     pub struct ContactPlane {
-        data: ConstraintProperties,
+        particle: [ParticleReference; 1],
         collision_distance: f64,
         point: Point3,
         normal: Vec3,
@@ -273,34 +245,20 @@ pub mod builtin_constraints {
             collision_distance: f64,
             point: Point3,
             normal: Vec3,
-            xpbd: bool,
-        ) -> ContactPlane {
-            ContactPlane {
-                data: ConstraintProperties::new(vec![particle], ConstraintType::Inequality, xpbd),
+        ) -> XpbdConstraint {
+            XpbdConstraint::new(ContactPlane {
+                particle: [particle],
                 collision_distance,
                 point,
                 normal: normal.norm(),
-            }
-        }
-
-        pub fn compliance(mut self, compliance: f64) -> ContactPlane {
-            self.data.compliance = compliance;
-            self
-        }
-
-        pub fn dissipation(mut self, dissipation: f64) -> ContactPlane {
-            self.data.dissipation = dissipation;
-            self
+            })
+            .as_inequality()
         }
     }
 
-    impl XPBDConstraint for ContactPlane {
-        fn properties(&self) -> &ConstraintProperties {
-            &self.data
-        }
-
-        fn properties_mut(&mut self) -> &mut ConstraintProperties {
-            &mut self.data
+    impl XpbdImplementation for ContactPlane {
+        fn particles(&self) -> &[ParticleReference] {
+            &self.particle
         }
 
         fn constraint(&self, particles: &[&Particle]) -> f64 {
@@ -311,6 +269,6 @@ pub mod builtin_constraints {
             vec![self.normal]
         }
     }
-
-    //--------------------------------------------------------------------//
 }
+
+//---------------------------------------------------------------------------------------------------//

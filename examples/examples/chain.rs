@@ -31,7 +31,8 @@ fn main() {
                     [*p1, *&system.all_particles()[(i as usize) + 1]],
                     2.0 * LINK_RADIUS,
                 )
-                .max_tension(226000.0 / ((i + 1) as f64)),
+                .max_force(226000.0 / ((i + 1) as f64))
+                .build(),
             );
         }
     }
@@ -42,11 +43,10 @@ fn main() {
     let mut index: usize = 0;
     for ref1 in &system.all_particles() {
         for ref2 in &system.all_particles()[(index + 1)..] {
-            system.add_constraint(Constraints::NonPenetrate::new(
-                [*ref1, *ref2],
-                2.0 * system.particle_radius,
-                true,
-            ));
+            system.add_constraint(
+                Constraints::NonPenetrate::new([*ref1, *ref2], 2.0 * system.particle_radius)
+                    .build(),
+            );
         }
         index += 1;
     }
