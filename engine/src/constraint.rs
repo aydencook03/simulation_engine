@@ -173,7 +173,7 @@ pub trait XpbdImplementation {
 /* future optimized version?
 pub trait XPBDConstraint {
     const COUNT: usize;
-    fn particles(&self) -> &[ParticleReference];
+    fn particles(&self) -> [ParticleReference; Self::COUNT];
     fn constraint(&self, particles: &[&Particle; Self::COUNT]) -> f64;
     fn gradients(&self, particles: &[&Particle; Self::COUNT]) -> [Vec3; Self::COUNT];
 } */
