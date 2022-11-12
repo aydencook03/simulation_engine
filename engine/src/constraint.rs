@@ -10,6 +10,7 @@ pub struct Constraint {
 }
 
 pub enum ConstraintType {
+    Generic(Box<dyn GenericConstraint>),
     Xpbd(XpbdConstraint),
     Boundary(Box<dyn BoundaryConstraint>),
 }
@@ -23,6 +24,9 @@ impl Constraint {
 
     pub fn project(&mut self, particle_source: &mut [Particle], dt: f64, static_pass: bool) {
         match &mut self.constraint_type {
+            ConstraintType::Generic(constraint) => {
+                constraint.project(particle_source, dt, static_pass)
+            }
             ConstraintType::Xpbd(constraint) => {
                 let (breakable, max_force) = match constraint.max_force {
                     Some(force) => (true, force),
@@ -87,6 +91,7 @@ impl Constraint {
 
     pub fn force_estimate(&self) -> f64 {
         match &self.constraint_type {
+            ConstraintType::Generic(_constraint) => 0.0,
             ConstraintType::Xpbd(constraint) => constraint.force,
             ConstraintType::Boundary(_constraint) => todo!(),
         }
@@ -94,6 +99,12 @@ impl Constraint {
 }
 
 //---------------------------------------------------------------------------------------------------//
+
+pub trait GenericConstraint {
+    fn project(&mut self, particle_source: &mut [Particle], dt: f64, static_pass: bool);
+}
+
+//--------------------------------------------------------------------//
 
 pub struct XpbdConstraint {
     implementation: Box<dyn XpbdImplementation>,
