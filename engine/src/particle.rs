@@ -38,7 +38,6 @@ pub struct Extent {
     pub shape: Shape,
 }
 
-#[derive(Copy, Clone)]
 pub enum Shape {
     Sphere,
     Cuboid,

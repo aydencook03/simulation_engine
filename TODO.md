@@ -53,12 +53,12 @@
         - [ ] differential operators
       - [ ] unstructured
   - dynamics & interactions:
-    - [ ] forces
-      - [ ] generic
-      - [ ] field interaction
-      - [ ] pair-wise interaction
-      - [ ] simple force
-    - [ ] xpbd compliant constraints
+    - [X] forces
+      - [X] generic
+      - [X] field interaction
+      - [X] pair-wise interaction
+      - [X] simple force
+    - [X] xpbd compliant constraints
     - [ ] sph, mpm
     - [ ] collisions
     - [ ] thermodynamics
@@ -134,14 +134,16 @@
   - [ ] viscosity
 
 - Thermodynamics
-  - [ ] research how to implement a good general macroscopic thermodynamics model
-  - [ ] is both orientation & size needed for proper thermodyanamics, or only size?
+  - [X] research how to implement a good general macroscopic thermodynamics model
+  - [X] is both orientation & size needed for proper thermodyanamics, or only size?
+    - neither. thermodynamics is an emergent phenomenon that requires smoothing.
   - [ ] conduction, advection, radiation, friction, collisions
   - [ ] state variables & state equations
     - what is needed in this engine? pos, vel, temp, radius?
     - pressure/volume, temperature/entropy, internal energy, work, heat
     - fields can alter any of these state variables. a field could implement a certain state eqn?
-  - [ ] thermal expansion
+  - [X] thermal expansion
+    - increase in temperature -> increase in internal pressure
   - [ ] phase changes
 
 - Compilation Features

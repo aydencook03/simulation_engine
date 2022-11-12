@@ -31,33 +31,4 @@ The other interesting thing to note is that when you use a single particle to re
 
 With all of this in mind, the most fundamental calculations that this engine will be doing is an integration of Newton's second law, the handling of constraints, smoothing of a system of particles to recover a continuum when needed, and evolving some thermodynamic models. To ensure the conservation of energy, a [symplectic integrator](https://en.wikipedia.org/wiki/Symplectic_integrator) will be used. For the handling of constraints, the [XPBD](https://doi.org/10.1145/2994258.2994272) algorithm will be used, which is a fantastic algorithm and framework for compliant constrained dynamics that can even replace things like Finite Element Analysis using particles.
 
-### Primary Goals
-
-- Particles
-    - A dynamical object that has mass and a state (position, velocity, temperature, size).
-    - Additional properties can be attached to a particle to allow for more dynamics (charge, material properties, etc).
-    - Allow kinematic-only particles for things like central gravity bodies, boundary particles, constraint & spring attachments, platforms, etc.
-- Fields
-    - A generic object that can store state, evolve over time, and dynamically interact with coupled particles.
-    - A good api for common functionality of any type of field and boundary condition.
-- Compliant Constraints
-    - An implementation of the XPBD algorithm.
-    - A good api for common functionality of any type of constraint.
-- SPH
-    - Functions and algorithms that separate away the common functionality of SPH-like smoothing.
-- Thermodynamics
-    - A good way to handle generic thermodynamic models and equations of state.
-
-### Current State & Challenges
-
-Currently, there are initial implementations of particles, fields, and constraints.
-
-The primary challenge so far has been abstracting away common functionality of fields and constraints so that the engine can universally support a wide variety of dynamics.
-
-Another large challenge has been implementing a good thermodynamics model.
-
-### Project Plan
-
-Initially I want to make sure there is a strong foundation of code that enables all of the primary goals mentioned. A more detailed and task oriented breakdown can be found in the [TODO.md](./TODO.md) file.
-
 ## References
