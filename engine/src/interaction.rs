@@ -64,8 +64,7 @@ impl Interaction {
                 }
             }
             InteractionType::PairWiseForce(inter) => {
-                let mut index: usize = 0;
-                for ref1 in &self.coupled_particles {
+                for (index, ref1) in self.coupled_particles.iter().enumerate() {
                     for ref2 in &self.coupled_particles[(index + 1)..] {
                         if let Some(force) =
                             inter.force(ref1.get(particle_source), ref2.get(particle_source))
@@ -76,7 +75,6 @@ impl Interaction {
                             p2.add_force(-force, p2.pos);
                         }
                     }
-                    index += 1;
                 }
             }
             InteractionType::SimpleForce(inter) => {
@@ -98,13 +96,11 @@ impl Interaction {
             InteractionType::FieldParticle(inter) => inter.field_energy(),
             InteractionType::PairWiseForce(inter) => {
                 let mut potential = 0.0;
-                let mut index: usize = 0;
-                for ref1 in &self.coupled_particles {
+                for (index, ref1) in self.coupled_particles.iter().enumerate() {
                     for ref2 in &self.coupled_particles[(index + 1)..] {
                         potential +=
                             inter.potential(ref1.get(particle_source), ref2.get(particle_source));
                     }
-                    index += 1;
                 }
                 potential
             }

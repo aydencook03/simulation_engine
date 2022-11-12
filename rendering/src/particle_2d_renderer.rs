@@ -98,7 +98,7 @@ impl Particle2DRenderer {
         let [r, g, b] = rgb;
         let r = (r as u32) << 16;
         let g = (g as u32) << 8;
-        let b = (b as u32) << 0;
+        let b = b as u32;// << 0;
 
         r | g | b
     }
@@ -189,12 +189,10 @@ impl Particle2DRenderer {
 
     fn render_particles(&self, context: &mut SoftbufferContext, system: &System) {
         // create particle style
-        let mut particle_style = Paint::default();
-        particle_style.anti_alias = true;
+        let mut particle_style = Paint { anti_alias: true, ..Default::default()};
 
         // create stroke styles
-        let mut stroke_style = Paint::default();
-        stroke_style.anti_alias = true;
+        let mut stroke_style = Paint {anti_alias: true, ..Default::default()};
         stroke_style.set_color_rgba8(
             self.style.stroke_color[0],
             self.style.stroke_color[1],
@@ -273,6 +271,12 @@ impl Particle2DRenderer {
         context
             .context
             .set_buffer(&framebuffer, width as u16, height as u16);
+    }
+}
+
+impl Default for Particle2DRenderer {
+    fn default() -> Self {
+        Self::new()
     }
 }
 

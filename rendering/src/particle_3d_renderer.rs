@@ -18,4 +18,10 @@ impl Particle3DRenderer {
     }
 }
 
+impl Default for Particle3DRenderer {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 //---------------------------------------------------------------------------------------------------//

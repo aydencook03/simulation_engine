@@ -20,8 +20,6 @@ impl Constraint {
         Constraint { constraint_type }
     }
 
-    //--------------------------------------------------------------------//
-
     pub fn project(&mut self, particle_source: &mut [Particle], dt: f64, static_pass: bool) {
         match &mut self.constraint_type {
             ConstraintType::Generic(constraint) => {

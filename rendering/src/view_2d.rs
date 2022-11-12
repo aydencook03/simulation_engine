@@ -45,7 +45,7 @@ impl View2D {
     }
 
     /// Reset the view.
-    pub fn reset(self: &mut Self) {
+    pub fn reset(&mut self) {
         self.view_offset = Vec3::zero();
         self.zoom = 1.0;
     }
@@ -53,37 +53,37 @@ impl View2D {
     /// Used to map the zoom parameter to the actual zoom amount.
     ///
     /// It uses exp(zoom - 1.0). This is useful because the zoom amount should never become negative.
-    pub fn parameterized_zoom(self: &Self) -> f64 {
+    pub fn parameterized_zoom(&self) -> f64 {
         std::f64::consts::E.powf(self.zoom - 1.0)
     }
 
     /// Pan the view to the right.
-    pub fn pan_right(self: &mut Self) {
+    pub fn pan_right(&mut self) {
         self.view_offset.x += self.pan_step / self.parameterized_zoom();
     }
 
     /// Pan the view to the left.
-    pub fn pan_left(self: &mut Self) {
+    pub fn pan_left(&mut self) {
         self.view_offset.x -= self.pan_step / self.parameterized_zoom();
     }
 
     /// Pan the view up.
-    pub fn pan_up(self: &mut Self) {
+    pub fn pan_up(&mut self) {
         self.view_offset.y += self.pan_step / self.parameterized_zoom();
     }
 
     /// Pan the view down.
-    pub fn pan_down(self: &mut Self) {
+    pub fn pan_down(&mut self) {
         self.view_offset.y -= self.pan_step / self.parameterized_zoom();
     }
 
     /// Zoom the view in.
-    pub fn zoom_in(self: &mut Self) {
+    pub fn zoom_in(&mut self) {
         self.zoom += self.zoom_step;
     }
 
     /// Zoom the view out.
-    pub fn zoom_out(self: &mut Self) {
+    pub fn zoom_out(&mut self) {
         self.zoom -= self.zoom_step;
     }
 
@@ -91,12 +91,18 @@ impl View2D {
     ///
     /// The 2d view into the simulation is likely to be panned around or zoomed in and out, so this function
     /// maps a set of coordinates in the simulation space to what they would be on the panned and zoomed view.
-    pub fn map_to_view(self: &Self, pos: Vec3, radius: f64) -> (Vec3, f64) {
+    pub fn map_to_view(&self, pos: Vec3, radius: f64) -> (Vec3, f64) {
         let zoom = self.parameterized_zoom();
         let vec = zoom * (pos - self.view_offset);
         let radius = radius * zoom;
 
         (vec, radius)
+    }
+}
+
+impl Default for View2D {
+    fn default() -> Self {
+        Self::new()
     }
 }
 

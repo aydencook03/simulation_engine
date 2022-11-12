@@ -2,91 +2,88 @@ use engine::prelude::*;
 use rand::Rng;
 use rendering::particle_2d_renderer::Particle2DRenderer;
 
-const COUNT: u32 = 200;
-const MASS: f64 = 10.0;
-const RADIUS: f64 = 8.0;
-const BOND_ENERGY: f64 = 100000.0;
+const COUNT: u32 = 500;
+const DENSITY: f64 = 0.05;
+const MIN_MASS: f64 = 5.0;
+const MAX_MASS: f64 = 100.0;
+const GRAVITY: f64 = 600.0;
 
 fn main() {
     let mut system = System::new();
-    system.particle_radius = RADIUS;
+    system.particle_radius =
+        ((3.0 * (MIN_MASS + MAX_MASS) / 2.0) / (4.0 * DENSITY * engine::math::PI)).cbrt();
     let mut window = Particle2DRenderer::new();
     window.scale.physics_dt = 1.0 / 30.0;
+    window
+        .style
+        .group_colors
+        .insert(1, rendering::colors::FOREST_GREEN);
 
     let mut rng = rand::thread_rng();
     let bounds = [-500.0, 500.0, -500.0, 500.0];
 
     for _ in 0..COUNT {
-        let rand_x = rng.gen_range((bounds[0] + RADIUS)..(bounds[1] - RADIUS));
-        let rand_y = rng.gen_range((bounds[2] + RADIUS)..(bounds[3] - RADIUS));
+        let rand_x = rng.gen_range(bounds[0]..bounds[1]);
+        let rand_y = rng.gen_range(bounds[2]..bounds[3]);
+        let rand_mass = rng.gen_range(MIN_MASS..MAX_MASS);
 
-        system.add_particle(Particle::new().pos_xyz(rand_x, rand_y, 0.0).mass(MASS));
-    }
-
-    let mut repulsion = Interactions::LennardJones::new(BOND_ENERGY, 2. * RADIUS).build();
-    repulsion.add_particles(&system.all_particles());
-    system.add_interaction(repulsion);
-
-    for particle in &system.all_particles() {
-        system.add_constraint(
-            Constraints::ContactPlane::new(
-                *particle,
-                system.particle_radius,
-                Vec3::new(bounds[0], 0.0, 0.0),
-                Vec3::new(1.0, 0.0, 0.0),
-            )
-            .as_force()
-            .build(),
-        );
-        system.add_constraint(
-            Constraints::ContactPlane::new(
-                *particle,
-                system.particle_radius,
-                Vec3::new(bounds[1], 0.0, 0.0),
-                Vec3::new(-1.0, 0.0, 0.0),
-            )
-            .as_force()
-            .build(),
-        );
-        system.add_constraint(
-            Constraints::ContactPlane::new(
-                *particle,
-                system.particle_radius,
-                Vec3::new(0.0, bounds[2], 0.0),
-                Vec3::new(0.0, 1.0, 0.0),
-            )
-            .as_force()
-            .build(),
-        );
-        system.add_constraint(
-            Constraints::ContactPlane::new(
-                *particle,
-                system.particle_radius,
-                Vec3::new(0.0, bounds[3], 0.0),
-                Vec3::new(0.0, -1.0, 0.0),
-            )
-            .as_force()
-            .build(),
+        system.add_particle(
+            Particle::new()
+                .pos_xyz(rand_x, rand_y, 0.0)
+                .mass(rand_mass)
+                .group(1),
         );
     }
 
+    let mut gravity = Interactions::Falling::new(GRAVITY).build();
+    gravity.add_particles(&system.all_particles());
+    system.add_interaction(gravity);
+
+    // add a non_penetrate constraint to all particles
     let mut index: usize = 0;
-    let mut constraints: Vec<Constraint> = Vec::new();
     for ref1 in &system.all_particles() {
         for ref2 in &system.all_particles()[(index + 1)..] {
-            constraints.push(
+            system.add_constraint(
                 Constraints::NonPenetrate::new([*ref1, *ref2], 2.0 * system.particle_radius)
+                    .compliance(0.000001)
                     .build(),
             );
         }
         index += 1;
     }
-    for _ in 0..100 {
-        for constraint in &mut constraints {
-            constraint.project(&mut system.particles, core::f64::MIN_POSITIVE, true);
-        }
-        system.static_constraint_pass(1);
+
+    // add a boundary constraint to all particles
+    for part in &system.all_particles() {
+        system.add_constraint(
+            Constraints::ContactPlane::new(
+                *part,
+                system.particle_radius,
+                Vec3::new(bounds[0], 0.0, 0.0),
+                Vec3::new(1.0, 0.0, 0.0),
+            )
+            .build(),
+        );
+        system.add_constraint(
+            Constraints::ContactPlane::new(
+                *part,
+                system.particle_radius,
+                Vec3::new(bounds[1], 0.0, 0.0),
+                Vec3::new(-1.0, 0.0, 0.0),
+            )
+            .build(),
+        );
+        system.add_constraint(
+            Constraints::ContactPlane::new(
+                *part,
+                system.particle_radius,
+                Vec3::new(0.0, bounds[2], 0.0),
+                Vec3::new(0.0, 1.0, 0.0),
+            )
+            .build(),
+        );
     }
+
+    system.static_constraint_pass(2);
 
     window.run(system);
 }

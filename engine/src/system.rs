@@ -74,22 +74,18 @@ impl System {
 
     pub fn all_particles(&self) -> Vec<ParticleReference> {
         let mut references = Vec::new();
-        let mut index = 0;
-        for particle in &self.particles {
+        for (index, particle) in self.particles.iter().enumerate() {
             references.push(ParticleReference::new(particle.id, index));
-            index += 1;
         }
         references
     }
 
     pub fn particles_in_group(&self, group: u32) -> Vec<ParticleReference> {
         let mut references = Vec::new();
-        let mut index = 0;
-        for particle in &self.particles {
+        for (index, particle) in self.particles.iter().enumerate() {
             if particle.group == group {
                 references.push(ParticleReference::new(particle.id, index));
             }
-            index += 1;
         }
         references
     }
