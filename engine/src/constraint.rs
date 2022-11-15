@@ -64,15 +64,16 @@ impl Constraint {
                             (-evaluated - gamma * damp) / ((1.0 + gamma) * scale + alpha);
 
                         for (i, part) in constraint.implementation.particles().iter().enumerate() {
-                            if !constraint.as_force || static_pass {
-                                let inv_mass = part.get(particle_source).inverse_mass;
-                                part.get_mut(particle_source).pos +=
-                                    lagrange * inv_mass * gradients[i];
-                            } else {
-                                part.get_mut(particle_source)
-                                    .forces
-                                    .push(lagrange * gradients[i] / dt.powi(2));
-                            }
+                            let displacement =
+                                lagrange * part.get(particle_source).inverse_mass * gradients[i];
+                            let pos = part.get(particle_source).pos;
+
+                            part.get_mut(particle_source).add_displacement(
+                                displacement,
+                                pos,
+                                constraint.as_force && !static_pass,
+                                dt,
+                            );
                         }
 
                         let force = lagrange / dt.powi(2);

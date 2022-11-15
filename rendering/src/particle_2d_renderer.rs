@@ -246,6 +246,12 @@ impl Particle2DRenderer {
                     (height / 2.0 - y) as f32,
                     radius as f32,
                 );
+                /* pb.push_rect(
+                    (x + width / 2.0 - radius) as f32,
+                    (height / 2.0 - y - radius) as f32,
+                    (2.0*radius) as f32,
+                    (2.0*radius) as f32,
+                ); */
                 pb.finish().unwrap()
             };
 

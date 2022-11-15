@@ -154,12 +154,16 @@ impl Particle {
 
     pub fn add_displacement(
         &mut self,
-        _displacement: Vec3,
+        displacement: Vec3,
         _at_point: Point3,
-        _as_force: bool,
-        _dt: f64,
+        as_force: bool,
+        dt: f64,
     ) {
-        todo!();
+        if !as_force {
+            self.pos += displacement;
+        } else {
+            self.forces.push(self.mass * displacement / dt.powi(2));
+        }
     }
 
     pub fn update_vel(&mut self, dt: f64) {
