@@ -2,9 +2,11 @@
 
 - Short Term
   - [ ] bevy 3d renderer
-  - [ ] spatial hashing vs bounding boxes (speed, generality, ease of implementation)
+  - [ ] spatial hashing vs bounding boxes vs signed-distance-field-voxelization (speed, generality, ease of implementation)
+  - [ ] look at structure of Rapier project (parry, Colliders, user api, etc)
   - [ ] rigid body update methods
   - [ ] sph prototypes
+  - [ ] interactivity (interaction in physics pipeline, etc)
   - [ ] investigate
     - [ ] read xpbd paper. understand mathematical derivation to see where my algorithm could come from
     - [ ] cantilever beam w/ xpbd vs w/out
@@ -156,3 +158,28 @@
   - [ ] plastic deformation (break constraint and then create a new one in the new location?)
   - [ ] bouncy objects
   - [ ] granular materials
+
+- Notable Others
+  - PhysX
+  - Flex
+  - Rapier & Parry
+  - Bullet
+  - PySPH
+  - PHANTOM
+  - SPLASH
+
+- Possibly useful crates
+  - performance
+    - wgpu
+    - rayon
+    - crossbeam
+    - simba & simd
+  - data
+    - arrayvec
+    - bitflags
+  - simplification
+    - nalgebra
+    - parry
+    - rustc-hash
+  - serde
+  - bevy
