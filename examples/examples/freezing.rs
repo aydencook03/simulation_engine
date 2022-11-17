@@ -5,8 +5,8 @@ use rendering::particle_2d_renderer::Particle2DRenderer;
 const COUNT: u32 = 200;
 const MASS: f64 = 10.0;
 const RADIUS: f64 = 8.0;
-const BOND_ENERGY: f64 = 100000.0;
-const GRAVITY: f64 = 5.0;
+const BOND_ENERGY: f64 = 150000.0;
+const GRAVITY: f64 = 15.0;
 
 fn main() {
     let mut system = System::new();

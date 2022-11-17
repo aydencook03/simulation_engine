@@ -22,10 +22,13 @@ pub struct Particle {
     pub pos: Point3,
     pub vel: Vec3,
     pub temperature: f64,
+
+    // spatial extension
     pub extent: Option<Extent>,
 }
 
 //--------------------------------------------------------------------//
+// extending the particle spatially to create a rigid body
 
 pub struct Extent {
     pub inverse_inertia: Matrix3,

@@ -59,6 +59,33 @@ impl Vec3 {
         }
     }
 
+    /// Returns the x axis unit vector
+    pub fn x_hat() -> Vec3 {
+        Vec3 {
+            x: 1.0,
+            y: 0.0,
+            z: 0.0,
+        }
+    }
+
+    /// Returns the y axis unit vector
+    pub fn y_hat() -> Vec3 {
+        Vec3 {
+            x: 0.0,
+            y: 1.0,
+            z: 0.0,
+        }
+    }
+
+    /// Returns the z axis unit vector
+    pub fn z_hat() -> Vec3 {
+        Vec3 {
+            x: 0.0,
+            y: 0.0,
+            z: 1.0,
+        }
+    }
+
     /// Dot product with another Vec3
     pub fn dot(self, other: Vec3) -> f64 {
         (self.x * other.x) + (self.y * other.y) + (self.z * other.z)
@@ -86,6 +113,29 @@ impl Vec3 {
     /// Return the normalized version of the Vec3
     pub fn norm(self) -> Vec3 {
         self / self.mag()
+    }
+}
+
+//---------------------------------------------------------------------------------------------------//
+// Associated functions and methods of Matrix3.
+
+impl Matrix3 {
+    pub fn identity() -> Matrix3 {
+        Matrix3::default()
+    }
+
+    pub fn cross_product_matrix(vector: Vec3) -> Matrix3 {
+        Matrix3([
+            [0.0, -vector.z, vector.y],
+            [vector.z, 0.0, -vector.x],
+            [-vector.y, vector.x, 0.0],
+        ])
+    }
+
+    pub fn rotation_axis_angle(axis: Vec3, angle: f64) -> Matrix3 {
+        let cross = Matrix3::cross_product_matrix(axis);
+
+        Matrix3::identity() + angle.sin() * cross + (1.0 - angle.cos()) * cross * cross
     }
 }
 
@@ -210,6 +260,47 @@ impl core::ops::Mul<Vec3> for Matrix3 {
             y: rhs.x * self.0[1][0] + rhs.y * self.0[1][1] + rhs.z * self.0[1][2],
             z: rhs.x * self.0[2][0] + rhs.y * self.0[2][1] + rhs.z * self.0[2][2],
         }
+    }
+}
+
+impl core::ops::Mul<Matrix3> for Matrix3 {
+    type Output = Matrix3;
+    fn mul(self, rhs: Matrix3) -> Self::Output {
+        Matrix3([
+            [
+                self.0[0][0] * rhs.0[0][0]
+                    + self.0[0][1] * rhs.0[1][0]
+                    + self.0[0][2] * rhs.0[2][0],
+                self.0[0][0] * rhs.0[0][1]
+                    + self.0[0][1] * rhs.0[1][1]
+                    + self.0[0][2] * rhs.0[2][1],
+                self.0[0][0] * rhs.0[0][2]
+                    + self.0[0][1] * rhs.0[1][2]
+                    + self.0[0][2] * rhs.0[2][2],
+            ],
+            [
+                self.0[1][0] * rhs.0[0][0]
+                    + self.0[1][1] * rhs.0[1][0]
+                    + self.0[1][2] * rhs.0[2][0],
+                self.0[1][0] * rhs.0[0][1]
+                    + self.0[1][1] * rhs.0[1][1]
+                    + self.0[1][2] * rhs.0[2][1],
+                self.0[1][0] * rhs.0[0][2]
+                    + self.0[1][1] * rhs.0[1][2]
+                    + self.0[1][2] * rhs.0[2][2],
+            ],
+            [
+                self.0[2][0] * rhs.0[0][0]
+                    + self.0[2][1] * rhs.0[1][0]
+                    + self.0[2][2] * rhs.0[2][0],
+                self.0[2][0] * rhs.0[0][1]
+                    + self.0[2][1] * rhs.0[1][1]
+                    + self.0[2][2] * rhs.0[2][1],
+                self.0[2][0] * rhs.0[0][2]
+                    + self.0[2][1] * rhs.0[1][2]
+                    + self.0[2][2] * rhs.0[2][2],
+            ],
+        ])
     }
 }
 

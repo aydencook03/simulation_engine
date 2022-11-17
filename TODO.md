@@ -1,15 +1,9 @@
 # TODO / IDEAS
 
 - Short Term
-  - [X] develop a good abstraction/api for constraints
-  - [ ] doc comment for Constraint
-    - [ ] comment explaining math and equations of XPBD
-    - [ ] static vs non-static, xpbd vs non-xpbd
-    - [ ] how to derive constraint force from lagrange multiplier
-  - [X] simplify the abstraction/api for fields
-    - [X] remove dt
-    - [X] mimick constraint api. ie: Field trait: evolve, energy. SimpleFieldData, ParticleParticle, FieldParticle
-  - [X] account for N's 3rd law in the ParticleParticle interaction (can enable optimizations?)
+  - [ ] bevy 3d renderer
+  - [ ] spatial hashing vs bounding boxes (speed, generality, ease of implementation)
+  - [ ] sph prototypes
   - [ ] investigate
     - [ ] read xpbd paper. understand mathematical derivation to see where my algorithm could come from
     - [ ] cantilever beam w/ xpbd vs w/out
@@ -18,25 +12,6 @@
     - [ ] why does non-xpbd conserve kinetic energy while xpbd does not?
     - [ ] step through non-xpbd algorithm w/ variables to prove the conservation of quantities
     - [ ] what is the physical correspondance to the xpbd dissipation? what is its behavior in relation to compliance?
-  - [ ] real-time 3d renderer w/ simple interaction (using bevy)
-  - [X] support breakable constraints (max constraint force and broken properties)
-  - [X] non-dynamical particles (central gravity bodies, boundary particles, constraint & spring attachments, platforms, etc.)
-  - [ ] a common functionality implementation of SPH smoothing
-    - [ ] different smoothing kernels & their gradient, divergence, laplacian, etc
-    - [ ] different modifications to the kernels for certain symmetries and properties
-    - [ ] different boundary conditions
-  - [X] builder methods for builtin fields & constraints
-  - [X] fix BoxBound instability
-  - [ ] a general purpose (common functionality) Mesh object
-    - [ ] different types:
-      - [ ] structured (FDM, FVM, FEM)
-        - [ ] 2d: orthogonal quadrilateral / lattice graph. 3d: hexahedral
-      - [ ] unstructured (FVM, FEM)
-        - [ ] 2d: quadrilateral, triangular. 3d: tetrahedral
-        - [ ] surface mesh
-    - [ ] mesh <=> connected particles
-    - [ ] different boundary conditions (Neumann, dirichet, etc)
-    - [ ] mpm algorithms implemented on it?
 
 - Big Picture
   - math
@@ -49,14 +24,17 @@
     - [X] particles
     - [ ] rigid bodies
     - [ ] mesh
-      - [ ] structured
+      - [ ] structured (FDM, FVM, FEM)
         - [ ] differential operators
-      - [ ] unstructured
+      - [ ] unstructured (FVM, FVM)
+      - [ ] mesh <-> connected particles
+      - [ ] mesh boundary conditions (Neumann, dirichlet, etc)
+      - [ ] mpm algorithms
   - dynamics & interactions:
-    - [X] forces
+    - [X] interactions
       - [X] generic
       - [X] field interaction
-      - [X] pair-wise interaction
+      - [X] pair-wise interaction forces
       - [X] simple force
     - [X] xpbd compliant constraints
     - [ ] sph, mpm
@@ -64,20 +42,19 @@
     - [ ] thermodynamics
     - [ ] boundary conditions
       - [ ] sources & sinks
-      - [ ] inlet
-      - [ ] outlet
+      - [ ] outlet / sink
       - [ ] no-slip
       - [ ] constant pressure
       - [ ] symmetric
       - [ ] periodic
       - [ ] rigid / fixed
   - algorithms:
-    - [ ] n-body pairing (take a generic slice and return an iterator)
-    - [ ] composite shapes (rigid body <-> collection of particles)
+    - [ ] n-body pairing (take a generic slice and return an iterator of pairs)
+    - [ ] composite shapes (rigid body <-> collection of particles) (voxelization)
     - [ ] Barnes–Hut algorithm
     - [ ] collision detection & neighbor finding
-      - [ ] spatial dividing (octree)
-      - [ ] hashmap
+      - [ ] spatial dividing (octree, bounding volume heirarchy, etc)
+      - [ ] spatial hashing
   - features:
     - [ ] rendering
     - [ ] serialization/deserialization
@@ -123,13 +100,13 @@
   - [ ] neo-hookean soft body (tetrahedral hydrostatic constraint & deviatoric constraint)
   - [ ] closed triangle mesh overpressure
   - [ ] fluid w/ surface tension, cohesion, viscosity
-  - [ ] cloth drag
+  - [ ] cloth drag (unified particle "cloth and ropes")
   - [ ] shape matching for soft/rigid bodies
   - [ ] generic constraint API
     - see what common behavior can be consolidated into the constraint trait
 
 - Collision Handling
-  - [ ] collision / impulse forces
+  - [X] collision / impulse forces
   - [ ] friction
   - [ ] viscosity
 
@@ -178,4 +155,3 @@
   - [ ] plastic deformation (break constraint and then create a new one in the new location?)
   - [ ] bouncy objects
   - [ ] granular materials
-  - [ ] extend engine to support rigid bodies (a particle with orientation, shape, inertia) (like bullet, rapier, xpbd, etc)
