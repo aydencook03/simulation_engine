@@ -3,6 +3,7 @@
 - Short Term
   - [ ] bevy 3d renderer
   - [ ] spatial hashing vs bounding boxes (speed, generality, ease of implementation)
+  - [ ] rigid body update methods
   - [ ] sph prototypes
   - [ ] investigate
     - [ ] read xpbd paper. understand mathematical derivation to see where my algorithm could come from

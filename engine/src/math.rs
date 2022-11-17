@@ -32,12 +32,12 @@ impl Vec3 {
         Vec3 { x, y, z }
     }
 
-    /// Create a Vec3 in the x-y plane using polar components
-    pub fn new_polar(r: f64, angle: f64) -> Vec3 {
+    /// Create a Vec3 using cyclidrical coordinates (r, angle, z)
+    pub fn new_polar(r: f64, angle: f64, z: f64) -> Vec3 {
         Vec3 {
             x: r * angle.cos(),
             y: r * angle.sin(),
-            z: 0.0,
+            z,
         }
     }
 

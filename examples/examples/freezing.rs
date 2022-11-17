@@ -76,7 +76,7 @@ fn main() {
     }
 
     let mut index: usize = 0;
-    let mut constraints: Vec<Constraint> = Vec::new();
+    let mut constraints = Vec::new();
     for ref1 in &system.all_particles() {
         for ref2 in &system.all_particles()[(index + 1)..] {
             constraints.push(Constraints::NonPenetrate::new([*ref1, *ref2], 2. * RADIUS).build());
