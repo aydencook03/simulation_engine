@@ -133,6 +133,7 @@ impl Matrix3 {
     }
 
     pub fn rotation_axis_angle(axis: Vec3, angle: f64) -> Matrix3 {
+        let axis = axis.norm();
         let cross = Matrix3::cross_product_matrix(axis);
 
         Matrix3::identity() + angle.sin() * cross + (1.0 - angle.cos()) * cross * cross

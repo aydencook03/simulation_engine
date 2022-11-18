@@ -169,17 +169,22 @@
   - SPLASH
 
 - Possibly useful crates
+  - rendering
+    - winit
+    - softbuffer
+    - tiny_skia
+    - three-d
+    - bevy
   - performance
     - wgpu
     - rayon
     - crossbeam
     - simba & simd
   - data
+    - serde
     - arrayvec
     - bitflags
   - simplification
     - nalgebra
     - parry
     - rustc-hash
-  - serde
-  - bevy
