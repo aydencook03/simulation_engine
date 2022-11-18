@@ -1,14 +1,14 @@
-use engine::math::Vec3;
+use engine::math::{Point3, Vec3};
 
 //---------------------------------------------------------------------------------------------------//
 
 #[derive(Copy, Clone, Default)]
 pub struct Camera3D {
-    pos: Vec3,
+    pos: Point3,
     dir: Vec3,
     focal_length: f64,
 
-    init_pos: Vec3,
+    init_pos: Point3,
     init_dir: Vec3,
     init_focal_length: f64,
 }
@@ -42,12 +42,12 @@ impl Camera3D {
         self.focal_length = self.init_focal_length;
     }
 
-    pub fn orthographic_sphere(&self, pos: Vec3, radius: f64) -> (Vec3, f64) {
-        (pos, radius)
+    pub fn orthographic_point(&self, point: Point3) -> Point3 {
+        point
     }
 
-    pub fn perspective_sphere(&self, pos: Vec3, radius: f64) -> (Vec3, f64) {
-        (pos, radius)
+    pub fn perspective_point(&self, point: Point3) -> Point3 {
+        point
     }
 }
 

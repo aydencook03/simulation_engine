@@ -13,15 +13,15 @@ pub struct Particle {
     pub charge: f64,
     pub extra: u128,
 
-    // dynamics
-    pub inverse_mass: f64,
-    pub prev_pos: Point3,
-    pub forces: Vec<Vec3>,
-
     // state
     pub pos: Point3,
     pub vel: Vec3,
     pub temperature: f64,
+
+    // dynamics
+    pub inverse_mass: f64,
+    pub prev_pos: Point3,
+    pub forces: Vec<Vec3>,
 
     // spatial extension
     pub extent: Option<Extent>,
@@ -31,12 +31,12 @@ pub struct Particle {
 // extending the particle spatially to create a rigid body
 
 pub struct Extent {
+    pub orientation: Vec3,
+    pub angular_velocity: Vec3,
+
     pub inverse_inertia: Matrix3,
     pub prev_orientation: Vec3,
     pub torques: Vec<Vec3>,
-
-    pub orientation: Vec3,
-    pub angular_velocity: Vec3,
 
     pub shape: Shape,
 }
@@ -108,9 +108,7 @@ impl Particle {
         self
     }
     pub fn pos_xyz(mut self, x: f64, y: f64, z: f64) -> Particle {
-        self.pos.x = x;
-        self.pos.y = y;
-        self.pos.z = z;
+        self.pos = Point3::new(x, y, z);
         self
     }
     pub fn vel(mut self, vel: Vec3) -> Particle {
@@ -118,9 +116,7 @@ impl Particle {
         self
     }
     pub fn vel_xyz(mut self, vel_x: f64, vel_y: f64, vel_z: f64) -> Particle {
-        self.vel.x = vel_x;
-        self.vel.y = vel_y;
-        self.vel.z = vel_z;
+        self.vel = Vec3::new(vel_x, vel_y, vel_z);
         self
     }
     pub fn temperature(mut self, temp: f64) -> Particle {
