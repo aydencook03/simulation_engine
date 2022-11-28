@@ -1,5 +1,5 @@
 use crate::{
-    math::Vec3,
+    math::{Vec3, Point3},
     particle::{Particle, ParticleReference},
 };
 
@@ -15,7 +15,7 @@ pub enum InteractionType {
     FieldParticle(Box<dyn FieldParticleInteraction>),
     PairWiseForce(Box<dyn PairWiseForce>),
     SimpleForce(Box<dyn SimpleForce>),
-    Sph(Box<dyn SphInteraction>),
+    Sph(SphInteraction),
     Mpm(Box<dyn MpmInteraction>),
 }
 
@@ -36,8 +36,6 @@ impl Interaction {
             self.coupled_particles.push(*reference);
         }
     }
-
-    //--------------------------------------------------------------------//
 
     pub fn handle(&mut self, particle_source: &mut [Particle], dt: f64) {
         match &mut self.interaction_type {
@@ -155,7 +153,26 @@ pub trait SimpleForce {
     }
 }
 
-pub trait SphInteraction {}
+//--------------------------------------------------------------------//
+
+pub struct SphInteraction {
+    kernel: Box<dyn SphKernel>,
+    smoothing_radius: Option<f64>,
+    support_radius: Option<f64>,
+}
+
+impl SphInteraction {
+    
+}
+
+pub trait SphKernel {
+    fn w(&self, point: Point3) -> f64;
+    fn grad_w(&self, point: Point3) -> Vec3;
+    fn div_w(&self, point: Point3) -> f64;
+    fn laplace_w(&self, point: Point3) -> f64;
+}
+
+//--------------------------------------------------------------------//
 
 pub trait MpmInteraction {}
 

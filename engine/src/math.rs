@@ -4,7 +4,7 @@
 //! cross products, affine transformations, etc.
 
 //---------------------------------------------------------------------------------------------------//
-// The Vec3 type.
+// The fundamental math objects.
 
 pub const PI: f64 = core::f64::consts::PI;
 
@@ -33,7 +33,7 @@ impl Vec3 {
     }
 
     /// Create a Vec3 using cyclidrical coordinates (r, angle, z)
-    pub fn new_polar(r: f64, angle: f64, z: f64) -> Vec3 {
+    pub fn new_cylindrical(r: f64, angle: f64, z: f64) -> Vec3 {
         Vec3 {
             x: r * angle.cos(),
             y: r * angle.sin(),
@@ -242,9 +242,6 @@ impl core::ops::DivAssign<f64> for Vec3 {
 }
 
 //---------------------------------------------------------------------------------------------------//
-// Associated functions and methods of Matrix3.
-
-//---------------------------------------------------------------------------------------------------//
 // Operator overloading on Matrix3.
 
 impl Default for Matrix3 {
@@ -349,3 +346,5 @@ impl core::ops::Add<Matrix3> for Matrix3 {
         ])
     }
 }
+
+//---------------------------------------------------------------------------------------------------//

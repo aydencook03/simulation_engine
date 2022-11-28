@@ -1,8 +1,9 @@
 # TODO / IDEAS
 
 - Short Term
-  - [ ] bevy 3d renderer
+  - [ ] 3d renderer
   - [ ] spatial hashing vs bounding boxes vs signed-distance-field-voxelization (speed, generality, ease of implementation)
+  - [ ] AABB/BVH pass then SDF voxelization pass
   - [ ] look at structure of Rapier project (parry, Colliders, user api, etc)
   - [ ] rigid body update methods
   - [ ] sph prototypes
@@ -43,6 +44,7 @@
     - [ ] sph, mpm
     - [ ] collisions
     - [ ] thermodynamics
+    - [ ] molecular dynamics
     - [ ] boundary conditions
       - [ ] sources & sinks
       - [ ] outlet / sink
@@ -66,12 +68,27 @@
     - [ ] parallelization
     - [ ] gpu acceleration
 
+Scales:
+  - Microscopic
+    - Particle Dynamics
+    - Molecular Dynamics/Mechanics
+  - Mesoscopic
+    - Statistical Mechanics
+      - Lattice Boltzmann Equation
+        - Lattice Boltzmann Method
+      - Mesoscale Modeling
+  - Macroscopic
+    - Continuum Mechanics
+      - Navier Stokes Equation
+    - Thermodynamics
+    - Rigid Bodies
+
 - Examples
   - [ ] cantilever
   - [ ] pile of blocks
   - [ ] cloth
   - [ ] jello block
-  - [ ] planet collision
+  - [ ] viscous planet collision
   - [ ] dam break
   - [ ] pile of sand
 
@@ -142,8 +159,13 @@
     - [ ] sph-like smoothing
 
 - Physics
-  - [ ] intermolecular forces & interatomic potentials from molecular mechanics
-    - [ ] solids (covalent/ionic/metallic bonds)
+  - [ ] microscopic
+    - [ ] molecular dynamics & molecular mechanics
+      - [ ] different ensemble constraints
+      - [ ] different potentials
+      - [ ] solely attractive/repulsive coulomb force
+  - [ ] macroscopic
+    -[ ] solids (covalent/ionic/metallic bonds)
       - [ ] covalent bond potential, electrostatic attraction
       - [X] xpbd distance constraints w/ compliance (harmonic oscillator)
       - [ ] smoothed-particle-hydrodynamics
@@ -155,11 +177,12 @@
       - [ ] position-based-fluids
   - [ ] soft bodies
     - [ ] volume conserving, pnuematic, etc
+    - [ ] bouncy objects
   - [ ] plastic deformation (break constraint and then create a new one in the new location?)
-  - [ ] bouncy objects
   - [ ] granular materials
 
 - Notable Others
+  - LAMMPS
   - PhysX
   - Flex
   - Rapier & Parry
@@ -175,16 +198,17 @@
     - tiny_skia
     - three-d
     - bevy
+    - plotters
   - performance
+    - arrayvec
     - wgpu
     - rayon
     - crossbeam
     - simba & simd
   - data
     - serde
-    - arrayvec
     - bitflags
-  - simplification
+  - redundancy
     - nalgebra
     - parry
     - rustc-hash
