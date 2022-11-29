@@ -11,12 +11,11 @@ fn main() {
     let mass2 = system.add_particle(Particle::new().pos_xyz(100.0, 250.0, 0.0).mass(8.0));
     let mass3 = system.add_particle(Particle::new().pos_xyz(200.0, 250.0, 0.0).mass(2.0));
 
-    let mut gravity = Interactions::Falling::new(200.0).build();
-    gravity.add_particles(&system.all_particles());
+    let gravity = Interactions::Falling::new(200.0).with_particles(&system.all_particles());
 
-    let dist1 = Constraints::Distance::new([center, mass1], 250.).build();
-    let dist2 = Constraints::Distance::new([mass1, mass2], 100.).build();
-    let dist3 = Constraints::Distance::new([mass2, mass3], 100.).build();
+    let dist1 = Constraints::Distance::new([center, mass1], 250.);
+    let dist2 = Constraints::Distance::new([mass1, mass2], 100.);
+    let dist3 = Constraints::Distance::new([mass2, mass3], 100.);
 
     system.add_interaction(gravity);
     system.add_constraint(dist1);

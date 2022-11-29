@@ -54,27 +54,26 @@ fn main() {
             .vel(vel),
     );
 
-    system.add_constraint(Constraints::Distance::new([top_right, top_left], width).build());
-    system.add_constraint(Constraints::Distance::new([top_left, bottom_left], height).build());
-    system.add_constraint(Constraints::Distance::new([bottom_left, bottom_right], width).build());
-    system.add_constraint(Constraints::Distance::new([bottom_right, top_right], height).build());
-    system.add_constraint(
-        Constraints::Distance::new(
-            [top_left, bottom_right],
-            Vec3::new(width, height, 0.0).mag(),
-        )
-        .build(),
-    );
-    system.add_constraint(
-        Constraints::Distance::new(
-            [bottom_left, top_right],
-            Vec3::new(width, height, 0.0).mag(),
-        )
-        .build(),
-    );
+    system.add_constraint(Constraints::Distance::new([top_right, top_left], width));
+    system.add_constraint(Constraints::Distance::new([top_left, bottom_left], height));
+    system.add_constraint(Constraints::Distance::new(
+        [bottom_left, bottom_right],
+        width,
+    ));
+    system.add_constraint(Constraints::Distance::new(
+        [bottom_right, top_right],
+        height,
+    ));
+    system.add_constraint(Constraints::Distance::new(
+        [top_left, bottom_right],
+        Vec3::new(width, height, 0.0).mag(),
+    ));
+    system.add_constraint(Constraints::Distance::new(
+        [bottom_left, top_right],
+        Vec3::new(width, height, 0.0).mag(),
+    ));
 
-    let mut gravity = Interactions::Falling::new(GRAVITY).build();
-    gravity.add_particles(&system.all_particles());
+    let gravity = Interactions::Falling::new(GRAVITY).with_particles(&system.all_particles());
     system.add_interaction(gravity);
 
     // add a boundary constraint to all particles
@@ -86,8 +85,7 @@ fn main() {
                 Vec3::new(-500.0, 0.0, 0.0),
                 Vec3::new(1.0, 0.0, 0.0),
             )
-            .as_force()
-            .build(),
+            .as_force(),
         );
         system.add_constraint(
             Constraints::ContactPlane::new(
@@ -96,8 +94,7 @@ fn main() {
                 Vec3::new(500.0, 0.0, 0.0),
                 Vec3::new(-1.0, 0.0, 0.0),
             )
-            .as_force()
-            .build(),
+            .as_force(),
         );
         system.add_constraint(
             Constraints::ContactPlane::new(
@@ -106,8 +103,7 @@ fn main() {
                 Vec3::new(0.0, -500.0, 0.0),
                 Vec3::new(0.0, 1.0, 0.0),
             )
-            .as_force()
-            .build(),
+            .as_force(),
         );
     }
 

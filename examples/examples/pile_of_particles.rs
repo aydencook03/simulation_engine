@@ -35,18 +35,17 @@ fn main() {
         );
     }
 
-    let mut gravity = Interactions::Falling::new(GRAVITY).build();
-    gravity.add_particles(&system.all_particles());
+    let gravity = Interactions::Falling::new(GRAVITY).with_particles(&system.all_particles());
     system.add_interaction(gravity);
 
     // add a non_penetrate constraint to all particles
     let mut index: usize = 0;
     for ref1 in &system.all_particles() {
         for ref2 in &system.all_particles()[(index + 1)..] {
-            system.add_constraint(
-                Constraints::NonPenetrate::new([*ref1, *ref2], 2.0 * system.particle_radius)
-                    .build(),
-            );
+            system.add_constraint(Constraints::NonPenetrate::new(
+                [*ref1, *ref2],
+                2.0 * system.particle_radius,
+            ));
         }
         index += 1;
     }
@@ -60,8 +59,7 @@ fn main() {
                 Vec3::new(bounds[0], 0.0, 0.0),
                 Vec3::new(1.0, 0.0, 0.0),
             )
-            .as_force()
-            .build(),
+            .as_force(),
         );
         system.add_constraint(
             Constraints::ContactPlane::new(
@@ -70,8 +68,7 @@ fn main() {
                 Vec3::new(bounds[1], 0.0, 0.0),
                 Vec3::new(-1.0, 0.0, 0.0),
             )
-            .as_force()
-            .build(),
+            .as_force(),
         );
         system.add_constraint(
             Constraints::ContactPlane::new(
@@ -80,8 +77,7 @@ fn main() {
                 Vec3::new(0.0, bounds[2], 0.0),
                 Vec3::new(0.0, 1.0, 0.0),
             )
-            .as_force()
-            .build(),
+            .as_force(),
         );
     }
 

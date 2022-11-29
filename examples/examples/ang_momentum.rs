@@ -19,8 +19,7 @@ fn main() {
             .mass(10.0),
     );
 
-    let mut gravity = Interactions::Gravity::new(6000.0).build();
-    gravity.add_particles(&system.all_particles());
+    let gravity = Interactions::Gravity::new(6000.0).with_particles(&system.all_particles());
     system.add_interaction(gravity);
 
     // add a non_penetrate constraint to all particles
@@ -31,8 +30,7 @@ fn main() {
                 Constraints::NonPenetrate::new([*ref1, *ref2], 2.0 * system.particle_radius)
                     .compliance(0.00001)
                     .dissipation(30.0)
-                    .as_force()
-                    .build(),
+                    .as_force(),
             );
         }
         index += 1;

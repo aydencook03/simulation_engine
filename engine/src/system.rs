@@ -1,4 +1,3 @@
-use crate::collision::CollisionDetector;
 use crate::constraint::Constraint;
 use crate::interaction::Interaction;
 use crate::math::Vec3;
@@ -15,12 +14,8 @@ pub struct System {
     pub particle_radius: f64,
 
     pub particles: Vec<Particle>,
-    pub interactions: Vec<Interaction>,
-    pub constraints: Vec<Constraint>,
-
-    pub collision_detector: Option<Box<dyn CollisionDetector>>, // constains collision groups
-    pub collision_interactions: Vec<Interaction>,
-    pub collision_constraints: Vec<Constraint>,
+    pub interactions: Vec<Box<dyn Interaction>>,
+    pub constraints: Vec<Box<dyn Constraint>>,
 
     pub id_counter: u32,
 }
@@ -59,13 +54,13 @@ impl System {
         references
     }
 
-    pub fn add_interaction(&mut self, interaction: Interaction) -> usize {
-        self.interactions.push(interaction);
+    pub fn add_interaction(&mut self, interaction: impl Interaction + 'static) -> usize {
+        self.interactions.push(Box::new(interaction));
         self.interactions.len() - 1
     }
 
-    pub fn add_constraint(&mut self, constraint: Constraint) -> usize {
-        self.constraints.push(constraint);
+    pub fn add_constraint(&mut self, constraint: impl Constraint + 'static) -> usize {
+        self.constraints.push(Box::new(constraint));
         self.constraints.len() - 1
     }
 

@@ -31,8 +31,7 @@ fn main() {
                     [*p1, *&system.all_particles()[(i as usize) + 1]],
                     2.0 * LINK_RADIUS,
                 )
-                .max_force(226000.0 / ((i + 1) as f64))
-                .build(),
+                .max_force(226000.0 / ((i + 1) as f64)),
             );
         }
     }
@@ -43,18 +42,15 @@ fn main() {
     let mut index: usize = 0;
     for ref1 in &system.all_particles() {
         for ref2 in &system.all_particles()[(index + 1)..] {
-            system.add_constraint(
-                Constraints::NonPenetrate::new([*ref1, *ref2], 2.0 * system.particle_radius)
-                    .build(),
-            );
+            system.add_constraint(Constraints::NonPenetrate::new(
+                [*ref1, *ref2],
+                2.0 * system.particle_radius,
+            ));
         }
         index += 1;
     }
 
-    let mut gravity = Interactions::Falling::new(GRAVITY)
-        .ground_reference(-500.0)
-        .build();
-    gravity.add_particles(&system.all_particles());
+    let gravity = Interactions::Falling::new(GRAVITY).with_particles(&system.all_particles());
 
     system.add_interaction(gravity);
     system.static_constraint_pass(1);
