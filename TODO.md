@@ -34,7 +34,7 @@
       - [ ] mesh <-> connected particles
       - [ ] mesh boundary conditions (Neumann, dirichlet, etc)
       - [ ] mpm algorithms
-  - dynamics & interactions:
+  - physics:
     - [X] interactions
       - [X] generic
       - [X] field interaction
@@ -44,7 +44,7 @@
     - [ ] sph, mpm
     - [ ] collisions
     - [ ] thermodynamics
-    - [ ] molecular dynamics
+    - [ ] molecular dynamics, statistical mechanics, mesoscale modeling
     - [ ] boundary conditions
       - [ ] sources & sinks
       - [ ] outlet / sink
@@ -67,21 +67,6 @@
     - [ ] wasm
     - [ ] parallelization
     - [ ] gpu acceleration
-
-Scales:
-  - Microscopic
-    - Particle Dynamics
-    - Molecular Dynamics/Mechanics
-  - Mesoscopic
-    - Statistical Mechanics
-      - Lattice Boltzmann Equation
-        - Lattice Boltzmann Method
-      - Mesoscale Modeling
-  - Macroscopic
-    - Continuum Mechanics
-      - Navier Stokes Equation
-    - Thermodynamics
-    - Rigid Bodies
 
 - Examples
   - [ ] cantilever
@@ -183,12 +168,10 @@ Scales:
 
 - Notable Others
   - LAMMPS
-  - PhysX
-  - Flex
+  - PhysX & Flex
   - Rapier & Parry
   - Bullet
-  - PySPH
-  - PHANTOM
+  - PySPH & PHANTOM
   - SPLASH
 
 - Possibly useful crates

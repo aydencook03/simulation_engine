@@ -117,18 +117,6 @@ impl System {
         dbg!(ke);
     }
 
-    pub fn debug_mechanical_energy(&self) {
-        let mut ke = 0.0;
-        let mut pe = 0.0;
-        for particle in &self.particles {
-            ke += 0.5 * particle.mass * particle.vel.mag_squared();
-        }
-        for interaction in &self.interactions {
-            pe += interaction.interaction_energy(&self.particles);
-        }
-        dbg!(ke + pe);
-    }
-
     //--------------------------------------------------------------------//
     // time evolution
 

@@ -12,10 +12,10 @@ pub struct Interaction {
 
 pub enum InteractionType {
     Generic(Box<dyn GenericInteraction>),
-    FieldParticle(Box<dyn FieldParticleInteraction>),
+    FieldParticle(Box<dyn FieldParticleForce>),
     PairWiseForce(Box<dyn PairWiseForce>),
     SimpleForce(Box<dyn SimpleForce>),
-    Sph(SphInteraction),
+    Sph(SphParameters),
     Mpm(Box<dyn MpmInteraction>),
 }
 
@@ -87,32 +87,6 @@ impl Interaction {
             InteractionType::Mpm(_inter) => todo!(),
         }
     }
-
-    pub fn interaction_energy(&self, particle_source: &[Particle]) -> f64 {
-        match &self.interaction_type {
-            InteractionType::Generic(_) => 0.0,
-            InteractionType::FieldParticle(inter) => inter.field_energy(),
-            InteractionType::PairWiseForce(inter) => {
-                let mut potential = 0.0;
-                for (index, ref1) in self.coupled_particles.iter().enumerate() {
-                    for ref2 in &self.coupled_particles[(index + 1)..] {
-                        potential +=
-                            inter.potential(ref1.get(particle_source), ref2.get(particle_source));
-                    }
-                }
-                potential
-            }
-            InteractionType::SimpleForce(inter) => {
-                let mut potential = 0.0;
-                for reference in &self.coupled_particles {
-                    potential += inter.potential(reference.get(particle_source));
-                }
-                potential
-            }
-            InteractionType::Sph(_inter) => todo!(),
-            InteractionType::Mpm(_inter) => todo!(),
-        }
-    }
 }
 
 //---------------------------------------------------------------------------------------------------//
@@ -121,7 +95,7 @@ pub trait GenericInteraction {
     fn interaction(&mut self, particle_source: &mut [Particle], dt: f64);
 }
 
-pub trait FieldParticleInteraction {
+pub trait FieldParticleForce {
     fn particle_to_field(&mut self, _particle: &Particle) {}
 
     fn integrate(&mut self, _dt: f64) {}
@@ -131,45 +105,32 @@ pub trait FieldParticleInteraction {
     }
 
     fn clear(&mut self) {}
-
-    fn field_energy(&self) -> f64 {
-        0.0
-    }
 }
 
 pub trait PairWiseForce {
     fn force(&self, _particle1: &Particle, _particle2: &Particle) -> Option<Vec3>;
-
-    fn potential(&self, _particle1: &Particle, _particle2: &Particle) -> f64 {
-        0.0
-    }
 }
 
 pub trait SimpleForce {
     fn force(&self, _particle: &Particle) -> Option<Vec3>;
-
-    fn potential(&self, _particle: &Particle) -> f64 {
-        0.0
-    }
 }
 
 //--------------------------------------------------------------------//
 
-pub struct SphInteraction {
+pub struct SphParameters {
     kernel: Box<dyn SphKernel>,
     smoothing_radius: Option<f64>,
-    support_radius: Option<f64>,
 }
 
-impl SphInteraction {
+impl SphParameters {
     
 }
 
 pub trait SphKernel {
-    fn w(&self, point: Point3) -> f64;
-    fn grad_w(&self, point: Point3) -> Vec3;
-    fn div_w(&self, point: Point3) -> f64;
-    fn laplace_w(&self, point: Point3) -> f64;
+    fn w(&self, r: Point3, h: f64) -> f64;
+    fn grad_w(&self, r: Point3, h: f64) -> Vec3;
+    fn div_w(&self, r: Point3, h: f64) -> f64;
+    fn laplace_w(&self, r: Point3, h: f64) -> f64;
 }
 
 //--------------------------------------------------------------------//
@@ -251,9 +212,6 @@ pub mod builtin_interactions {
         fn force(&self, particle: &Particle) -> Option<Vec3> {
             Some(Vec3::new(0.0, -particle.mass * self.0, 0.0))
         }
-        fn potential(&self, particle: &Particle) -> f64 {
-            particle.mass * self.0 * (particle.pos.y - self.1)
-        }
     }
 
     //--------------------------------------------------------------------//
@@ -277,10 +235,6 @@ pub mod builtin_interactions {
 
             Some(((self.0 * particle1.mass * particle2.mass) / dist.powi(3)) * radial)
         }
-        fn potential(&self, particle1: &Particle, particle2: &Particle) -> f64 {
-            let radial = particle2.pos - particle1.pos;
-            -self.0 * particle1.mass * particle2.mass / radial.mag()
-        }
     }
 
     //--------------------------------------------------------------------//
@@ -303,11 +257,6 @@ pub mod builtin_interactions {
             let dist = radial.mag();
 
             Some(-((self.0 * particle1.charge * particle2.charge) / dist.powi(3)) * radial)
-        }
-
-        fn potential(&self, particle1: &Particle, particle2: &Particle) -> f64 {
-            let radial = particle2.pos - particle1.pos;
-            self.0 * particle1.charge * particle2.charge / radial.mag()
         }
     }
 
@@ -353,14 +302,6 @@ pub mod builtin_interactions {
                 -c * ((n * sigma.powf(n) / r.powf(n + 2.)) - (m * sigma.powf(m) / r.powf(m + 2.)))
                     * radial,
             )
-        }
-        fn potential(&self, particle1: &Particle, particle2: &Particle) -> f64 {
-            let (n, m) = (self.repulsion, self.attraction);
-            let c = (n / (n - m)) * ((n / m).powf(m / (n - m))) * self.dispersion_energy;
-            let sigma = self.collision_radius;
-            let r = (particle2.pos - particle1.pos).mag();
-
-            c * ((sigma / r).powf(n) - (sigma / r).powf(m))
         }
     }
 }

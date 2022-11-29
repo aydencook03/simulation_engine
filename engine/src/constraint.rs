@@ -11,7 +11,7 @@ pub struct Constraint {
 
 pub enum ConstraintType {
     Generic(Box<dyn GenericConstraint>),
-    Xpbd(XpbdConstraint),
+    Xpbd(XpbdParameters),
     Boundary(Box<dyn BoundaryConstraint>),
 }
 
@@ -87,14 +87,6 @@ impl Constraint {
             ConstraintType::Boundary(_constraint) => todo!(),
         }
     }
-
-    pub fn force_estimate(&self) -> f64 {
-        match &self.constraint_type {
-            ConstraintType::Generic(_constraint) => 0.0,
-            ConstraintType::Xpbd(constraint) => constraint.force,
-            ConstraintType::Boundary(_constraint) => todo!(),
-        }
-    }
 }
 
 //---------------------------------------------------------------------------------------------------//
@@ -105,8 +97,8 @@ pub trait GenericConstraint {
 
 //--------------------------------------------------------------------//
 
-pub struct XpbdConstraint {
-    implementation: Box<dyn XpbdImplementation>,
+pub struct XpbdParameters {
+    implementation: Box<dyn XpbdFunction>,
 
     compliance: f64,
     dissipation: f64,
@@ -119,9 +111,9 @@ pub struct XpbdConstraint {
     as_inequality: bool,
 }
 
-impl XpbdConstraint {
-    pub fn new(implementation: impl XpbdImplementation + 'static) -> XpbdConstraint {
-        XpbdConstraint {
+impl XpbdParameters {
+    pub fn new(implementation: impl XpbdFunction + 'static) -> XpbdParameters {
+        XpbdParameters {
             implementation: Box::new(implementation),
             compliance: 0.0,
             dissipation: 0.0,
@@ -133,27 +125,27 @@ impl XpbdConstraint {
         }
     }
 
-    pub fn compliance(mut self, compliance: f64) -> XpbdConstraint {
+    pub fn compliance(mut self, compliance: f64) -> XpbdParameters {
         self.compliance = compliance;
         self
     }
 
-    pub fn dissipation(mut self, dissipation: f64) -> XpbdConstraint {
+    pub fn dissipation(mut self, dissipation: f64) -> XpbdParameters {
         self.dissipation = dissipation;
         self
     }
 
-    pub fn max_force(mut self, max_force: f64) -> XpbdConstraint {
+    pub fn max_force(mut self, max_force: f64) -> XpbdParameters {
         self.max_force = Some(max_force);
         self
     }
 
-    pub fn as_force(mut self) -> XpbdConstraint {
+    pub fn as_force(mut self) -> XpbdParameters {
         self.as_force = true;
         self
     }
 
-    pub fn as_inequality(mut self) -> XpbdConstraint {
+    pub fn as_inequality(mut self) -> XpbdParameters {
         self.as_inequality = true;
         self
     }
@@ -161,16 +153,20 @@ impl XpbdConstraint {
     pub fn build(self) -> Constraint {
         Constraint::new(ConstraintType::Xpbd(self))
     }
+
+    pub fn force_estimate(&self) -> f64 {
+        self.force
+    }
 }
 
-pub trait XpbdImplementation {
+pub trait XpbdFunction {
     fn particles(&self) -> &[ParticleReference];
     fn constraint(&self, particles: &[&Particle]) -> f64;
     fn gradients(&self, particles: &[&Particle]) -> Vec<Vec3>;
 }
 
 /* future optimized version?
-pub trait XpbdImplementation {
+pub trait XpbdFunction {
     const COUNT: usize;
     fn particles(&self) -> [ParticleReference; Self::COUNT];
     fn constraint(&self, particles: [&Particle; Self::COUNT]) -> f64;
@@ -185,7 +181,7 @@ pub trait BoundaryConstraint {}
 
 pub mod builtin_constraints {
     use crate::{
-        constraint::{XpbdConstraint, XpbdImplementation},
+        constraint::{XpbdParameters, XpbdFunction},
         math::{Point3, Vec3},
         particle::{Particle, ParticleReference},
     };
@@ -195,12 +191,12 @@ pub mod builtin_constraints {
     pub struct Distance([ParticleReference; 2], f64);
 
     impl Distance {
-        pub fn new(particles: [ParticleReference; 2], dist: f64) -> XpbdConstraint {
-            XpbdConstraint::new(Distance(particles, dist))
+        pub fn new(particles: [ParticleReference; 2], dist: f64) -> XpbdParameters {
+            XpbdParameters::new(Distance(particles, dist))
         }
     }
 
-    impl XpbdImplementation for Distance {
+    impl XpbdFunction for Distance {
         fn particles(&self) -> &[ParticleReference] {
             &self.0
         }
@@ -220,12 +216,12 @@ pub mod builtin_constraints {
     pub struct NonPenetrate([ParticleReference; 2], f64);
 
     impl NonPenetrate {
-        pub fn new(particles: [ParticleReference; 2], collision_distance: f64) -> XpbdConstraint {
-            XpbdConstraint::new(NonPenetrate(particles, collision_distance)).as_inequality()
+        pub fn new(particles: [ParticleReference; 2], collision_distance: f64) -> XpbdParameters {
+            XpbdParameters::new(NonPenetrate(particles, collision_distance)).as_inequality()
         }
     }
 
-    impl XpbdImplementation for NonPenetrate {
+    impl XpbdFunction for NonPenetrate {
         fn particles(&self) -> &[ParticleReference] {
             &self.0
         }
@@ -255,8 +251,8 @@ pub mod builtin_constraints {
             collision_distance: f64,
             point: Point3,
             normal: Vec3,
-        ) -> XpbdConstraint {
-            XpbdConstraint::new(ContactPlane {
+        ) -> XpbdParameters {
+            XpbdParameters::new(ContactPlane {
                 particle: [particle],
                 collision_distance,
                 point,
@@ -266,7 +262,7 @@ pub mod builtin_constraints {
         }
     }
 
-    impl XpbdImplementation for ContactPlane {
+    impl XpbdFunction for ContactPlane {
         fn particles(&self) -> &[ParticleReference] {
             &self.particle
         }
