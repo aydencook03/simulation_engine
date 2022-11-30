@@ -1,4 +1,5 @@
 use crate::math::{Matrix3, Point3, Vec3};
+use std::collections::HashMap;
 
 //---------------------------------------------------------------------------------------------------//
 
@@ -11,7 +12,7 @@ pub struct Particle {
     // properties
     pub mass: f64,
     pub charge: f64,
-    pub extra: u128,
+    pub extra: HashMap<String, f64>,
 
     // state
     pub pos: Point3,

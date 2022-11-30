@@ -42,7 +42,7 @@
       - [X] simple force
     - [X] xpbd compliant constraints
     - [ ] sph, mpm
-    - [ ] collisions
+    - [ ] collisions (verlet lists)
     - [ ] thermodynamics
     - [ ] molecular dynamics, statistical mechanics, mesoscale modeling
     - [ ] boundary conditions

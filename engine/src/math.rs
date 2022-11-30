@@ -7,6 +7,7 @@
 // The fundamental math objects.
 
 pub const PI: f64 = core::f64::consts::PI;
+pub const E: f64 = core::f64::consts::E;
 
 /// Another name for a Vec3 for semantic purposes
 pub type Point3 = Vec3;
