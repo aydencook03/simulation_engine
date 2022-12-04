@@ -8,8 +8,8 @@ pub mod system;
 
 pub mod prelude {
     pub use crate::{
-        constraint::{builtin_constraints as Constraints, Constraint},
-        interaction::builtin_interactions as Interactions,
+        constraint::{constraints as Constraints, Constraint},
+        interaction::interactions as Interactions,
         math::{Matrix3, Vec3, PI},
         particle::Particle,
         system::System,

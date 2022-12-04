@@ -23,7 +23,7 @@ fn main() {
         .group_colors
         .insert(2, rendering::colors::FOREST_GREEN);
     window.style.group_colors.insert(3, rendering::colors::RUST);
-    window.scale.starting_zoom = -15.0;
+    window.scale.starting_zoom = -15.6;
     window.scale.physics_dt = 1.0 * 60.0;
     window.scale.time_unit = (60.0, "Minutes".to_string());
 

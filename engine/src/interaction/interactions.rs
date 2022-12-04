@@ -79,6 +79,25 @@ impl PairWiseForce for ElectroStatic {
 
 //--------------------------------------------------------------------//
 
+pub struct CoulombAttraction(f64);
+
+impl CoulombAttraction {
+    pub fn new(attraction_constant: f64) -> PairWiseForceParameters {
+        PairWiseForceParameters::new(CoulombAttraction(attraction_constant))
+    }
+}
+
+impl PairWiseForce for CoulombAttraction {
+    fn force(&self, particle1: &Particle, particle2: &Particle) -> Option<Vec3> {
+        let radial = particle2.pos - particle1.pos;
+        let dist = radial.mag();
+
+        Some(-(self.0 / dist.powi(3)) * radial)
+    }
+}
+
+//--------------------------------------------------------------------//
+
 pub struct LennardJones {
     dispersion_energy: f64,
     collision_radius: f64,

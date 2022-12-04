@@ -1,5 +1,5 @@
-pub mod builtin_interactions;
 pub mod field;
+pub mod interactions;
 pub mod pair_wise;
 pub mod simple;
 pub mod sph;

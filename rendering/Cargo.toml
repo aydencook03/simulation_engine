@@ -11,6 +11,7 @@ engine = { path = "../engine" }
 # particle 2d renderer (real time)
 winit = "0.26"
 softbuffer = "0.1"
-tiny-skia = "0.8"
+#tiny-skia = "0.8"
+tiny-skia = {version = "0.8", features = ["png-format"]}
 
 # particle 3d renderer (real time)

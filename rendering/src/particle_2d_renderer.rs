@@ -43,6 +43,7 @@ use tiny_skia::{FillRule, Paint, PathBuilder, Pixmap, Stroke, Transform};
 struct SoftbufferContext {
     view: View2D,
     context: GraphicsContext<Window>,
+    frame: u32,
 }
 
 //---------------------------------------------------------------------------------------------------//
@@ -120,6 +121,7 @@ impl Particle2DRenderer {
         let mut context = SoftbufferContext {
             view: View2D::new(),
             context: unsafe { GraphicsContext::new(window) }.unwrap(),
+            frame: 0,
         };
         context.view.zoom = self.scale.starting_zoom;
 
@@ -175,7 +177,7 @@ impl Particle2DRenderer {
                         "Simulation - fps: {:.0} - time: {:.2} {}",
                         1.0 / passed_sec,
                         system.time / self.scale.time_unit.0,
-                        self.scale.time_unit.1
+                        self.scale.time_unit.1,
                     ));
 
                     time = Instant::now();
@@ -269,6 +271,11 @@ impl Particle2DRenderer {
         }
 
         //--------------------------------------------------------------------//
+
+        // tiny-skia = {version = "0.8", features = ["png-format"]}
+        // draw_buffer.save_png(format!("./output/{:05}.png", context.frame)).expect("error");
+        context.frame += 1;
+        // then use imagemagick `$convert -delay 100/fps -loop 0 ./output/*.png ./output/name.gif`
 
         // convert the draw_buffer to the format that Softbuffer uses
         let framebuffer: Vec<u32> = draw_buffer

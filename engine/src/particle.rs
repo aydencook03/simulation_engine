@@ -1,5 +1,4 @@
 use crate::math::{Matrix3, Point3, Vec3};
-use std::collections::HashMap;
 
 //---------------------------------------------------------------------------------------------------//
 
@@ -9,27 +8,29 @@ pub struct Particle {
     pub id: u32,
     pub group: u32,
 
-    // properties
-    pub mass: f64,
-    pub charge: f64,
-    pub extra: HashMap<String, f64>,
-
     // state
     pub pos: Point3,
     pub vel: Vec3,
-    pub temperature: f64,
 
     // dynamics
+    pub mass: f64,
     pub inverse_mass: f64,
     pub prev_pos: Point3,
     pub forces: Vec<Vec3>,
 
-    // spatial extension
+    // continuum sampling
+    pub density: f64,
+    pub internal_energy: f64,
+    //pub entropy: f64,
+
+    // electromagnetic properties
+    pub charge: f64,
+
+    // rigid body extension
     pub extent: Option<Extent>,
 }
 
 //--------------------------------------------------------------------//
-// extending the particle spatially to create a rigid body
 
 pub struct Extent {
     pub orientation: Vec3,
@@ -52,12 +53,6 @@ pub enum Shape {
     ConvexMesh,
     TriangleMesh,
     Heightfield,
-}
-
-impl Shape {
-    pub fn inertia_matrix(&self) -> Matrix3 {
-        todo!()
-    }
 }
 
 //---------------------------------------------------------------------------------------------------//
@@ -87,10 +82,6 @@ impl Particle {
         self.mass = mass;
         self
     }
-    pub fn charge(mut self, charge: f64) -> Particle {
-        self.charge = charge;
-        self
-    }
     pub fn inverse_mass(mut self, inverse_mass: f64) -> Particle {
         self.inverse_mass = inverse_mass;
         self
@@ -118,10 +109,6 @@ impl Particle {
     }
     pub fn vel_xyz(mut self, vel_x: f64, vel_y: f64, vel_z: f64) -> Particle {
         self.vel = Vec3::new(vel_x, vel_y, vel_z);
-        self
-    }
-    pub fn temperature(mut self, temp: f64) -> Particle {
-        self.temperature = temp;
         self
     }
 

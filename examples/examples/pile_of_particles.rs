@@ -81,7 +81,5 @@ fn main() {
         );
     }
 
-    system.static_constraint_pass(2);
-
     window.run(system);
 }
