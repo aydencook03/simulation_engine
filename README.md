@@ -2,12 +2,10 @@
 
 ## Examples
 
-|                                                  |                                            |
-|--------------------------------------------------|--------------------------------------------|
-| ![Two planets colliding.](./media/collision.gif)                                              |
-| ![Snapping chain.](./media/chain.gif)            | ![Phase transition.](./media/freezing.gif) |
-| ![Pile of particles.](./media/pile.gif)          | ![Triple pendulum.](./media/pendulum.gif)  |
-| ![Three body system.](./media/gravity.gif)       | ![Frictionless block.](./media/block.gif)  |
+|                                                  |                                            |                                            |
+|--------------------------------------------------|--------------------------------------------|--------------------------------------------|
+| ![Two planets colliding.](./media/collision.gif) | ![Snapping chain.](./media/chain.gif)      | ![Phase transition.](./media/freezing.gif) |
+| ![Pile of particles.](./media/pile.gif)          | ![Triple pendulum.](./media/pendulum.gif)  | ![Frictionless block.](./media/block.gif)  |
 
 ## Running the Examples
 The list of current examples can be found in the examples directory. Before running them, make sure that you have Rust's build tool, Cargo, installed ([installation](https://www.rust-lang.org/tools/install)). You can then run them with 
