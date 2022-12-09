@@ -273,9 +273,10 @@ impl Particle2DRenderer {
         //--------------------------------------------------------------------//
 
         // tiny-skia = {version = "0.8", features = ["png-format"]}
-        // draw_buffer.save_png(format!("./output/{:05}.png", context.frame)).expect("error");
+        // draw_buffer.save_png(format!("./target/{:05}.png", context.frame)).expect("error");
         context.frame += 1;
-        // then use imagemagick `$convert -delay 100/fps -loop 0 ./output/*.png ./output/name.gif`
+        // imagemagick `$convert -delay 100/fps -loop 0 ./target/*.png ./media/name.gif`
+        // rm ./target/*.png
 
         // convert the draw_buffer to the format that Softbuffer uses
         let framebuffer: Vec<u32> = draw_buffer

@@ -124,28 +124,30 @@ impl System {
     }
 
     pub fn step_forward(&mut self, dt: f64) {
-        if self.running && dt != 0_f64 {
-            let sub_dt = dt / (self.substeps as f64);
-            for _ in 0..self.substeps {
-                for interaction in &mut self.interactions {
-                    interaction.handle(&mut self.particles, sub_dt);
-                }
-
-                for particle in &mut self.particles {
-                    particle.integrate(sub_dt);
-                    particle.forces.clear();
-                }
-
-                for constraint in &mut self.constraints {
-                    constraint.project(&mut self.particles, sub_dt, false);
-                }
-
-                for particle in &mut self.particles {
-                    particle.update_vel(sub_dt);
-                }
-            }
-            self.time += dt;
+        if !self.running || dt == 0_f64 {
+            return;
         }
+
+        let sub_dt = dt / (self.substeps as f64);
+        for _ in 0..self.substeps {
+            for interaction in &mut self.interactions {
+                interaction.handle(&mut self.particles, sub_dt);
+            }
+
+            for particle in &mut self.particles {
+                particle.integrate(sub_dt);
+                particle.forces.clear();
+            }
+
+            for constraint in &mut self.constraints {
+                constraint.project(&mut self.particles, sub_dt, false);
+            }
+
+            for particle in &mut self.particles {
+                particle.update_vel(sub_dt);
+            }
+        }
+        self.time += dt;
     }
 }
 

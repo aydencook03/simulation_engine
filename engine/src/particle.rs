@@ -20,8 +20,8 @@ pub struct Particle {
 
     // continuum sampling
     pub density: f64,
-    pub internal_energy: f64,
-    //pub entropy: f64,
+    pub temperature: f64,
+    pub entropy: f64,
 
     // electromagnetic properties
     pub charge: f64,
