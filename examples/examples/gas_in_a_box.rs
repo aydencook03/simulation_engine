@@ -10,7 +10,7 @@ const BOND_ENERGY: f64 = 100000.0;
 fn main() {
     let mut system = System::new();
     system.particle_radius = RADIUS;
-    let mut window = Particle2DRenderer::new();
+    let mut window = Particle2DRenderer::new(None);
     window.scale.physics_dt = 1.0 / 30.0;
 
     let mut rng = rand::thread_rng();

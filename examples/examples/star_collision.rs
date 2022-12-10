@@ -10,7 +10,7 @@ const G: f64 = 6.674e-11;
 fn main() {
     // configure the system and rendering parameters
     let mut system = System::new();
-    let mut window = Particle2DRenderer::new();
+    let mut window = Particle2DRenderer::new(None);
     system.substeps = 1;
     window.style.stroke_size = 0.0;
     window.style.bg_color = rendering::colors::BLACK;

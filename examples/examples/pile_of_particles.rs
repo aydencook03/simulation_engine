@@ -12,7 +12,7 @@ fn main() {
     let mut system = System::new();
     system.particle_radius =
         ((3.0 * (MIN_MASS + MAX_MASS) / 2.0) / (4.0 * DENSITY * engine::math::PI)).cbrt();
-    let mut window = Particle2DRenderer::new();
+    let mut window = Particle2DRenderer::new(None);
     window.scale.physics_dt = 1.0 / 30.0;
     window
         .style

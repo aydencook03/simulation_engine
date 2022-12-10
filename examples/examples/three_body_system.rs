@@ -3,7 +3,7 @@ use rendering::particle_2d_renderer::Particle2DRenderer;
 
 fn main() {
     let mut system = System::new();
-    let window = Particle2DRenderer::new();
+    let window = Particle2DRenderer::new(None);
 
     system.add_particle(Particle::new().mass(50.0).vel_xyz(-10.0, 0.0, 14.0));
     system.add_particle(

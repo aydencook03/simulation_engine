@@ -12,7 +12,7 @@ const LINK_MASS: f64 = CHAIN_MASS / (LINK_COUNT as f64);
 fn main() {
     let mut system = System::new();
     system.particle_radius = LINK_RADIUS;
-    let mut window = Particle2DRenderer::new();
+    let mut window = Particle2DRenderer::new(None);
     window.scale.physics_dt = 1.0 / 60.0;
     window.style.stroke_size = 0.0;
 

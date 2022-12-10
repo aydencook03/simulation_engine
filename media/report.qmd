@@ -25,7 +25,7 @@ Because the framework aims to support classical and non-relativistic behavior, t
 - Conservation Laws (m, E, $\vec{p}$, $\vec{l}$)
 - Laws of Thermodynamics
 
-One of the primary issues with using particles as the underlying unit of behavior is the fact that most things that occur at the scale of humans has an order of magnitude of around $10^{24}$ particles involved. Performing any interesting simulation would thus be nearly impossible if each and every particle were to be simulated.
+One of the primary issues with using particles as the underlying unit of simulation is the fact that most things that occur at the scale of humans have an order of magnitude of around $10^{24}$ particles involved. Performing any interesting simulation would thus be nearly impossible if each and every particle were to be simulated.
 
 In order to account for this, methods for recovering a continuum from a smaller set of discrete particles will be needed. The most popular method for doing so is Smoothed Particle Hydrodynamics (SPH), which will be the subject of @sec-sph.
 
@@ -41,25 +41,31 @@ The first API is called an `Interaction`, and the entrypoint for an Interaction 
 
 ### Particle Dynamics
 
-Position based forces, pair forces, field interaction forces.
+Force-based simulation is ubiquitous, and is thus an obvious inclusion in a framework such as this one.
 
+As this framework has been created in a modular fashion, anyone can hand-code their own forces and interactions, however, many forces have a lot of implementation details in common.
 
+To reduce repetition, a handful of common force "types" have been pre-implemented, including things such as force potentials, pairwise forces between particles, and forces that arrise due to an interaction with a field.
+
+Many things can be simulated using these forces alone, such as kinetic gases, spring systems, Lennard-Jones fluids, gravity, etc.
 
 ### Smoothed Particle Hydrodynamics (SPH) {#sec-sph}
 
-The foundational starting point of the SPH method is the following identity:
+Because of the large number of particles participating, macroscopic phenomena are often modelled as continuous. It is thus important to provide a way to recover a continuum from discrete particles. SPH is a method that aims to do so.
+
+Because a particle has finite mass and zero extent, trying to calculate something like density (or another continuum quantity) requires the use of a Dirac-Delta function. Thus the foundational starting point of the SPH method is the following identity:
 
 $$
 A(\vec{r}) = \iiint\limits_{\mathbb{R}^3} A(\vec{r}\prime) \delta(\vec{r}-\vec{r}\prime) dV\prime
 $$ {#eq-identity}
 
-By recognizing that $dm = \rho dV$, and by substituing a kernel approximation to the Dirac-Delta distribution, we arrive at the following continuous formula:
+By recognizing that $dm = \rho dV$, and by substituing an approximation to the Dirac-Delta distribution, called the kernel $W$, we arrive at the following continuous formula:
 
 $$
 A(\vec{r}) = \iiint\limits_{\mathbb{R}^3} \frac{A(\vec{r}\prime)}{\rho(\vec{r}\prime)} W(\vec{r}-\vec{r}\prime, h) dm\prime
 $$
 
-The final step is the discretization. Our spatial domain is sampled by a collection of particles, and so the integral over that domain will become the following discrete sum over the particles:
+A primary constraint on $W$ is that it must approach the Dirac-Delta distribution as $h \rightarrow 0$, giving $h$ the name "the smoothing length." The final step is the discretization. Our spatial domain is sampled by a collection of particles, and so the integral over that domain will become the following discrete sum over the particles:
 
 $$
 A(\vec{r}) = \sum_{i}^{N} m_i \frac{A_i}{\rho_i} W(\vec{r}-\vec{r}_i, h)

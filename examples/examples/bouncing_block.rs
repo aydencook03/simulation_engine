@@ -5,7 +5,7 @@ const GRAVITY: f64 = 600.0;
 
 fn main() {
     let mut system = System::new();
-    let mut window = Particle2DRenderer::new();
+    let mut window = Particle2DRenderer::new(None);
     window.scale.physics_dt = 1.0 / 240.0;
 
     let center = Vec3::new(0.0, 0.0, 0.0);

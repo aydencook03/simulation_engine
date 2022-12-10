@@ -16,8 +16,8 @@
 //! | +/-    | Zoom In/Out  |
 //! | Enter  | Reset View   |
 //! | Space  | Pause/Play   |
-//! | R      | Reset Sim    |
-//! | S      | Step Forward |
+//! | F      | Step Forward |
+//! | S      | Save Image   |
 //! | Q      | Quit         |
 
 //---------------------------------------------------------------------------------------------------//
@@ -40,20 +40,11 @@ use tiny_skia::{FillRule, Paint, PathBuilder, Pixmap, Stroke, Transform};
 
 //---------------------------------------------------------------------------------------------------//
 
-struct SoftbufferContext {
-    view: View2D,
-    context: GraphicsContext<Window>,
-    frame: u32,
-}
-
-//---------------------------------------------------------------------------------------------------//
-
-pub struct Style2D {
-    pub stroke_size: f32,
-    pub stroke_color: Color,
-    pub bg_color: Color,
-    pub starting_window_size: [u32; 2],
-    pub group_colors: HashMap<u32, Color>,
+pub struct Particle2DRenderer {
+    pub save_animation: bool,
+    pub style: Style2D,
+    pub scale: Scale2D,
+    pub user_function: Option<fn(&mut Particle2DRenderer, &mut System)>,
 }
 
 pub struct Scale2D {
@@ -63,19 +54,33 @@ pub struct Scale2D {
     pub starting_zoom: f64,
 }
 
-pub struct Particle2DRenderer {
-    pub style: Style2D,
-    pub scale: Scale2D,
+pub struct Style2D {
+    pub stroke_size: f32,
+    pub stroke_color: Color,
+    pub bg_color: Color,
+    pub starting_window_size: [u32; 2],
+    pub group_colors: HashMap<u32, Color>,
+}
+
+//--------------------------------------------------------------------//
+
+struct SoftbufferContext {
+    view: View2D,
+    context: GraphicsContext<Window>,
+    frame: u32,
 }
 
 //---------------------------------------------------------------------------------------------------//
 
 impl Particle2DRenderer {
     /// Creates a default window.
-    pub fn new() -> Particle2DRenderer {
+    pub fn new(
+        user_function: Option<fn(&mut Particle2DRenderer, &mut System)>,
+    ) -> Particle2DRenderer {
         let mut group_colors = HashMap::new();
         group_colors.insert(0, crate::colors::CRIMSON);
         Particle2DRenderer {
+            save_animation: false,
             style: Style2D {
                 stroke_size: 2.5,
                 stroke_color: crate::colors::BLACK,
@@ -89,6 +94,7 @@ impl Particle2DRenderer {
                 pixel_distance: 1.0,
                 starting_zoom: 1.0,
             },
+            user_function,
         }
     }
 
@@ -104,7 +110,7 @@ impl Particle2DRenderer {
         r | g | b
     }
 
-    pub fn run(self, mut system: System) {
+    pub fn run(mut self, mut system: System) {
         let event_loop = EventLoop::new();
         let window = {
             let size = PhysicalSize::new(
@@ -157,18 +163,22 @@ impl Particle2DRenderer {
                     VirtualKeyCode::Minus => context.view.zoom_out(),
                     VirtualKeyCode::Return => context.view.reset(),
                     VirtualKeyCode::Space => system.running = !system.running,
-                    VirtualKeyCode::R => todo!(),
-                    VirtualKeyCode::S => {
+                    VirtualKeyCode::F => {
                         if !system.running {
                             system.running = true;
                             system.step_forward(self.scale.physics_dt);
                             system.running = false;
                         }
                     }
+                    VirtualKeyCode::R => todo!(),
+                    VirtualKeyCode::S => todo!(),
                     VirtualKeyCode::Q => *control_flow = ControlFlow::Exit,
                     _ => (),
                 },
                 Event::MainEventsCleared => {
+                    if let Some(function) = self.user_function {
+                        function(&mut self, &mut system);
+                    }
                     self.render_particles(&mut context, &system);
                     system.step_forward(self.scale.physics_dt);
 
@@ -228,6 +238,7 @@ impl Particle2DRenderer {
         ));
 
         //--------------------------------------------------------------------//
+
         let mut particles = Vec::new();
         for particle in &system.particles {
             particles.push((particle.pos, particle.group));
@@ -296,7 +307,7 @@ impl Particle2DRenderer {
 
 impl Default for Particle2DRenderer {
     fn default() -> Self {
-        Self::new()
+        Self::new(None)
     }
 }
 
