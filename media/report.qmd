@@ -15,7 +15,7 @@ format:
 
 # Introduction
 
-The primary goal of the project is to create a general-purpose framework for particle based simulations. Particles are chosen as the primary means of simulation because of their simplicity and generality. Most phenomena in reality can be described by underlying particle dynamics.
+The primary goal of the project is to create a general-purpose framework for particle based simulations. Particles are chosen as the primary means of simulation because of their simplicity and generality. Most phenomena in reality can be described by underlying particle dynamics, adding further reason to investigate their use in simulation.
 
 ## Background
 
@@ -30,6 +30,10 @@ One of the primary issues with using particles as the underlying unit of simulat
 In order to account for this, methods for recovering a continuum from a smaller set of discrete particles will be needed. The most popular method for doing so is Smoothed Particle Hydrodynamics (SPH), which will be the subject of @sec-sph.
 
 ## Usefulness
+
+Important systems are often complex and involve many areas of physics merging and interacting. Thus the importance of this project stems from the fact that having a unified framework for physical simulation opens the door to studying situations that involve coupled and interacting phenomena.
+
+Furthermore, having a single general purpose framework that captures a lot of overlapping implementation details would reduce much of the boilerplate and redundancy that is necessary when creating a simulation. Instead of needing a large amount of manual code just to test a new idea or study an important system, one can simply tap into what this framework provides and add any additional behavior as necessary.
 
 # Methods
 
@@ -102,7 +106,7 @@ $$
 Using this instead, we arrive at the pairwise force that is central to SPH:
 
 $$
-\vec{F}_{ij}^{pr} = -m_i m_j (\frac{P_i}{\rho_i^2} + \frac{P_j}{\rho_j^2}) \nabla W(\vec{r}_i-\vec{r}_j, h)
+\vec{F}_{ij}^{pressure} = -m_i m_j (\frac{P_i}{\rho_i^2} + \frac{P_j}{\rho_j^2}) \nabla W(\vec{r}_i-\vec{r}_j, h)
 $$ {#eq-pressure-force}
 
 Given that $\nabla W(\vec{r}_i-\vec{r}_j, h) = -\nabla W(\vec{r}_j-\vec{r}_i, h)$, this pairwise force will conserve momentum. Finally, to close the equations of motion, an equation of state is needed so that pressure can be calculated. A common one in astrophysics is the polytrope $P = K\rho^{\frac{n+1}{n}}$.
