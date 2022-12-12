@@ -135,7 +135,7 @@ $$
 C(\vec{x}_1, ..., \vec{x}_i) \geq 0
 $$ {#eq-constraint-ineq}
 
-The goal is to then find a position change for each particle $\Delta \vec{x}_i$ such that the constraint becomes satisfied. XPBD does this by using an approximate implicit integration step where the constraint function is linearized. A detailed derivation can be found in @macklin2019small.
+The goal is to then find a position change for each particle $\Delta \vec{x}_i$ such that the constraint becomes satisfied. XPBD does this by using an approximate implicit integration step where the constraint function is linearized [see @macklin2019small for a detailed derivation].
 
 $$
 \Delta \vec{x}_i = \lambda w_i \nabla_{\vec{x}_i}C(\vec{x})
@@ -146,7 +146,65 @@ $$ {#eq-lambda}
 
 XPBD uses the inverse mass of each particle $w_i$ so that setting $w_i = 0$ creates a particle that cannot be moved by the constraint. Also, XPBD allows the constraints to have both compliance and dampening by adjusting $\alpha$ and $\beta$ respectively.
 
+#### Implementation
+
+To create a new XPBD constraint in the framework, one simply needs to specify the constraint function and the gradients of the constraint function.
+
+```
+trait Xpbd {
+    fn C(particles) -> f64;
+    fn grad(particles) -> Vec<Vec3>;
+}
+```
+
+Everything else is then handled automatically. The full XPBD implementation can be found [here](https://github.com/aydencook03/simulation_engine/blob/main/engine/src/constraint/xpbd.rs).
+
 # Results
+
+Although the physics happens in three dimensions, the current renderer is a minimal-viable-product that only renders in two dimensions. However, a two dimensional view of the example simulations is still enough for a qualitative analysis.
+
+## Collision
+
+::: {#fig-collision layout-ncol="2"}
+![](./collision/collision_1.png)
+
+![](./collision/collision_2.png)
+
+![](./collision/collision_3.png)
+
+![](./collision/collision_4.png)
+
+Collision
+:::
+
+## Phase Change
+
+::: {#fig-phase-change layout-ncol="2"}
+![](./phase_change/phase_change_1.png)
+
+![](./phase_change/phase_change_2.png)
+
+![](./phase_change/phase_change_3.png)
+
+![](./phase_change/phase_change_4.png)
+
+Phase Change
+:::
+
+## Breaking Chain
+
+::: {#fig-breaking-chain layout-ncol="2"}
+
+![](./breaking_chain/breaking_chain_1.png)
+
+![](./breaking_chain/breaking_chain_2.png)
+
+![](./breaking_chain/breaking_chain_3.png)
+
+![](./breaking_chain/breaking_chain_4.png)
+
+Breaking Chain
+:::
 
 # Discussion
 
