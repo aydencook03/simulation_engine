@@ -213,9 +213,27 @@ A final test has been created to analyze the accuracy and stability of XPBD, as 
 Breaking Chain
 :::
 
-# Discussion
+More demos and animations can be seen by going to the project's repository (see @sec-links).
+
+# Analysis of Results
+
+## Collision
+
+Although a simple model is used to conduct the simulation, the collision still demonstrates key features such as material mixing and the long debris tail connecting the two bodies post-collision. SPH could be used to drastically increase the accuracy, however its implementation is not yet complete. The speed of this framework is also shown here, as the simulation with 1500 particles was able to run at around 20 fps while being unoptimized and serial.
+
+## Phase Change
+
+The most important thing to notice in the gas simulation is the phase change that occurs. After bouncing around for a while under the influence of gravity, the gas eventually settles onto the lower temperature bottom boundary and begins to form a solid. Once it loses enough energy, a regular lattice structure begins to emerge while the particles vibrate in place. Even with this simple model, sophisticated behavior can emerge.
+
+In the future, I would like to implement methods of more accurate temperature control so that a global gas temperature can be maintained. By doing this, the fluid phase of matter could be investigated.
+
+## Breaking Chain
+
+After the chain comes into contact witht the immovable particle, it stretches beyond its breaking point, causing it to snap. The sudden breaking of the chain causes a shock wave to travel to the pivot point and reflect back down. Creating such a simulation with force based methods would require a complicated solver that would be ridden with instabilities at such a large time step. However, XPBD handles the situation with no problem and still demonstrates shock propagation.
 
 # Conclusion
+
+It has been shown that a general purpose framework for particle based simulations can be created through the use of two carefully chosen APIs. A selection of the most important methods from the framework has also been shown and tested. With a combination of force based dynamics, smoothed particle hydrodynamics, and extended position based dynamics, a wide range of physical phenomenon can be accurately simulated, and their qualitative accuracy has been demonstrated.
 
 # Appendix
 
@@ -241,7 +259,7 @@ for each substep_count:
 time += dt
 ```
 
-## Relevent Links
+## Relevent Links {#sec-links}
 
 - [Project GitHub Repository](https://github.com/aydencook03/simulation_engine)
 
