@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# A small script to extract keyframe images from a GIF
+
 import sys
 from PIL import Image
 
