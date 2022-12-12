@@ -16,7 +16,7 @@ format:
 
 # Introduction
 
-The primary goal of the project is to create a general-purpose framework for particle based simulations. Particles are chosen as the primary means of simulation because of their simplicity and generality. Most phenomena in reality can be described by underlying particle dynamics, adding further reason to investigate their use in simulation.
+The primary goal of the project is to create a general-purpose framework for particle based simulations. Particles have been chosen as the primary means of simulation because of their simplicity and generality. Also, most phenomena in reality can be described by underlying particle dynamics, adding further reason to investigate their use in simulation.
 
 ## Background
 
@@ -42,19 +42,17 @@ To remain general purpose, modular, and extensible, the framework has been creat
 
 The first API is called an `Interaction`, with the entrypoint occuring at the beginning of the main loop. The second is called a `Constraint`, with an entrypoint after the particle integration step (see @lst-update-loop).
 
-The ordering of the update loop has been chosen carefully as to allow as wide a range of behavior possible. In physics simulations, it is most accurate to first calculate forces and then perform integration based on those forces, so therefore interactions are handled first. After the equations of motion have been integrated for each particle, the system proceeds to projecting constraints (see @sec-constraints).
+The ordering of the update loop has been chosen carefully to allow as wide a range of behavior possible. In physics simulations, it is most accurate to first calculate forces and then perform integration based on those forces, therefore interactions are handled first. After the equations of motion have been integrated for each particle, the system proceeds to projecting constraints (see @sec-constraints).
 
 ## Interactions
 
-Because the framework is crafted in a modular fashion, anyone can implement their own interactions. However, many useful/common ones have already been implemented.
+Because the framework is crafted in a modular fashion, anyone can implement their own interactions. However, many useful/common types have already been implemented.
 
 ### Particle Dynamics
 
 Force-based simulation is ubiquitous, and is thus an obvious inclusion in a framework such as this one.
 
-As this framework has been created in a modular fashion, anyone can hand-code their own forces and interactions, however, many forces have a lot of implementation details in common.
-
-To reduce repetition, a handful of common force "types" have been pre-implemented, including things such as force potentials, pairwise forces between particles, and forces that arrise due to an interaction with a field.
+To reduce redundancy, a handful of common force "types" have been pre-implemented, including things such as force potentials, pairwise forces between particles, and forces that arrise due to an interaction with a field.
 
 Many things can be simulated using these forces alone, such as kinetic gases, spring systems, Lennard-Jones fluids, gravity, etc.
 
@@ -118,11 +116,35 @@ Given that $\nabla W(\vec{r}_i-\vec{r}_j, h) = -\nabla W(\vec{r}_j-\vec{r}_i, h)
 
 ## Constraints {#sec-constraints}
 
-Oftentimes when trying to describe the behavior of a system it is easier to describe what the system *can't do*, instead of how it does what it does. It is for this reason that constraints play a central role in the framework alongside interactions. For example, instead of trying to analyze every force involved in a triple pendulum's motion, an easier description would be to specify the fixed distance between each mass.
+Oftentimes when trying to describe the behavior of a system it is easier to describe what it *can't do* rather than how it does it. It is for this reason that constraints play a central role in the framework alongside interactions. For example, instead of trying to analyze every force involved in a triple pendulum's motion, an easier description would be to specify the fixed distance between each mass.
 
 ### Extended Position Based Dynamics (XPBD)
 
-[@macklin2019small]
+The primary method for constraint solving that has already been implemented is XPBD, which is a mathematical framework and algorithm for compliant constrained dynamics. The implementation here is adapted from @macklin2019small.
+
+The framework's main update loop has been ordered in such a way as to allow for the natural inclusion of XPBD (and other constraints).
+
+#### Equations
+
+XPBD works by specifying a function of particle positions that must always be satisfied, called a constrain function. The implementation here allows for two types:
+
+$$
+C(\vec{x}_1, ..., \vec{x}_i) = 0
+$$ {#eq-constraint-eq}
+$$
+C(\vec{x}_1, ..., \vec{x}_i) \geq 0
+$$ {#eq-constraint-ineq}
+
+The goal is to then find a position change for each particle $\Delta \vec{x}_i$ such that the constraint becomes satisfied. XPBD does this by using an approximate implicit integration step where the constraint function is linearized. A detailed derivation can be found in @macklin2019small.
+
+$$
+\Delta \vec{x}_i = \lambda w_i \nabla_{\vec{x}_i}C(\vec{x})
+$$ {#eq-delta-pos}
+$$
+\lambda = \frac{-C(\vec{x}) - \frac{\alpha\beta}{\Delta t} \sum_{i}\nabla_{\vec{x}_i}C(\vec{x}) \cdot (\vec{x}_i - \vec{x}_i^{prev})}{(1 + \frac{\alpha\beta}{\Delta t})\sum_i w_i |\nabla_{\vec{x}_i}C(\vec{x})|^2 + \frac{\alpha}{{\Delta t}^2}}
+$$ {#eq-lambda}
+
+XPBD uses the inverse mass of each particle $w_i$ so that setting $w_i = 0$ creates a particle that cannot be moved by the constraint. Also, XPBD allows the constraints to have both compliance and dampening by adjusting $\alpha$ and $\beta$ respectively.
 
 # Results
 
