@@ -44,7 +44,8 @@
     - [ ] sph, mpm
     - [ ] collisions (verlet lists)
     - [ ] thermodynamics
-    - [ ] molecular dynamics, statistical mechanics, mesoscale modeling
+    - [ ] molecular dynamics, statistical mechanics, mesoscale modeling, active matter
+      - [ ] molecular dynamics => dissipative particle dynamics => smoothed particle hydrodynamics
     - [ ] boundary conditions
       - [ ] sources & sinks
       - [ ] outlet / sink

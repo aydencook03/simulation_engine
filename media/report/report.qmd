@@ -38,7 +38,7 @@ Furthermore, having a single general purpose framework that captures a lot of ov
 
 # Methods
 
-To remain general purpose, modular, and extensible, the framework has been created in such a way that allows for any type of particle behavior to easily tap into the system's main update loop. Two different APIs have been created to do so.
+To remain general purpose, modular, and extensible, the framework has been created in such a way that allows for any type of particle behavior to easily tap into the system's main update loop. Two different Application Programming Interfaces (APIs) have been created to do so. These APIs allow any user of the framework to easily interface with the rest of the system.
 
 The first API is called an `Interaction`, with the entrypoint occuring at the beginning of the main loop. The second is called a `Constraint`, with an entrypoint after the particle integration step (see @lst-update-loop).
 
@@ -66,11 +66,11 @@ $$
 A(\vec{r}) = \iiint\limits_{\mathbb{R}^3} A(\vec{r}\prime) \delta(\vec{r}-\vec{r}\prime) dV\prime
 $$ {#eq-identity}
 
-By recognizing that $dm = \rho dV$, and by substituing an approximation to the Dirac-Delta distribution, called the kernel $W$, we arrive at the following continuous formula:
+Where $A$ is any generic function of the position. By recognizing that $dm = \rho dV$, and by substituing an approximation to the Dirac-Delta distribution, called the kernel $W$, we arrive at the following continuous formula:
 
 $$
 A(\vec{r}) = \iiint\limits_{\mathbb{R}^3} \frac{A(\vec{r}\prime)}{\rho(\vec{r}\prime)} W(\vec{r}-\vec{r}\prime, h) dm\prime
-$$
+$$ {#eq-continuous-sph}
 
 A primary constraint on $W$ is that it must approach the Dirac-Delta distribution as $h \rightarrow 0$, giving $h$ the name "the smoothing length." The final step is the discretization. Our spatial domain is sampled by a collection of particles, and so the integral over that domain will become the following discrete sum over the particles:
 
@@ -90,7 +90,7 @@ In a continuum, the particles experience an acceleration due to the local pressu
 
 $$
 \frac{d\vec{r}_i}{dt} = -\frac{1}{\rho_i}\nabla_{\vec{r}_i}P
-$$
+$$ {#eq-pressure-force}
 
 Discretizing this force alone will allow us to capture a lot of the behavior of a fluid, so it will serve as the primary example shown here.
 
@@ -98,18 +98,18 @@ A nice thing about the SPH method is that it allows us to easily calculate gradi
 
 $$
 \frac{d\vec{r}_i}{dt} = -\frac{1}{\rho_i} \sum_{j}^{N} m_j \frac{P_j}{\rho_j} \nabla W(\vec{r}_i-\vec{r}_j, h)
-$$
+$$ {#eq-sph-pressure-force-bad}
 
-However, upon further inspection one may notice that the force on particle i due to particle j is not antisymmetric as Newton's Third Law requires for momentum conservation $\vec{F}_{ij} \neq -\vec{F}_{ji}$. To fix this, the following identity can be used:
+However, upon further inspection one may notice that the force on particle $i$ due to particle $j$ is not antisymmetric as Newton's Third Law requires for momentum conservation $\vec{F}_{ij} \neq -\vec{F}_{ji}$. To fix this, the following identity can be used:
 
 $$
-\nabla(\frac{P}{\rho}) = \frac{1}{\rho}\nabla P - \frac{P}{\rho^2}\nabla\rho
-$$
+\nabla\left(\frac{P}{\rho}\right) = \frac{1}{\rho}\nabla P - \frac{P}{\rho^2}\nabla\rho
+$$ {#eq-gradient-identity}
 
 Using this instead, we arrive at the pairwise force that is central to SPH:
 
 $$
-\vec{F}_{ij}^{pressure} = -m_i m_j (\frac{P_i}{\rho_i^2} + \frac{P_j}{\rho_j^2}) \nabla W(\vec{r}_i-\vec{r}_j, h)
+\vec{F}_{ij}^{pressure} = -m_i m_j \left(\frac{P_i}{\rho_i^2} + \frac{P_j}{\rho_j^2}\right) \nabla W(\vec{r}_i-\vec{r}_j, h)
 $$ {#eq-pressure-force}
 
 Given that $\nabla W(\vec{r}_i-\vec{r}_j, h) = -\nabla W(\vec{r}_j-\vec{r}_i, h)$, this pairwise force will conserve momentum. Finally, to close the equations of motion, an equation of state is needed so that pressure can be calculated. A common one in astrophysics is the polytrope $P = K\rho^{\frac{n+1}{n}}$.
@@ -135,16 +135,18 @@ $$
 C(\vec{x}_1, ..., \vec{x}_i) \geq 0
 $$ {#eq-constraint-ineq}
 
-The goal is to then find a position change for each particle $\Delta \vec{x}_i$ such that the constraint becomes satisfied. XPBD does this by using an approximate implicit integration step where the constraint function is linearized [see @macklin2019small for a detailed derivation].
+The goal is to then find a position change for each particle $\Delta \vec{x}_i$ such that the constraint becomes satisfied, $C(\vec{x}+\Delta \vec{x})=0$. XPBD does this by using an approximate implicit integration step where the constraint function is linearized [see @macklin2019small for a detailed derivation].
+
+XPBD uses the inverse mass of each particle $w_i$, which allows for infinitely massive particles by setting $w_i=0$. Also, XPBD allows the constraints to have both compliance and dampening by adjusting $\alpha$ and $\beta$ respectively.
 
 $$
 \Delta \vec{x}_i = \lambda w_i \nabla_{\vec{x}_i}C(\vec{x})
 $$ {#eq-delta-pos}
 $$
-\lambda = \frac{-C(\vec{x}) - \frac{\alpha\beta}{\Delta t} \sum_{i}\nabla_{\vec{x}_i}C(\vec{x}) \cdot (\vec{x}_i - \vec{x}_i^{prev})}{(1 + \frac{\alpha\beta}{\Delta t})\sum_i w_i |\nabla_{\vec{x}_i}C(\vec{x})|^2 + \frac{\alpha}{{\Delta t}^2}}
+\lambda = \frac{-C(\vec{x}) - \frac{\alpha\beta}{\Delta t} \sum_{i}\nabla_{\vec{x}_i}C(\vec{x}) \cdot \left(\vec{x}_i - \vec{x}_i^{prev}\right)}{\left(1 + \frac{\alpha\beta}{\Delta t}\right)\sum_i w_i |\nabla_{\vec{x}_i}C(\vec{x})|^2 + \frac{\alpha}{{\Delta t}^2}}
 $$ {#eq-lambda}
 
-XPBD uses the inverse mass of each particle $w_i$ so that setting $w_i = 0$ creates a particle that cannot be moved by the constraint. Also, XPBD allows the constraints to have both compliance and dampening by adjusting $\alpha$ and $\beta$ respectively.
+Using @eq-delta-pos, the position correction $\Delta \vec{x}_i$ for each particle $i$ can be calculated and applied in order to satisfy the constraint. The term $\alpha$ is the compliance of the constraint, which allows for softer constraints rather than hard constraints, and the term $\beta$ is a term to control the dampening.
 
 #### Implementation
 

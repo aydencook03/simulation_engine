@@ -37,7 +37,7 @@ fn main() {
     } */
 
     system.add_interaction(
-        Interactions::LennardJones::new(1000.0, 2.*system.particle_radius)
+        Interactions::LennardJones::new(1000.0, 2. * system.particle_radius)
             .build()
             .with_particles(&system.all_particles()),
     );
