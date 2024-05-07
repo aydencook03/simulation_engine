@@ -46,10 +46,7 @@ impl System {
     pub fn add_particles(&mut self, particles: Vec<Particle>) -> Vec<ParticleReference> {
         let mut references = Vec::new();
         for particle in particles {
-            let id = self.id_counter;
-            self.particles.push(particle.id(id));
-            self.id_counter += 1;
-            references.push(ParticleReference::new(id, self.particles.len() - 1));
+            references.push(self.add_particle(particle));
         }
         references
     }

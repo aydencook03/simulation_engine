@@ -6,7 +6,7 @@ use crate::math::{Matrix3, Point3, Vec3};
 pub struct Particle {
     // identity
     pub id: u32,
-    pub group: u32,
+    pub group: u32, // should this be turned into a collection of groups?
 
     // state
     pub pos: Point3,
