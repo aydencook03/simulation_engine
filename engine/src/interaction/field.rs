@@ -62,7 +62,7 @@ impl Interaction for FieldForceParameters {
         for reference in &self.coupled_particles {
             let particle = reference.get_mut(particle_source);
             if let Some(force) = self.field.force_on_particle(particle) {
-                particle.add_force(force, particle.pos);
+                particle.add_force(force);
             }
         }
     }

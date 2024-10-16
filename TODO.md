@@ -5,7 +5,6 @@
   - [ ] spatial hashing vs bounding boxes vs signed-distance-field-voxelization (speed, generality, ease of implementation)
   - [ ] AABB/BVH pass then SDF voxelization pass
   - [ ] look at structure of Rapier project (parry, Colliders, user api, etc)
-  - [ ] rigid body update methods
   - [ ] sph prototypes
   - [ ] interactivity (interaction in physics pipeline, etc)
   - [ ] investigate
@@ -26,14 +25,6 @@
   - objects:
     - [X] system
     - [X] particles
-    - [ ] rigid bodies
-    - [ ] mesh
-      - [ ] structured (FDM, FVM, FEM)
-        - [ ] differential operators
-      - [ ] unstructured (FVM, FVM)
-      - [ ] mesh <-> connected particles
-      - [ ] mesh boundary conditions (Neumann, dirichlet, etc)
-      - [ ] mpm algorithms
   - physics:
     - [X] interactions
       - [X] generic
@@ -41,7 +32,7 @@
       - [X] pair-wise interaction forces
       - [X] simple force
     - [X] xpbd compliant constraints
-    - [ ] sph, mpm
+    - [ ] sph
     - [ ] collisions (verlet lists)
     - [ ] thermodynamics
     - [ ] molecular dynamics, statistical mechanics, mesoscale modeling, active matter
@@ -57,6 +48,7 @@
   - algorithms:
     - [ ] n-body pairing (take a generic slice and return an iterator of pairs)
     - [ ] composite shapes (rigid body <-> collection of particles) (voxelization)
+    - [ ] mesh <-> connected particles
     - [ ] Barnes–Hut algorithm
     - [ ] collision detection & neighbor finding
       - [ ] spatial dividing (octree, bounding volume heirarchy, etc)

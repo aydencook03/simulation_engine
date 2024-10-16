@@ -45,9 +45,9 @@ impl Interaction for PairWiseForceParameters {
                     .force(ref1.get(particle_source), ref2.get(particle_source))
                 {
                     let p1 = ref1.get_mut(particle_source);
-                    p1.add_force(force, p1.pos);
+                    p1.add_force(force);
                     let p2 = ref2.get_mut(particle_source);
-                    p2.add_force(-force, p2.pos);
+                    p2.add_force(-force);
                 }
             }
         }

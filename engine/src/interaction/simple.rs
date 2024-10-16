@@ -41,7 +41,7 @@ impl Interaction for SimpleForceParameters {
         for reference in &self.coupled_particles {
             if let Some(force) = self.force.force(reference.get(particle_source)) {
                 let particle = reference.get_mut(particle_source);
-                particle.add_force(force, particle.pos);
+                particle.add_force(force);
             }
         }
     }

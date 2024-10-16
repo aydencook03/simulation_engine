@@ -1,4 +1,4 @@
-use crate::math::{Matrix3, Point3, Vec3};
+use crate::math::{Point3, Vec3};
 
 //---------------------------------------------------------------------------------------------------//
 
@@ -25,34 +25,6 @@ pub struct Particle {
 
     // electromagnetic properties
     pub charge: f64,
-
-    // rigid body extension
-    pub extent: Option<Extent>,
-}
-
-//--------------------------------------------------------------------//
-
-pub struct Extent {
-    pub orientation: Vec3,
-    pub angular_velocity: Vec3,
-
-    pub inverse_inertia: Matrix3,
-    pub prev_orientation: Vec3,
-    pub torques: Vec<Vec3>,
-
-    pub shape: Shape,
-}
-
-pub enum Shape {
-    Sphere,
-    Cuboid,
-    Capsule,
-    Cylinder,
-    Cone,
-    Compound,
-    ConvexMesh,
-    TriangleMesh,
-    Heightfield,
 }
 
 //---------------------------------------------------------------------------------------------------//
@@ -76,7 +48,7 @@ impl Particle {
     }
 
     //--------------------------------------------------------------------//
-    // builder methods for particle properties
+    // builder methods for particle dynamics properties
 
     pub fn force_mass(mut self, mass: f64) -> Particle {
         self.mass = mass;
@@ -122,21 +94,13 @@ impl Particle {
             total_force += *force;
         }
 
-        if let Some(_extent) = &mut self.extent {
-            todo!();
-        }
-
         self.vel += total_force * self.inverse_mass * dt;
         self.prev_pos = self.pos;
         self.pos += self.vel * dt;
     }
 
-    pub fn add_force(&mut self, force: Vec3, at_point: Point3) {
+    pub fn add_force(&mut self, force: Vec3) {
         self.forces.push(force);
-
-        if let Some(extent) = &mut self.extent {
-            extent.torques.push((at_point - self.pos).cross(force));
-        }
     }
 
     pub fn add_displacement(
