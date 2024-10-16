@@ -131,12 +131,13 @@
 
 - Compilation Features
   - [ ] serialization of System struct and saving/loading from file (using serde)
-  - [ ] load and run a serialized system from the command line (create folder of serialized examples)
+  - [ ] load and run a serialized system from the command line (create folder of serialized examples?)
   - [ ] object mesh file loading (for FEM-like analysis)?
   - [ ] parallelize using simd, rayon, bevy_tasks::ParallelIterator, etc
   - [ ] wgpu acceleration
 
 - Rendering
+  - [ ] implementable draw method for constraints. ie: drawing contact planes, rod connections, etc
   - [ ] animation baking (both 3d and 2d)
     - [ ] save/serialize System state to file once the animation is completed
   - [ ] color based on radiation/temperature
