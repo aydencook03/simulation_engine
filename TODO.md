@@ -170,10 +170,10 @@
 
 - Possibly useful crates
   - rendering
+    - three-d
     - winit
     - softbuffer
     - tiny_skia
-    - three-d
     - bevy
     - plotters
   - performance
