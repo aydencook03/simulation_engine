@@ -111,8 +111,6 @@ Constraints directly modify particle positions (and sometimes velocities) to sat
 
 - **Timing**: Interactions occur before integration, while constraints are applied after.
 - **Purpose**: Interactions model forces, while constraints enforce specific conditions.
-- **Implementation**: Interactions modify forces, while constraints directly adjust positions.
-- **Flexibility**: Interactions suit continuous forces, while constraints maintain strict conditions.
 
 This separation allows the engine to handle both dynamic force-based behaviors and precise geometric constraints efficiently.
 
