@@ -25,14 +25,14 @@ More examples can be found in the `examples/examples` directory.
 1. Install Rust and Cargo: [https://www.rust-lang.org/tools/install](https://www.rust-lang.org/tools/install)
 2. Clone the repository:
 
-   ```sh
+   ```bash
    git clone https://github.com/aydencook03/simulation_engine.git
    cd simulation_engine
    ```
 
 3. Run an example:
 
-   ```sh
+   ```bash
    cargo run --release --example collision
    ```
 
