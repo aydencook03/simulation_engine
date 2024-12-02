@@ -6,10 +6,11 @@ A powerful, general-purpose framework for particle-based simulations in Rust.
 
 - Multiple simulation methods: Force-based Dynamics (FBD), Extended Position-Based Dynamics (XPBD), and Smoothed-Particle Hydrodynamics (SPH)
 - Rigid body simulation using both XPBD and FBD
+- Fluid simulation using SPH
 - Modular architecture for easy extension
 - Real-time 2D rendering
 - Pre-implemented interactions and constraints
-- Support for custom user-defined behaviors
+- Support for custom user-defined interactions and constraints
 
 ## Examples
 
