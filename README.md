@@ -2,11 +2,19 @@
 
 A powerful, general-purpose framework for particle-based simulations in Rust.
 
+This Rust-based engine provides a flexible framework for particle-based simulations, supporting methods like Force-Based Dynamics (FBD) and Extended Position-Based Dynamics (XPBD). XPBD enables both rigid and soft body simulations, along with arbitrary constraints like collisions, joints, and springs.
+
+Examples include simulations of colliding bodies, a breaking chain under stress, a frictionless rigid block, Lennard-Jones gases, and phase transitions. A basic real-time 2D renderer is included as an example implementation to visualize these systems, built using low-level Rust libraries like `winit` and `softbuffer` for efficient and lightweight rendering.
+
+Smoothed Particle Hydrodynamics (SPH) is a planned feature that will enable fluid and other continuous material simulations, such as modeling liquid flow or astrophysical phenomena.
+
+The engine is modular, allowing users to create custom interactions and constraints to suit their needs.
+
 ## Key Features
 
-- Multiple simulation methods: Force-based Dynamics (FBD), Extended Position-Based Dynamics (XPBD), and Smoothed-Particle Hydrodynamics (SPH)
+- Multiple simulation methods: Force-based Dynamics (FBD), Extended Position-Based Dynamics (XPBD), and Smoothed-Particle Hydrodynamics (SPH) (Planned)
 - Rigid body simulation using both XPBD and FBD
-- Fluid simulation using SPH
+- Fluid simulation using SPH (Planned)
 - Modular architecture for easy extension
 - Real-time 2D rendering
 - Pre-implemented interactions and constraints
@@ -84,7 +92,3 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 ## License
 
 Dual-licensed under the MIT License and the Apache License 2.0.
-
-## Acknowledgements
-
-This project is inspired by various particle-based simulation techniques in computational physics and computer graphics.
